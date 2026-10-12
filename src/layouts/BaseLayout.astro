@@ -1,0 +1,46 @@
+<script setup lang="ts">
+  /**
+   * Base layout for all pages
+   * Implements SEO, CSP, and brand consistency
+   */
+  defineProps<{
+    title: string;
+    description: string;
+    ogImage?: string;
+  }>();
+</script>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="icon" href="/favicon.svg" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage || '/favicon.svg'} />
+  <meta property="og:type" content="website" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Nexus Digital",
+      "url": "https://nexusdigital.com"
+    }
+  </script>
+  <style>
+    :root {
+      --color-primary: #1a1a1a;
+      --color-secondary: #4a4a4a;
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --font-sans: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <slot />
+</body>
+</html>
