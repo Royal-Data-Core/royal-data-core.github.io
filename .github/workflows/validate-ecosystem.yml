@@ -42,7 +42,7 @@ jobs:
       - name: Check agent files
         run: |
           REQUIRED_AGENTS=(
-            "nexus-prime"
+            "nexus-prime.system"
             "architect-sdd"
             "spec-engineer"
             "frontend-astro"
