@@ -1,0 +1,61 @@
+name: Validate SDD Ecosystem
+
+on:
+  push:
+    paths:
+      - '.opencode/agents/**'
+      - '.ai/**'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - '.opencode/agents/**'
+      - '.ai/**'
+      - 'scripts/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run parser tests
+        run: python scripts/test_nexus_parser.py
+
+      - name: Validate constitution.md exists
+        run: |
+          if [ ! -f .ai/constitution.md ]; then
+            echo "❌ .ai/constitution.md não encontrado"
+            exit 1
+          fi
+          echo "✅ constitution.md presente"
+
+      - name: Check agent files
+        run: |
+          REQUIRED_AGENTS=(
+            "nexus-prime"
+            "architect-sdd"
+            "spec-engineer"
+            "frontend-astro"
+            "content-strategist"
+            "devops-platform"
+            "integrations-security"
+            "qa-shiftleft"
+            "reviewer-gatekeeper"
+          )
+          for agent in "${REQUIRED_AGENTS[@]}"; do
+            if [ ! -f ".opencode/agents/${agent}.md" ]; then
+              echo "❌ Agente faltando: ${agent}.md"
+              exit 1
+            fi
+          done
+          echo "✅ Todos os agentes presentes"
