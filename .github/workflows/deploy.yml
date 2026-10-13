@@ -4,41 +4,31 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: 18
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Build Astro project
+      - name: Build project
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: deploy.yml
-          environment: github-pages
-          branch: main
-          path: ./dist
-          clean: true
+          github_token: ${{ secrets.RDC_GH_TOKEN }}
+          publish_dir: ./dist
