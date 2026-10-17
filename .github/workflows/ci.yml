@@ -1,43 +1,304 @@
-name: CI - Lint, Test, and Validate
+# RFC-001 §2.2 — Pipeline de validação (PR e develop)
+# BYPASS-001: actions pinadas por tag; conversão para SHA completo até Dia 10 (INFRA-001, scripts/pin-actions.sh)
+name: CI - Reset
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+# RFC-001 §2.6(5): pull_request_target BANIDO. Nenhum secret é exposto a PR.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
+  # ────────────────────────────────────────────────────────────────
+  # GATE 1 — Sem navegador. Rápido (~90s). Falha antes de gastar build.
+  # ────────────────────────────────────────────────────────────────
+  guard:
+    name: guard · lint + static analysis + adr + secrets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v6          # BYPASS-001
         with:
-          node-version: 18
+          fetch-depth: 0                    # necessário para gitleaks e adr-gate
 
-      - name: Cache node modules
-        uses: actions/cache@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4         # BYPASS-001
         with:
-          path: ~/.npm
-          key: node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            node-modules-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install (frozen, no lifecycle scripts)
+        run: npm ci --ignore-scripts        # ADR-001 D3/D4 — NUNCA `npm install`
 
-      - name: Lint
+      # ADR-001 D4: invariante que torna --ignore-scripts seguro
+      - name: ADR-001/D4 · verify no dependency declares lifecycle scripts
+        run: node scripts/verify-no-postinstall.mjs
+
+      - name: Astro sync (gera tipos para `astro check`)
+        run: npx astro sync
+
+      - name: Typecheck (astro check + tsc)
+        run: npm run check
+
+      - name: Lint (ESLint)
         run: npm run lint
 
-      - name: Type check
-        run: npm run type-check
+      - name: Format (Prettier --check)
+        run: npm run format:check
 
-      - name: Unit tests
-        run: npm run test
+      - name: Markdown lint (.ai/ + content)
+        run: npm run lint:md
 
-      - name: E2E tests
-        run: npm run e2e
+      # CONSTITUTION §C3 — gate de ADR
+      - name: C3 · ADR required for topology changes
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ "$BASE" = "0000000000000000000000000000000000000000" ] || \
+             [ "$HEAD" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::base/head indisponível (force-push inicial) — pulando adr-gate"
+            exit 0
+          fi
+          # RFC-001 §2.6(4): diff escrito em arquivo, nunca interpolado em run:
+          git diff --name-only "$BASE" "$HEAD" > /tmp/changed.txt
+          if grep -Eq '^(astro\.config\.mjs|package\.json|src/content\.config\.ts|\.github/workflows/)' /tmp/changed.txt; then
+            if ! grep -q '^\.ai/adr/' /tmp/changed.txt; then
+              echo "::error file=.ai/adr::CONSTITUTION §C3 — mudança de topologia sem ADR."
+              echo "Arquivos que disparam o gate:"
+              grep -E '^(astro\.config\.mjs|package\.json|src/content\.config\.ts|\.github/workflows/)' /tmp/changed.txt
+              echo "Crie .ai/adr/ADR-NNN-<slug>.md a partir de .ai/adr/ADR-TEMPLATE.md"
+              exit 1
+            fi
+            echo "::notice::adr-gate satisfeito — ADR presente no diff"
+          fi
 
-      - name: Lighthouse CI
-        run: npx lighthouse-ci
+      # CONSTITUTION §C1 — output mode estático
+      - name: C1 · assert output mode is static
+        run: |
+          if grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs; then
+            echo "::error file=astro.config.mjs::CONSTITUTION §C1 — apenas output: 'static' é permitido"
+            exit 1
+          fi
+          echo "output mode: static ✓"
+
+      # ADR-000 — identificadores em EN
+      - name: ADR-000 · no accented identifiers
+        run: |
+          if grep -REn '\b(function|const|let|var|class|interface|type)\s+[A-Za-z_$]*[àáâãéêíóôõúüçÀÁÂÃÉÊÍÓÔÕÚÜÇ]' src/ scripts/ 2>/dev/null; then
+            echo "::error::ADR-000 — identificadores devem estar em EN, sem acentos"
+            exit 1
+          fi
+
+      - name: gitleaks (histórico completo)
+        run: |
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz" \
+            -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --no-banner --redact --exit-code 1
+
+      - name: Upload changed-files report
+        if: always()
+        uses: actions/upload-artifact@v4    # BYPASS-001
+        with:
+          name: guard-changed-files
+          path: /tmp/changed.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ────────────────────────────────────────────────────────────────
+  # GATE 2 — Build + auditoria de bundle
+  # ────────────────────────────────────────────────────────────────
+  build:
+    name: build · astro + pagefind + bundle audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8                      # §C5 / RFC-001 FM-02
+    needs: guard
+    steps:
+      - uses: actions/checkout@v6           # BYPASS-001
+
+      - uses: actions/setup-node@v4         # BYPASS-001
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Restore Astro cache
+        uses: actions/cache@v4              # BYPASS-001
+        with:
+          path: .astro/
+          key: astro-${{ runner.os }}-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-${{ runner.os }}-
+
+      # RFC-001 §2.6(4): variáveis de evento SEMPRE via env, nunca interpoladas em run:
+      - name: Resolve site + base from GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5    # BYPASS-001
+        with:
+          static_site_generator: astro
+
+      - name: Build (Astro)
+        env:
+          SITE: ${{ steps.pages.outputs.origin }}
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}
+        run: npm run build
+
+      - name: SPEC-007/AC-007.N3 · verify Pagefind index exists
+        run: |
+          test -f dist/_pagefind/pagefind.js   || { echo "::error::SPEC-007: pagefind.js ausente"; exit 1; }
+          test -f dist/_pagefind/pagefind.wasm || { echo "::error::SPEC-007: pagefind.wasm ausente"; exit 1; }
+          du -sh dist/_pagefind
+          [ "$(du -sm dist/_pagefind | cut -f1)" -le 5 ] || { echo "::error::SPEC-007: índice > 5 MB"; exit 1; }
+
+      - name: SPEC-008 · bundle + external-resource audit
+        run: node scripts/audit-bundle.mjs --dist dist
+
+      - name: CONSTITUTION §C5 · repo size gate (500 MB)
+        run: |
+          SIZE_MB=$(du -sm . | cut -f1)
+          echo "repo size: ${SIZE_MB} MB"
+          [ "$SIZE_MB" -le 500 ] || { echo "::error::§C5 — repo ${SIZE_MB} MB > 500 MB"; exit 1; }
+          DIST_MB=$(du -sm dist | cut -f1)
+          echo "dist size: ${DIST_MB} MB"
+          [ "$DIST_MB" -le 100 ] || { echo "::error::§C5 — site publicado ${DIST_MB} MB > 100 MB"; exit 1; }
+
+      - name: ADR-004 · .nojekyll presente no artefato
+        run: |
+          test -f dist/.nojekyll || { echo "::error::dist/.nojekyll ausente (copie para public/)"; exit 1; }
+          test -f dist/404.html  || { echo "::error::SPEC-006: dist/404.html ausente"; exit 1; }
+          test -f dist/index.html || { echo "::error::dist/index.html ausente (RFC-001 FM-04)"; exit 1; }
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4    # BYPASS-001
+        with:
+          name: dist
+          path: dist/
+          retention-days: 3
+          if-no-files-found: error
+
+  # ────────────────────────────────────────────────────────────────
+  # GATE 3 — Testes (e2e, a11y, links, unit)
+  # ────────────────────────────────────────────────────────────────
+  verify:
+    name: verify · e2e + a11y + links + unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    needs: build
+    steps:
+      - uses: actions/checkout@v6           # BYPASS-001
+
+      - uses: actions/setup-node@v4         # BYPASS-001
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4              # BYPASS-001
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Download dist
+        uses: actions/download-artifact@v4  # BYPASS-001
+        with:
+          name: dist
+          path: dist/
+
+      - name: Unit tests + coverage (§C12.3, ≥80% critical path)
+        run: npm run test:unit -- --coverage
+
+      - name: E2E (Playwright, cenários Gherkin das SPECs)
+        run: npm run test:e2e
+
+      - name: Accessibility (axe-core, WCAG 2.1 AA, 2 viewports)
+        run: npm run test:a11y
+
+      - name: Link integrity (linkinator)
+        run: npm run test:links
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4    # BYPASS-001
+        with:
+          name: test-reports
+          path: |
+            playwright-report/
+            test-results/
+            coverage/
+            .linkinator/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ────────────────────────────────────────────────────────────────
+  # GATE 4 — Core Web Vitals (§C10 / SPEC-002, SPEC-004)
+  # ────────────────────────────────────────────────────────────────
+  lighthouse:
+    name: lighthouse · core web vitals budgets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    needs: build
+    steps:
+      - uses: actions/checkout@v6           # BYPASS-001
+
+      - uses: actions/setup-node@v4         # BYPASS-001
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Download dist
+        uses: actions/download-artifact@v4  # BYPASS-001
+        with:
+          name: dist
+          path: dist/
+
+      - name: Restore LHCI baseline
+        uses: actions/cache@v4              # BYPASS-001
+        with:
+          path: .lighthouseci/
+          key: lhci-${{ github.ref_name }}
+          restore-keys: lhci-
+
+      # RFC-001 FM-08: retry 1 tolerante a flakiness de throttling em runner compartilhado
+      - name: Lighthouse CI (mobile, budgets rígidos)
+        run: |
+          npx @lhci/cli@0.14.x autorun --config=lighthouserc.json \
+            || npx @lhci/cli@0.14.x autorun --config=lighthouserc.json
+
+      - name: Upload LHCI report
+        if: always()
+        uses: actions/upload-artifact@v4    # BYPASS-001
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 30
+          if-no-files-found: ignore
