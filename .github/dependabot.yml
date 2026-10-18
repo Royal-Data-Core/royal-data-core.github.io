@@ -1,15 +1,40 @@
+# RFC-001 §2.6(2) — supply-chain: dependabot para npm E github-actions
 version: 2
 updates:
-  # Monitorar APENAS GitHub Actions (único ecossistema que realmente existe agora)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels: ["dependencies", "npm"]
+    reviewers: ["CHANGE-ME-owner"]          # ← substituir pelo handle GitHub (D-01)
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*"]
+      testing:
+        patterns: ["@playwright/*", "playwright", "vitest", "@vitest/*", "@axe-core/*"]
+      lint:
+        patterns: ["eslint*", "prettier*", "@typescript-eslint/*", "typescript", "markdownlint*"]
+    ignore:
+      # CONSTITUTION §C10: major de Astro pode alterar budgets; exige ADR antes
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "ci-cd"
-    # Commit messages padronizadas
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: "ci(actions)"
+    labels: ["dependencies", "ci", "INFRA-001"]
+    # BYPASS-001: após conversão para SHA, dependabot mantém os pins atualizados
