@@ -57,11 +57,15 @@ jobs:
           key: astro-prod-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
           restore-keys: astro-prod-
 
-      - name: Configure GitHub Pages
+      # RFC-001 §2.2 — mesma resolução determinística do ci.yml (ADR-008 D7:
+      # configure-pages@v5/v6 crasham no runner 2.337.0; zero rede, zero token).
+      - name: Resolve site + base (no-action, deterministic)
         id: pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0 — revert from v6: determinístico TypeError (non-Error throw, pré-API) no v6; pages já em build_type=workflow via API (cf ADR-008 D7)
-        with:
-          static_site_generator: astro
+        run: |
+          set -euo pipefail
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "origin=https://${OWNER_NORM}.github.io" >> "$GITHUB_OUTPUT"
+          echo "base_path=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
 
       - name: Build
         env:

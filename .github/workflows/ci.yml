@@ -162,11 +162,15 @@ jobs:
           restore-keys: astro-${{ runner.os }}-node${{ matrix.node }}-
 
       # RFC-001 §2.6(4): variáveis de evento SEMPRE via env, nunca interpoladas em run:
-      - name: Resolve site + base from GitHub Pages
+      # ADR-008 D7: configure-pages@v5/v6 crasham determinístico (non-Error throw,
+      # pré-API) no runner 2.337.0 — origin/base resolvidos shell-side, zero rede.
+      - name: Resolve site + base (no-action, deterministic)
         id: pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6 # BYPASS-001
-        with:
-          static_site_generator: astro
+        run: |
+          set -euo pipefail
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "origin=https://${OWNER_NORM}.github.io" >> "$GITHUB_OUTPUT"
+          echo "base_path=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
 
       - name: Build (Astro)
         env:
