@@ -5,7 +5,10 @@
   "type": "module",
   "description": "Royal Data Core LTDA — consultoria em testes de software. Site estatico hibrido (vitrine B2B + blog tecnico).",
   "license": "MIT",
-  "engines": { "node": ">=22.0.0", "npm": ">=10.0.0" },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -37,39 +40,61 @@
     "prepare": "husky || true"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/mdx": "^8.1.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.0.0",
     "@pagefind/default-ui": "^1.3.0",
-    "astro": "^5.0.0",
+    "astro": "^7.4.0",
     "pagefind": "^1.3.0",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.10.0",
-    "@lhci/cli": "^0.14.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.49.0",
     "@tailwindcss/vite": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "@vitest/coverage-v8": "^2.1.0",
-    "eslint": "^9.0.0",
-    "eslint-plugin-astro": "^1.0.0",
+    "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-astro": "^1.7.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
     "husky": "^9.1.0",
-    "lint-staged": "^15.2.0",
-    "linkinator": "^6.1.0",
-    "markdownlint-cli2": "^0.15.0",
+    "linkinator": "^8.1.0",
+    "lint-staged": "^17.6.0",
+    "markdownlint-cli2": "^0.23.3",
     "prettier": "^3.4.0",
     "prettier-plugin-astro": "^0.14.0",
     "prettier-plugin-tailwindcss": "^0.6.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0"
+    "vitest": "^5.0.5"
   },
   "lint-staged": {
-    "*.{astro,ts,tsx,js,mjs}": ["eslint --fix --max-warnings 0", "prettier --write"],
-    "*.{md,mdx}": ["markdownlint-cli2 --fix", "prettier --write"],
-    "*.{json,css,yml,yaml}": ["prettier --write"]
+    "*.{astro,ts,tsx,js,mjs}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{md,mdx}": [
+      "markdownlint-cli2 --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "overrides": {
+    "lighthouse": "^13.5.0",
+    "basic-ftp": "^6.2.3",
+    "tmp": "^0.2.6",
+    "uuid": "^11.1.1",
+    "inquirer": "^8.2.7",
+    "js-yaml": "^4.3.2",
+    "smol-toml": "^1.9.1",
+    "katex": "^0.19.0",
+    "eslint-plugin-astro": {
+      "astro-eslint-parser": "^2.1.0"
+    }
   }
 }
