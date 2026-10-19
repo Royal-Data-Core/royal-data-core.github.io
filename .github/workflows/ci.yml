@@ -1,6 +1,6 @@
 # RFC-001 §2.2 — Pipeline de validação (PR e develop)
 # BYPASS-001: actions pinadas por tag; conversão para SHA completo até Dia 10 (INFRA-001, scripts/pin-actions.sh)
-name: CI - Reset
+name: CI
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: "24" # ADR-005 D3 — Active LTS
 
 jobs:
   # ────────────────────────────────────────────────────────────────
@@ -26,22 +26,22 @@ jobs:
   # ────────────────────────────────────────────────────────────────
   guard:
     name: guard · lint + static analysis + adr + secrets
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
       - name: Checkout
-        uses: actions/checkout@v6          # BYPASS-001
+        uses: actions/checkout@v6 # BYPASS-001
         with:
-          fetch-depth: 0                    # necessário para gitleaks e adr-gate
+          fetch-depth: 0 # necessário para gitleaks e adr-gate
 
       - name: Setup Node
-        uses: actions/setup-node@v4         # BYPASS-001
+        uses: actions/setup-node@v4 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install (frozen, no lifecycle scripts)
-        run: npm ci --ignore-scripts        # ADR-001 D3/D4 — NUNCA `npm install`
+        run: npm ci --ignore-scripts # ADR-001 D3/D4 — NUNCA `npm install`
 
       # ADR-001 D4: invariante que torna --ignore-scripts seguro
       - name: ADR-001/D4 · verify no dependency declares lifecycle scripts
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload changed-files report
         if: always()
-        uses: actions/upload-artifact@v4    # BYPASS-001
+        uses: actions/upload-artifact@v4 # BYPASS-001
         with:
           name: guard-changed-files
           path: /tmp/changed.txt
@@ -123,32 +123,35 @@ jobs:
   # GATE 2 — Build + auditoria de bundle
   # ────────────────────────────────────────────────────────────────
   build:
-    name: build · astro + pagefind + bundle audit
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8                      # §C5 / RFC-001 FM-02
+    name: build · astro + pagefind + bundle audit (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 8 # §C5 / RFC-001 FM-02
     needs: guard
+    strategy:
+      matrix:
+        node: ["22.x", "24.x", "26.x"] # ADR-005 D2 — LTS + Current
     steps:
-      - uses: actions/checkout@v6           # BYPASS-001
+      - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4         # BYPASS-001
+      - uses: actions/setup-node@v4 # BYPASS-001
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          node-version: ${{ matrix.node }}
+          cache: "npm"
 
       - name: Install
         run: npm ci --ignore-scripts
 
       - name: Restore Astro cache
-        uses: actions/cache@v4              # BYPASS-001
+        uses: actions/cache@v4 # BYPASS-001
         with:
           path: .astro/
-          key: astro-${{ runner.os }}-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
-          restore-keys: astro-${{ runner.os }}-
+          key: astro-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-${{ runner.os }}-node${{ matrix.node }}-
 
       # RFC-001 §2.6(4): variáveis de evento SEMPRE via env, nunca interpoladas em run:
       - name: Resolve site + base from GitHub Pages
         id: pages
-        uses: actions/configure-pages@v5    # BYPASS-001
+        uses: actions/configure-pages@v5 # BYPASS-001
         with:
           static_site_generator: astro
 
@@ -183,8 +186,15 @@ jobs:
           test -f dist/404.html  || { echo "::error::SPEC-006: dist/404.html ausente"; exit 1; }
           test -f dist/index.html || { echo "::error::dist/index.html ausente (RFC-001 FM-04)"; exit 1; }
 
+      - name: SEC · assert no .ai/ or debris enters dist
+        run: |
+          if find dist \( -path '*/.ai/*' -o -name '.ai' -o -name '*.pyc' \) -print -quit | grep -q .; then
+            echo "::error::artifact contamination: .ai or debris leaked into dist"; exit 1
+          fi
+          echo "dist clean (no .ai/, no pyc) ✓"
+
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4    # BYPASS-001
+        uses: actions/upload-artifact@v4 # BYPASS-001
         with:
           name: dist
           path: dist/
@@ -196,22 +206,22 @@ jobs:
   # ────────────────────────────────────────────────────────────────
   verify:
     name: verify · e2e + a11y + links + unit
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6           # BYPASS-001
+      - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4         # BYPASS-001
+      - uses: actions/setup-node@v4 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install
         run: npm ci --ignore-scripts
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4              # BYPASS-001
+        uses: actions/cache@v4 # BYPASS-001
         id: pw-cache
         with:
           path: ~/.cache/ms-playwright
@@ -226,7 +236,7 @@ jobs:
         run: npx playwright install-deps chromium
 
       - name: Download dist
-        uses: actions/download-artifact@v4  # BYPASS-001
+        uses: actions/download-artifact@v4 # BYPASS-001
         with:
           name: dist
           path: dist/
@@ -245,7 +255,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v4    # BYPASS-001
+        uses: actions/upload-artifact@v4 # BYPASS-001
         with:
           name: test-reports
           path: |
@@ -261,28 +271,28 @@ jobs:
   # ────────────────────────────────────────────────────────────────
   lighthouse:
     name: lighthouse · core web vitals budgets
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6           # BYPASS-001
+      - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4         # BYPASS-001
+      - uses: actions/setup-node@v4 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install
         run: npm ci --ignore-scripts
 
       - name: Download dist
-        uses: actions/download-artifact@v4  # BYPASS-001
+        uses: actions/download-artifact@v4 # BYPASS-001
         with:
           name: dist
           path: dist/
 
       - name: Restore LHCI baseline
-        uses: actions/cache@v4              # BYPASS-001
+        uses: actions/cache@v4 # BYPASS-001
         with:
           path: .lighthouseci/
           key: lhci-${{ github.ref_name }}
@@ -291,12 +301,12 @@ jobs:
       # RFC-001 FM-08: retry 1 tolerante a flakiness de throttling em runner compartilhado
       - name: Lighthouse CI (mobile, budgets rígidos)
         run: |
-          npx @lhci/cli@0.14.x autorun --config=lighthouserc.json \
-            || npx @lhci/cli@0.14.x autorun --config=lighthouserc.json
+          npx @lhci/cli@0.15.x autorun --config=lighthouserc.json \
+            || npx @lhci/cli@0.15.x autorun --config=lighthouserc.json
 
       - name: Upload LHCI report
         if: always()
-        uses: actions/upload-artifact@v4    # BYPASS-001
+        uses: actions/upload-artifact@v4 # BYPASS-001
         with:
           name: lighthouse-report
           path: .lighthouseci/
