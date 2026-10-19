@@ -4,8 +4,8 @@
 
 **Engenharia de qualidade para software crítico.**
 
-[![CI](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/ci.yml)
-[![Deploy](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/deploy.yml)
+[![CI](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml)
+[![Deploy](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml)
 ![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Perf-≥95-2ea44f)
 ![Lighthouse A11y](https://img.shields.io/badge/Lighthouse_A11y-100-2ea44f)
 ![JS inicial](https://img.shields.io/badge/JS_inicial-≤50KB-informational)
@@ -26,7 +26,7 @@ formais antes de código e auditoria de segurança em cada commit.
 > Se você contrata QA, faz sentido exigir que o site do seu consultor passe pelos
 > gates que ele propõe para o seu produto. **Todos os relatórios deste repositório
 > são públicos.** Verifique você mesmo:
-> [CI runs](https://github.com/royaldatacore/royaldatacore.github.io/actions) ·
+> [CI runs](https://github.com/Royal-Data-Core/site-io/actions) ·
 > [Lighthouse](#-journal) · [specs](.ai/specs/) · [decisões arquiteturais](.ai/adr/)
 
 ### Metodologia
@@ -46,6 +46,24 @@ escrito antes de existir spec aprovada; nenhum PR é mergeado sem cenário de fa
 | [`.ai/ROADMAP.md`](.ai/ROADMAP.md)               | Roteiro sequencial de produção                     |
 | [`.ai/AGENT-PLAYBOOK.md`](.ai/AGENT-PLAYBOOK.md) | Roteamento operacional dos agentes                 |
 
+## 📊 Project Status — Resumo Executivo
+
+> Atualizado: **2026-10-19** · rodada de restauração estrutural (sanity + SDD synthesis).
+
+| Dimensão                 | Status | Evidência (gates verdes)                                                                              |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------- |
+| Site (S1 + S2 + S3 docs) | ✅     | 18 páginas estáticas — `/`, `/servicos`, `/blog[/slug]`, `/contato`, `/busca`, `/privacidade`, `/404` |
+| Pipeline de validação    | ✅     | check 0 err · lint 0 · format ✓ · lint:md/copy/topology 0                                             |
+| Testes                   | ✅     | unit+coverage **100 %** (SDD §4 ≥ 80 %) · e2e **28/28** · a11y **16/16** (2 viewports)                |
+| Acessibilidade legal     | ✅     | axe-core 0 violações WCAG 2.1 AA (paleta AA-tuned via ADR-007 D7)                                     |
+| Performance              | ✅     | JS 2.05 KB / CSS 4.65 KB gzip (§C10 ≤ 50/30 KB) · build ~1.5 s                                        |
+| Supply chain             | ✅     | `npm audit --omit=dev` = 0 · 401 pacotes, 0 lifecycle scripts                                         |
+| Runtime policy           | ✅     | Node LTS (22/24) + Current (26) — matriz em `build` (ADR-005)                                         |
+| Auditoria residual       | 🟡     | 5 HIGH dev-only (cadeia `braces` sem release limpa — ADR-006 em vigor)                                |
+| Infra pendente           | 🟡     | INFRA-001: 20/22 `actions/*` despinadas (deadline BYPASS-001)                                         |
+
+**Requer decisão humana (bloqueadores de Fase 3):** `D-01` handle/canonical do site · `D-03` email/WhatsApp reais (placeholders honestos publicados) · `D-04` redes sociais · rotação preventiva de `SSH_PRIVATE_KEY` (referência histórica nome-only).
+
 ---
 
 ## 📓 Journal — Changelog Arquitetural
@@ -53,9 +71,10 @@ escrito antes de existir spec aprovada; nenhum PR é mergeado sem cenário de fa
 > Ordem reversa (§C6). Uma entrada por merge em `main`.
 > Formato: `[AAAA-MM-DD] · [SPEC-ID|ADR-ID|RFC-ID] · descrição · PR`
 
-| Data         | Ref | Mudança                                                                                    | PR  |
-| ------------ | --- | ------------------------------------------------------------------------------------------ | --- |
-| _2026-10-16_ | _—_ | _Ratificação da Constituição v3.0.0, 9 specs, 2 RFCs, 5 ADRs. Projeto ainda não buildado._ | _—_ |
+| Data         | Ref                                      | Mudança                                                                                                                                                                                                                                                                                         | PR                                                                     |
+| ------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| _2026-10-19_ | SPEC-001…009 · ADR-005/006/007 · RFC-001 | Restauração estrutural: site estático S1+S2 (18 pág.), Node LTS+Current (ADR-005), audit 40→5 dev-only (ADR-006), scanner/gates corrigidos (ADR-007), suítes e2e+a11y mapeadas (28/28 · 16/16), coverage validator 100 %. Push direto ratificado pelo humano (revisão formal em PR postergada). | [`5e9eff9`](https://github.com/Royal-Data-Core/site-io/commit/5e9eff9) |
+| _2026-10-16_ | _—_                                      | _Ratificação da Constituição v3.0.0, 9 specs, 2 RFCs, 5 ADRs. Projeto ainda não buildado._                                                                                                                                                                                                      | _—_                                                                    |
 
 <!-- TEMPLATE DE ENTRADA (copiar e preencher a cada merge em main):
 | YYYY-MM-DD | SPEC-NNN | <descrição de 1 linha> | #NN |
@@ -99,8 +118,8 @@ escrito antes de existir spec aprovada; nenhum PR é mergeado sem cenário de fa
 
 ```bash
 # Pré-requisitos: Node >= 22, npm >= 10
-git clone https://github.com/royaldatacore/royaldatacore.github.io.git
-cd royaldatacore.github.io
+git clone https://github.com/Royal-Data-Core/site-io.git
+cd site-io
 cp .env.example .env          # preencha PUBLIC_CONTACT_EMAIL e PUBLIC_CONTACT_PHONE
 npm ci --ignore-scripts       # NUNCA `npm install` (ADR-001 D3)
 npm run dev                   # http://localhost:4321
