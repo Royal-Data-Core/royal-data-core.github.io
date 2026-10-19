@@ -180,7 +180,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # BYPASS-001
+        uses: actions/deploy-pages@v5 # BYPASS-001
 
       # RFC-001 FM-15: smoke test pós-deploy (retry/backoff para HTTP 429 — FM-10)
       - name: Smoke test published site
