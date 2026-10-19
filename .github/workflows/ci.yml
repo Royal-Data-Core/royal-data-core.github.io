@@ -1,5 +1,6 @@
 # RFC-001 §2.2 — Pipeline de validação (PR e develop)
-# BYPASS-001: actions pinadas por tag; conversão para SHA completo até Dia 10 (INFRA-001, scripts/pin-actions.sh)
+# BYPASS-001/INFRA-001: fechado neste ciclo — todas as actions pinadas por SHA completo via scripts/pin-actions.sh (npm run pin:actions)
+# ADR-008 D1: action-maintenance bots exempt from adr-gate (compensating: pin:actions:check + gitleaks + verify-no-postinstall)
 name: CI
 
 on:
@@ -30,12 +31,12 @@ jobs:
     timeout-minutes: 6
     steps:
       - name: Checkout
-        uses: actions/checkout@v6 # BYPASS-001
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
         with:
           fetch-depth: 0 # necessário para gitleaks e adr-gate
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # BYPASS-001
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -62,10 +63,17 @@ jobs:
       - name: Markdown lint (.ai/ + content)
         run: npm run lint:md
 
-      # CONSTITUTION §C3 — gate de ADR
+      # CONSTITUTION §C3 — gate de ADR (ADR-008 D1: action-maintenance bots exempt)
       - name: C3 · ADR required for topology changes
+        env:
+          PR_ACTOR: ${{ github.event.pull_request.user.login || github.actor }}
         run: |
           set -euo pipefail
+          # RFC-001 §2.6(4): event data routed via env: (never interpolated into run: scripts)
+          if [ "$PR_ACTOR" = "dependabot[bot]" ] || [ "$PR_ACTOR" = "github-actions[bot]" ]; then
+            echo "::notice::C3 adr-gate exempted via ADR-008 D1 — action-maintenance bot; dependency maintenance is not topology"
+            exit 0
+          fi
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "$BASE" = "0000000000000000000000000000000000000000" ] || \
@@ -112,7 +120,7 @@ jobs:
 
       - name: Upload changed-files report
         if: always()
-        uses: actions/upload-artifact@v4 # BYPASS-001
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:
           name: guard-changed-files
           path: /tmp/changed.txt
@@ -131,9 +139,9 @@ jobs:
       matrix:
         node: ["22.x", "24.x", "26.x"] # ADR-005 D2 — LTS + Current
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
@@ -142,7 +150,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Restore Astro cache
-        uses: actions/cache@v4 # BYPASS-001
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
         with:
           path: .astro/
           key: astro-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
@@ -151,7 +159,7 @@ jobs:
       # RFC-001 §2.6(4): variáveis de evento SEMPRE via env, nunca interpoladas em run:
       - name: Resolve site + base from GitHub Pages
         id: pages
-        uses: actions/configure-pages@v5 # BYPASS-001
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6 # BYPASS-001
         with:
           static_site_generator: astro
 
@@ -194,7 +202,7 @@ jobs:
           echo "dist clean (no .ai/, no pyc) ✓"
 
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4 # BYPASS-001
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:
           name: dist
           path: dist/
@@ -210,9 +218,9 @@ jobs:
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -221,7 +229,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4 # BYPASS-001
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
         id: pw-cache
         with:
           path: ~/.cache/ms-playwright
@@ -236,7 +244,7 @@ jobs:
         run: npx playwright install-deps chromium
 
       - name: Download dist
-        uses: actions/download-artifact@v4 # BYPASS-001
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
         with:
           name: dist
           path: dist/
@@ -255,7 +263,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v4 # BYPASS-001
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:
           name: test-reports
           path: |
@@ -275,9 +283,9 @@ jobs:
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -286,13 +294,13 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Download dist
-        uses: actions/download-artifact@v4 # BYPASS-001
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
         with:
           name: dist
           path: dist/
 
       - name: Restore LHCI baseline
-        uses: actions/cache@v4 # BYPASS-001
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
         with:
           path: .lighthouseci/
           key: lhci-${{ github.ref_name }}
@@ -306,7 +314,7 @@ jobs:
 
       - name: Upload LHCI report
         if: always()
-        uses: actions/upload-artifact@v4 # BYPASS-001
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:
           name: lighthouse-report
           path: .lighthouseci/
