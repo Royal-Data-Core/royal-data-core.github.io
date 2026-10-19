@@ -1,1 +1,0 @@
-This file was used for testing CI/CD pipeline triggers and can be safely deleted now that the workflow is configured correctly.

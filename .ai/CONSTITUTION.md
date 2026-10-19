@@ -1,5 +1,5 @@
 # 🏛️ CONSTITUTION — ROYAL DATA CORE
-**Versão:** 3.0.0 · **Ratificada:** 2026-10-16 · **Regime:** Fail-Closed · **Emendas:** somente por ADR + aprovação humana
+**Versão:** 3.1.0 · **Ratificada:** 2026-10-19 · **Regime:** Fail-Closed · **Emendas:** somente por ADR + aprovação humana
 
 ---
 
@@ -93,6 +93,7 @@ Os budgets de `SDD-CONTEXT §4` são **lei**. Regressão > 10 % em qualquer Core
 ## §C11 — LIBERDADE TÉCNICA INSTRUMENTAL
 Scripts de automação local e de CI podem usar qualquer runtime (Bash, Node, Deno, Bun, Python, Ruby, Go) desde que: (a) determinísticos, (b) versionados em `scripts/`, (c) documentados no `README.md §Scripts`, (d) **não** integrem o artefato publicado, (e) executáveis em Linux/macOS sem privilégios elevados.
 Bun é permitido em dev local **apenas** se `package-lock.json` permanecer o SSOT e o CI continuar usando `npm ci`. Divergência de lockfile = incidente P2.
+Runtime policy (ADR-005, ratificada 2026-10-19): o toolchain aceita Node.js **LTS** (Active ou Maintenance, par >= 22.0.0) e **Current**. O gate `build` roda com matriz `node-version: [22.x, 24.x, 26.x]`; `guard`, `verify`, `lighthouse` e o artefato canônico de produção usam Active LTS (24.x). `.node-version` = 24. Slugs de registro (`node_22/24/26_compatible`) ficam fora do vocabulário §9 até ratificação humana posterior; a política vigente é ADR-005.
 
 ## §C12 — CONTRATOS DE QUALIDADE
 Todo código mergeado em `main` satisfaz, cumulativamente:
