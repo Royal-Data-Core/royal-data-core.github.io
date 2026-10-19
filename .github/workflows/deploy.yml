@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@v7 # BYPASS-001
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4 # BYPASS-001
@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 8
     needs: guard
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@v7 # BYPASS-001
       - uses: actions/setup-node@v4 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
@@ -104,7 +104,7 @@ jobs:
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@v7 # BYPASS-001
       - uses: actions/setup-node@v4 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
@@ -140,7 +140,7 @@ jobs:
     timeout-minutes: 12
     needs: build
     steps:
-      - uses: actions/checkout@v6 # BYPASS-001
+      - uses: actions/checkout@v7 # BYPASS-001
       - uses: actions/setup-node@v4 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
