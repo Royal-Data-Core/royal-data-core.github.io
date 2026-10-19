@@ -18,7 +18,7 @@ const VALID_LOCAL_RE = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/;
 const VALID_DOMAIN_LABEL_RE = /^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/;
 
 export function validateEmail(email: string): boolean {
-  if (typeof email !== 'string') {
+  if (typeof email !== "string") {
     return false;
   }
   if (email.length === 0 || email.length > ADDRESS_MAX) {
@@ -33,7 +33,7 @@ export function validateEmail(email: string): boolean {
     return false;
   }
 
-  const [local = '', domain = ''] = email.split('@');
+  const [local = "", domain = ""] = email.split("@");
   return isLocalValid(local) && isDomainValid(domain);
 }
 
@@ -41,7 +41,7 @@ function isLocalValid(local: string): boolean {
   if (local.length === 0 || local.length > LOCAL_MAX) {
     return false;
   }
-  if (local.startsWith('.') || local.endsWith('.') || local.includes('..')) {
+  if (local.startsWith(".") || local.endsWith(".") || local.includes("..")) {
     return false;
   }
   return VALID_LOCAL_RE.test(local);
@@ -51,13 +51,13 @@ function isDomainValid(domain: string): boolean {
   if (domain.length === 0 || domain.length > 253) {
     return false;
   }
-  if (domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) {
+  if (domain.startsWith(".") || domain.endsWith(".") || domain.includes("..")) {
     return false;
   }
-  if (!domain.includes('.')) {
+  if (!domain.includes(".")) {
     return false;
   }
-  const labels = domain.split('.');
+  const labels = domain.split(".");
   // A trailing empty label is already covered by endsWith('.'), but keep labels strict.
   return labels.every((label) => VALID_DOMAIN_LABEL_RE.test(label));
 }
