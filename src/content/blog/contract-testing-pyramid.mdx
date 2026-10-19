@@ -1,0 +1,122 @@
+---
+title: 'Contratos de dados entre camadas de teste'
+description: 'Teste de integração não precisa levantar o sistema inteiro: ele precisa de uma promessa verificável sobre o dado que atravessa a borda. Contratos tornam essa promessa verificável.'
+publishDate: 2026-10-15
+tags: ['estrategia-de-testes', 'contratos', 'integracao']
+coverAlt: 'Artigo sem imagem de capa; exemplos de contrato entre produtor e consumidor em código.'
+lang: 'pt-BR'
+references:
+  - label: 'Martin Fowler — Contract Test'
+    url: 'https://martinfowler.com/bliki/ContractTest.html'
+  - label: 'Pact docs — consumer-driven contracts'
+    url: 'https://docs.pact.io/'
+  - label: 'Zod docs — schemas validados em runtime'
+    url: 'https://zod.dev/'
+draft: false
+---
+
+## Contexto
+
+A pirâmide de testes pede muitos testes de unidade, alguns de integração e poucos de
+interface. Em teoria, a camada de integração verifica se módulos conversam. Na
+prática, ela frequentemente se transforma em uma suíte que sobe sistema inteiro,
+demora mais que tolerável e quebra por ocorrências alheias à integração sob teste.
+
+Um recurso que reduz esse custo sem abrir mão da verificação: contratos — promessas
+comparadas sobre o dado que atravessa a borda entre produtor e consumidor.
+
+## Problema
+
+Exemplo comum: o serviço de pedidos consome o serviço de catálogo. Em algum ponto os
+dois times têm interpretações diferentes de "preço": um trata como inteiro em
+centavos, o outro como decimal. A mudança do campo passa nos testes escritos por
+cada lado, e rebenta somente no runtime — ou pior, em produção.
+
+O problema não é a falta de teste de integração: é a falta de compromisso
+verificável sobre o formato do dado na fronteira. Teste de ponta a ponta pega esse
+tipo de defeito, só que paga o teste com latência e ambiente compartilhado, e ainda
+assim cobre um único cenário de cada vez.
+
+## Análise
+
+Contrato assumido duas vezes — uma no produtor, outra no consumidor — é
+verificação de mesma promessa nas duas pontas:
+
+1. **Do lado do consumidor**: o cliente da integração é testado contra um contrato
+   gravado, um "modelo" do produtor que responde a pedido com payload congelado.
+2. **Do lado do produtor**: a própria resposta real de produção é verificada contra
+   o contrato para o qual os consumidores assinam.
+
+O truque está em comparar os dois lados sem precisar subir os dois serviços ao mesmo
+tempo — justamente o ganho de tempo que faz a suíte caber na rotina.
+
+## Solução
+
+Com schemas Zod no lado do consumidor, o contrato é literalmente código:
+
+```ts
+import { z } from 'zod';
+
+const catalogoItem = z.object({
+  sku: z.string(),
+  precoCentavos: z.number().int().nonnegative(),
+  moeda: z.literal('BRL'),
+});
+
+type CatalogoItem = z.infer<typeof catalogoItem>;
+
+export function parseCatalogItem(input: unknown): CatalogoItem {
+  const parsed = catalogoItem.safeParse(JSON.parse(input));
+  if (!parsed.success) {
+    throw new Error(`Contrato de catálogo violado: ${parsed.error.message}`);
+  }
+  return parsed.data;
+}
+```
+
+O mesmo schema vira a verificação do produtor — a única explicação textual é "este
+payload é exatamente o que o consumidor assinou". Com Pact, a mesma intenção fica
+explícita entre times:
+
+```json
+{
+  "consumer": { "name": "orders-service" },
+  "provider": { "name": "catalog-service" },
+  "interactions": [
+    {
+      "given": "item com preço em centavos",
+      "request": { "method": "GET", "path": "/items/RL-42" },
+      "response": {
+        "status": 200,
+        "body": { "sku": "RL-42", "precoCentavos": 1490, "moeda": "BRL" }
+      }
+    }
+  ]
+}
+```
+
+Na rotina local, a integração fica assim: payload congelado validado pelo mesmo
+código de `parseCatalogItem`. O teste de integração real passa a verificar
+"transporte + payload", e cada camada sob teste continua pequena e rápida.
+
+## Limitações da solução
+
+Contratos verificam formato, não semântica de negócio: "preço em centavos" pode
+estar num contrato e ainda assim errado na regra de desconto. Contratos também
+envelhecem — quando o produtor muda, alguém precisa propagar a alteração às
+ferramentas dos consumidores, senão passam a existir dois contratos dormentes sem
+que ninguém perceba. E contratos não substituem um teste ponta a ponta mínimo: o
+caso de autenticação e o caso de latência entre serviços continuam pedindo
+cobertura em ambiente integrado, ainda que em volume bem menor.
+
+## Resultado medido
+
+A alegação é limitada: contratos reduzem suítes que sobem sistema inteiro e
+trocam parte da verificação por comparações locais. A medição utilizável é simples e
+pode ser reproduzida: contar testes de ponta a ponta da suíte antes e depois da
+adoção, e registrar tempo de execução no pipeline público deste repositório.
+
+## Referências
+
+As entradas de frontmatter guardam o ensaio de Fowler sobre teste de contrato, a
+documentação do Pact e a página do Zod.

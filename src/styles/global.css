@@ -1,0 +1,42 @@
+/*
+ * Global stylesheet — imported ONLY by `src/layouts/BaseLayout.astro` (frontmatter).
+ *
+ * SPEC-008 (font-src 'self' + ADR-001): system font stack, ZERO webfont
+ * downloads / external requests. Tailwind v4 via the Vite plugin:
+ * `@import "tailwindcss";` enables its automatic content detection (no
+ * `content: []` config — ADR-001 D2).
+ */
+@import "tailwindcss";
+
+@theme {
+  /* Brand tokens (deep-blue on light surface) — contrast-checked for WCAG 2.1 AA:
+     white text on brand-700 (#1d4ed8) = 6.29:1; brand-700 text on white = 6.29:1;
+     slate-900 (#0f172a) on white = 17.9:1; slate-600 (#475569) on white = 7.0:1. */
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-900: #1e3a8a;
+  --color-surface: #f8fafc;
+
+  /* PERF-5: no webfonts. Tailwind default sans stack is already ui-sans-serif/system-ui. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  /* SPEC-002 AC-002.2 / SPEC-005 AC-005.6 — visible focus is never suppressed. */
+  :focus-visible {
+    outline: 3px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+
+  /* Skip-link target must be focusable and show focus (WCAG 2.4.7). */
+  #conteudo-principal:focus {
+    outline: 3px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+}

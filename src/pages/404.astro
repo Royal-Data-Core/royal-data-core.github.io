@@ -1,0 +1,105 @@
+---
+/**
+ * SPEC-006 — 404: emitted as dist/404.html (root), inherits BaseLayout fully
+ * (CSP-meta, skip-link, footer CNPJ), robots noindex,follow and NO canonical
+ * (AC-006.3). The requested path is rendered as TEXT ONLY — never as HTML.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/withBase';
+import {
+  CONTACT_EMAIL,
+  buildMailtoHrefEncoded,
+  contactFallbackHref,
+} from '../lib/contact';
+
+const SITE_DESCRIPTION =
+  'Endereço não encontrado. Escolha um destino: início, artigos, serviços ou busca.';
+
+/**
+ * AC-006.N1 — render as text only (textContent), never via set:html.
+ * Static asset: no request info is available at build time; the hint stays
+ * honest by describing the failure class instead of echoing dynamic input.
+ */
+const requestedPathHint =
+  'o endereço acessado não existe neste site (pode ter sido movido, renomeado, ou nunca existiu).';
+
+const brokenLinkMailto =
+  CONTACT_EMAIL && buildMailtoHrefEncoded(CONTACT_EMAIL, 'Link quebrado — reporte');
+---
+
+<BaseLayout title="Página não encontrada" description={SITE_DESCRIPTION} noIndex excludeFromSearch>
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <h1 class="text-3xl font-bold leading-tight tracking-tight text-slate-900">
+      Página não encontrada
+    </h1>
+    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <span data-testid="404-requested-path">{requestedPathHint}</span>
+    </p>
+
+    <ul class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <li>
+        <a
+          data-testid="404-link-home"
+          href={withBase('/')}
+          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md bg-brand-700 px-4 text-sm font-semibold text-white underline-offset-4 hover:bg-brand-900"
+        >
+          Voltar para o início
+        </a>
+      </li>
+      <li>
+        <a
+          data-testid="404-link-blog"
+          href={withBase('/blog')}
+          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-brand-700 px-4 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+        >
+          Ver artigos do blog
+        </a>
+      </li>
+      <li>
+        <a
+          data-testid="404-link-services"
+          href={withBase('/servicos')}
+          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-brand-700 px-4 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+        >
+          Ver serviços
+        </a>
+      </li>
+      <li>
+        <a
+          data-testid="404-search-hint"
+          href={withBase('/busca')}
+          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-4 text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+        >
+          Buscar no site
+        </a>
+      </li>
+      <li>
+        {
+          CONTACT_EMAIL && brokenLinkMailto ? (
+            <a
+              data-testid="404-contact-hint"
+              href={brokenLinkMailto.hrefEncoded}
+              aria-label={brokenLinkMailto.addressDecoded}
+              class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-4 text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+            >
+              <span set:html={'Avisar sobre o link quebrado'} />
+            </a>
+          ) : (
+            <a
+              data-testid="404-contact-hint"
+              href={contactFallbackHref()}
+              class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-4 text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+            >
+              Avisar sobre o link quebrado (página de contato)
+            </a>
+          )
+        }
+      </li>
+    </ul>
+
+    <p class="mt-6 text-sm text-slate-700">
+      Links quebrados são bugs. Se você chegou aqui por um link do próprio site, avise —
+      corrijo e registro no Journal.
+    </p>
+  </div>
+</BaseLayout>

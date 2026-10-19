@@ -1,3 +1,5 @@
-User-Agent: *
-Disallow: /admin/
-Sitemap: https://nexusdigital.com/sitemap.xml
+User-agent: *
+Allow: /
+Disallow: /_pagefind/
+
+Sitemap: https://royaldatacore.github.io/sitemap-index.xml

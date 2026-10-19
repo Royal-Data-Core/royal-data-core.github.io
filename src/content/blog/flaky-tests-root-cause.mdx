@@ -1,0 +1,138 @@
+---
+title: 'Testes flaky: da causa raiz à quarentena'
+description: 'Flaky não se resolve com retry: é um bug no código, no dado ou no ambiente. Protocolo de isolamento de causa raiz e quarentena com prazo para suítes que ninguém confia.'
+publishDate: 2026-10-12
+tags: ['testes-flaky', 'ci-cd', 'estrategia-de-testes']
+coverAlt: 'Artigo sem imagem de capa; exemplos de instrumentação aparecem como código no corpo.'
+lang: 'pt-BR'
+references:
+  - label: 'Martin Fowler — Non-Determinism in Automated Testing'
+    url: 'https://martinfowler.com/articles/nonDeterminism.html'
+  - label: 'Playwright docs — Retries como instrumentação'
+    url: 'https://playwright.dev/docs/retries'
+  - label: 'Vitest docs — vi.useFakeTimers (controle de tempo)'
+    url: 'https://vitest.dev/api/vi.html#vi-usefaketimers'
+draft: false
+---
+
+## Contexto
+
+Uma suíte de testes serve para dois propósitos: dizer "verificado, pode seguir" e
+dizer "pare, há um defeito". Quando um teste flaky entra na rotação, os dois sinais
+se misturam: o time aprende a ignorar o vermelho e o verde perde o valor. Este artigo
+documenta o protocolo que uso para tratar flaky — primeiro a causa raiz, depois a
+quarentena com prazo.
+
+## Problema
+
+O sintoma típico de uma suíte contaminada:
+
+```text
+1º commit: pipeline verde.
+2º commit: teste X falhou, sem mudança em código de produção.
+3º commit: re-execução do mesmo commit: tudo verde novamente.
+```
+
+Toda análise interrompida nesse ponto costuma terminar no mesmo atalho: um
+`retry: 2`. O retry mascara o sintoma. Ele não responde por que a verificação falhou
+uma vez e passou em outra — e é exatamente essa resposta que separa um time que
+confia na própria rede de proteção de um time que ignora o relatório da CI.
+
+## Análise
+
+Flaky quase sempre se encaixa em três famílias:
+
+1. **Tempo**: esperar via `sleep` fixo em vez de esperar por um evento real.
+2. **Estado compartilhado**: banco, fila ou singleton reutilizados sem limpeza
+   determinística entre testes.
+3. **Ordem**: o teste B depende do efeito colateral que o teste A deixou para trás.
+
+Uma quarta família aparece com menos frequência: infraestrutura compartilhada
+(VM de CI com oferta de recurso variando, por exemplo). Tratar essa família
+exige mudança de ambiente — o teste não pode ser corrigido pelo autor.
+
+Um plano de quarentena só tem valor se cumprir um prazo: o teste sai da quarentena
+em data definida ou volta ao pipeline corrigido. Sem prazo, quarentena vira depósito
+onde testes morrem em silêncio.
+
+## Solução
+
+O protocolo que aplico, na ordem:
+
+1. **Instrumentar antes de decidir.** Executar o teste em loop local
+   (`--repeat-each`) e registrar o trace por rodada para dizer qual camada falhou.
+2. **Classificar a causa** em uma das famílias acima usando o log, não o sintoma.
+3. **Corrigir na raiz**: trocar espera fixa por espera de evento; trocar estado
+   compartilhado por dado criado e destruído por teste.
+4. **Colocar em quarentena** o que não puder ser corrigido agora, com prazo
+   registrado no ticket e no nome do teste.
+5. **Medir de novo** após a correção: a rodada de repetições é o critério de
+   encerramento.
+
+Substituição de espera fixa por espera de evento:
+
+```ts
+// Antes: o teste competia com a rede em tempo chutado.
+await page.goto('/checkout');
+await page.waitForTimeout(3000);
+await expect(page.getByTestId('order-confirmed')).toBeVisible();
+
+// Depois: espera o evento que sinaliza a transição de estado.
+await page.goto('/checkout');
+const confirmation = page.getByTestId('order-confirmed');
+await expect(confirmation).toBeVisible({ timeout: 15_000 });
+```
+
+Quando o problema é tempo em lógica que não é de interface, o controle fica na
+suíte, não no relógio:
+
+```ts
+import { afterEach, beforeAll, expect, it, vi } from 'vitest';
+
+beforeAll(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+it('expira a sessão após o intervalo configurado', () => {
+  vi.setSystemTime(new Date('2026-02-03T10:00:00Z'));
+  session.start();
+
+  vi.advanceTimersByTime(31 * 60 * 1000);
+  expect(session).toHaveExpired();
+});
+```
+
+E a quarentena, com prazo visível na CI:
+
+```yaml
+# GitHub Actions: faltas aceitas, mas cobradas por ticket com prazo.
+- name: Rodar suíte ativa
+  run: npx vitest run
+
+- name: Rodar quarentena
+  run: npx vitest run quarantine || echo "::warning::quarentena vence — ticket FLAKY-001"
+```
+
+## Limitações da solução
+
+Instrumentação não identifica todas as causas: algumas só aparecem sob concorrência
+real, com carga. Nesse caso, o diagnóstico pede ambiente dedicado, e o custo disso é
+decisão orçamentária do time — o protocolo não resolve por conta própria. Outra
+limitação é de governança: se o time ignora o aviso de prazo repetidamente, a
+política existe no papel e não na prática, e o problema muda de técnica para gestão.
+
+## Resultado medido
+
+Este site não publica números sem fonte. O pipeline público deste repositório roda a
+suíte a cada commit, com quarentena regida por ticket e histórico de execução
+auditável nos artifacts de CI. Critérios de encerramento adotados: zero reentrada de
+quarentena sem ticket com prazo e zero remoção silenciosa de teste.
+
+## Referências
+
+As referências no frontmatter apontam para a documentação das ferramentas citadas
+(retries do Playwright, fake timers do Vitest) e para o ensaio de Fowler sobre
+nondeterminismo, que formaliza a taxonomia usada aqui.

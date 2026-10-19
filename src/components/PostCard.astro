@@ -1,0 +1,48 @@
+---
+/**
+ * Post card — SPEC-002 AC-002.4 / SPEC-004 AC-004.3.
+ * Date: "DD de mês de AAAA" via deterministic `Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })`.
+ * href ALWAYS via withBase() (AC-001.9).
+ */
+import { withBase } from '../lib/withBase';
+import { formatPublishDate, toIsoDate } from '../lib/date';
+
+interface Props {
+  title: string;
+  publishDate: Date;
+  href: string;
+  slug?: string;
+  readingTimeMinutes?: number;
+  description?: string;
+}
+
+const { title, publishDate, href, slug, readingTimeMinutes, description } = Astro.props;
+const headingTestId = slug ? `post-title-${slug}` : undefined;
+const dateTestId = slug ? `post-date-${slug}` : undefined;
+---
+
+<article
+  data-testid="post-card"
+  class="flex h-full flex-col gap-2 rounded-lg border border-slate-200 p-5"
+>
+  <p class="flex flex-wrap items-center gap-x-2 text-xs text-slate-600">
+    <time datetime={toIsoDate(publishDate)} data-testid={dateTestId}>
+      {formatPublishDate(publishDate)}
+    </time>
+    {
+      typeof readingTimeMinutes === 'number' ? (
+        <span data-testid="post-reading-time">{readingTimeMinutes} min de leitura</span>
+      ) : null
+    }
+  </p>
+  <h3 class="text-lg font-bold leading-snug text-slate-900">
+    <a
+      href={withBase(href)}
+      data-testid={headingTestId}
+      class="inline-flex rounded-md underline-offset-4 hover:text-brand-700 hover:underline"
+    >
+      {title}
+    </a>
+  </h3>
+  {description ? <p class="text-sm leading-relaxed text-slate-700">{description}</p> : null}
+</article>

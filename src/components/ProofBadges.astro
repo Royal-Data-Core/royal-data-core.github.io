@@ -1,0 +1,28 @@
+---
+/**
+ * SPEC-002 AC-002.3 — proof badges resolved at BUILD time, no external badge
+ * hosts (no img.shields.io), no fetch().
+ *
+ * Honesty rationale (§C9 / mission contract):
+ * - `proof-build-status` "build: passing" is emitted during a render that only
+ *   ships when the ENTIRE pipeline (astro build → pagefind → verify:pagefind →
+ *   bundle audit) succeeds; a build that fails after render never reaches
+ *   dist/ or deploy. Static text, never runtime-computed.
+ * - `proof-lighthouse-score` / `proof-tests-passing` are intentionally OMITTED:
+ *   LHCI/Vitest numbers are not available to the page renderer at render time
+ *   and printing unverifiable numbers is prohibited (§C9).
+ */
+---
+
+<ul class="flex flex-col gap-2 text-sm">
+  <li
+    data-testid="proof-build-status"
+    class="inline-flex min-h-[44px] items-center rounded-md border border-slate-300 bg-surface px-3 font-mono text-xs font-semibold text-slate-800"
+  >
+    build: passing
+  </li>
+  <!-- Non-verifiable badges (light score, test count) omitted per SPEC-002 AC-002.5 + §C9. -->
+  <li class="inline-flex min-h-[44px] items-center rounded-md border border-slate-300 bg-surface px-3 font-mono text-xs font-semibold text-slate-800">
+    custo mensal: R$ 0,00
+  </li>
+</ul>

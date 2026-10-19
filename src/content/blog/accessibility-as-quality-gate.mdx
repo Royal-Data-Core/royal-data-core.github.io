@@ -1,0 +1,125 @@
+---
+title: 'Acessibilidade como gate de qualidade'
+description: 'Acessibilidade funciona como regra de build, não como lista de verificação no fim: critérios de aceite automatizados com axe-core, budgets de contraste e teclado no pipeline.'
+publishDate: 2026-10-18
+tags: ['acessibilidade', 'wcag', 'automacao']
+coverAlt: 'Artigo sem imagem de capa; os exemplos aparecem como código de pipeline e de teste.'
+lang: 'pt-BR'
+references:
+  - label: 'WCAG 2.1 — recomendação W3C'
+    url: 'https://www.w3.org/TR/WCAG21/'
+  - label: 'axe-core — motor de regras de acessibilidade'
+    url: 'https://github.com/dequelabs/axe-core'
+  - label: 'Lighthouse — overview oficial'
+    url: 'https://developer.chrome.com/docs/lighthouse/overview/'
+draft: false
+---
+
+## Contexto
+
+"Vamos arrumar a acessibilidade depois do launch" é a forma comum de adiar um
+problema que, quando fica grande, fica caro. Este artigo documenta como tratei
+acessibilidade neste site: como critério de aceite automatizado dentro do pipeline,
+não como revisão manual após o deploy.
+
+## Problema
+
+Revisar acessibilidade no fim tem três defeitos:
+
+1. O backlog de correção já nasce acumulado — cada tela nova entra na dívida.
+2. A afirmação "está acessível" fica sem data: nada na rotina garante que o estado
+   continuou bom depois de um ajuste de layout.
+3. Fica fácil aceitar exceções discretas — um botão aqui, um rótulo lá — que na soma
+   desqualificam a experiência de quem usa leitor de tela ou navegação por teclado.
+
+## Análise
+
+O dado que muda o tratamento: grande parte dos erros de acessibilidade é
+sintática — atributo faltando, contraste fora do mínimo, foco perdido. São defeitos
+com strings e valores numéricos, ou seja, verificáveis por máquinas. O restante
+(legibilidade de texto alternativo, ordem de conteúdo, linguagem natural dos rótulos)
+continua humano — e por isso deve ficar no plano de revisão manual, com escopo reduzido.
+
+Dividir as duas camadas é o que torna viável tratar acessibilidade como gate: o
+automatizado entra no pipeline apresentando falha determinística; o manual entra no
+code review com checklist curto e específico.
+
+## Solução
+
+Neste site o gate tem três partes.
+
+Primeira parte: regras determinísticas em cada build — axe-core na rotina E2E,
+bloqueando critérios com resultado binário (rótulo, role, contraste):
+
+```ts
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+
+test('home atende as regras de axe para vitrine', async ({ page }) => {
+  await page.goto('/');
+  const resultados = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+
+  expect(resultados.violations).toEqual([]);
+});
+```
+
+Segunda parte: budgets de interação no próprio Lighthouse CI já configurado no
+repositório — `accessibility: 100`, contraste, targets com área mínima:
+
+```yaml
+budgets:
+  - accessibility: 100
+  - best-practices: 95
+  - performance: 95
+  - seo: 100
+```
+
+Terceira parte: checklist manual curto no code review, focado no que o automatizado
+não vê: o rótulo descreve o que o campo faz? O texto alternativo faz sentido fora do
+contexto? A ordem do tab percorre conteúdo na sequência em que ele foi escrito?
+
+O gate também cobre a base da navegação por teclado, porque é o erro discreto mais
+comum em páginas estáticas sem interatividade: um toque visual de foco que some no
+cinza, ou um link "Pular para o conteúdo" que não leva a lugar nenhum. A âncora do
+conteúdo principal existe aqui como elemento estrutural, com atributo `tabindex="-1"`
+para que o foco de teclado adentre o conteúdo após o salto:
+
+```html
+<a href="#conteudo-principal" class="skip-link">Pular para o conteúdo principal</a>
+<main id="conteudo-principal" tabindex="-1">
+  <!-- conteúdo da página -->
+</main>
+```
+
+Sem esse par, quem navega por teclado recebe um link que promete um atalho que não
+funciona — e o gate de axe Chromium não acusa nada, porque o markup em si é válido.
+
+## Limitações da solução
+
+Axe-core não lê a página como pessoas leem: cobre aproximadamente 30 a 50% dos
+critérios WCAG quando executado sozinho, dependendo do conteúdo. Um score 100 no
+automatizado é início razoável, não existe garantia de usabilidade completa — por
+isso a terceira parte existe. Outra limitação: gate automático depende de
+ferramenta correta; o ônus de manter regras atualizadas quando WCAG evolui é
+real, e cada versão de axe pode avaliar o mesmo markup de forma diferente.
+
+A última limitação é de custo, e valendo registrar: gate cobra tempo de manutenção.
+Regra nova de axe aparece, o build fica vermelho, alguém precisa investigar antes da
+prosseguir. Esse custo é o produto — é a diferença entre uma afirmação de
+acessibilidade e um critério de aceite verificável. Times que não têm tempo para
+essa manutenção em geral não têm evidência, apenas intenção. (Retoque de edição:
+a frase anterior vale para este projeto tanto quanto para qualquer outro.)
+
+## Resultado medido
+
+Os orçamentos declarados neste repositório (Perf ≥ 95, A11y = 100, LCP ≤
+2500 ms) ficam públicos em cada release no histórico de CI. Como este projeto é
+recente, nenhum número de tráfego ou resultado de cliente é apresentado aqui —
+apenas o que o pipeline público pode mostrar quando for executado.
+
+## Referências
+
+As entradas de frontmatter apontam para o texto da recomendação WCAG 2.1, para o
+material do axe-core e para o Lighthouse.
