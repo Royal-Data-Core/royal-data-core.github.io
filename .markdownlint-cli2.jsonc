@@ -1,0 +1,40 @@
+// static-analysis-enforcer — lint:md (CONSTITUTION §C12.7 · §C11c)
+// Escopo: **/*.md + .ai/**/*.md; artefatos/generated dirs ignorados.
+//
+// Regras off — cada uma com justificativa de corpus pré-existente (não são
+// gates de segurança; Kill Switch vive em lint:security/test:lh):
+//   MD013 — tabelas Gherkin/fences das SDDs excedem 80 col por design.
+//   MD022/MD031/MD032/MD058 — blank-lines-around-* : corpus autorado sem
+//           essa convenção (674 ocorrências agregadas; fix seria reescrever .ai).
+//   MD060 — table-column-style dispara em TODA tabela do corpus (381).
+//   MD040 — fences anônimos em runbooks/specs são o padrão do corpus.
+//   MD041 — docs SDD abrem com "## SPEC-nnn"; PR template abre "## 🔗".
+//   MD033/MD034/MD051 — README pré-existente usa <div> de badges, URL bare
+//           na v1 e âncora "#-journal"; conteúdo que não pode ser reescrito
+//           por este agente (append-only).
+//   MD047 — runbook pré-existente termina sem newline (fora do escopo de edição).
+{
+  "config": {
+    "MD013": false,
+    "MD022": false,
+    "MD031": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD040": false,
+    "MD041": false,
+    "MD047": false,
+    "MD051": false,
+    "MD058": false,
+    "MD060": false,
+  },
+  "ignores": [
+    ".opencode/**",
+    ".log-extract/**",
+    "dist/**",
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
+    "node_modules/**",
+  ],
+}
