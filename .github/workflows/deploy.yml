@@ -215,29 +215,33 @@ jobs:
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5 # BYPASS-001
 
       # RFC-001 FM-15: smoke test pós-deploy (retry/backoff para HTTP 429 — FM-10)
+      # CDN-staleness: Pages cache (max-age=600) pode servir o objeto ANTIGO nos
+      # primeiros segundos pós-troca — smoke consulta com buster `?v=<sha>`
+      # (static server ignora query; Fastly usa chave distinta → origin fresh).
       - name: Smoke test published site
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           set -euo pipefail
           URL="${PAGE_URL%/}/"
-          echo "smoke testing: $URL"
+          BUSTER="v=${GITHUB_SHA}"
+          echo "smoke testing: $URL ($BUSTER)"
           for attempt in 1 2 3 4 5; do
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$URL" || echo "000")
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$URL?$BUSTER" || echo "000")
             if [ "$CODE" = "200" ]; then echo "✓ HTTP 200 no attempt $attempt"; break; fi
             if [ "$CODE" = "429" ]; then echo "::warning::HTTP 429 (rate limit) — aguardando"; fi
             [ "$attempt" = "5" ] && { echo "::error::site não respondeu 200 após 5 tentativas (último: $CODE)"; exit 1; }
             sleep $((attempt * 30))
           done
           # SPEC-006: 404 custom servida
-          CODE404=$(curl -s -o /dev/null -w '%{http_code}' -L "${URL}rota-inexistente-xyz" || echo "000")
+          CODE404=$(curl -s -o /dev/null -w '%{http_code}' -L "${URL}rota-inexistente-xyz?$BUSTER" || echo "000")
           echo "404 route status: $CODE404"
           # SPEC-008 AC-008.10: HSTS fornecido pela edge do GitHub
-          curl -sI -L "$URL" | grep -i 'strict-transport-security' \
+          curl -sI -L "$URL?$BUSTER" | grep -i 'strict-transport-security' \
             && echo "✓ HSTS presente" \
             || echo "::warning::HSTS ausente — verifique Settings → Pages → Enforce HTTPS"
           # ADR-002: confirmar que NÃO há header CSP (esperado) e que há no HTML
-          curl -s -L "$URL" | grep -q 'http-equiv="Content-Security-Policy"' \
+          curl -s -L "$URL?$BUSTER" | grep -q 'http-equiv="Content-Security-Policy"' \
             && echo "✓ CSP via meta presente (ADR-002 D1)" \
             || { echo "::error::CSP-meta ausente no HTML publicado"; exit 1; }
 
