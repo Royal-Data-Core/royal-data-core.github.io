@@ -1,9 +1,12 @@
 name: CD
 
+# ⛔ DESATIVADO para push — ADR-008 D7: stub de deploy vazio ("Add deployment
+# commands here") disparava VERDE-FALSO em todo push main e confligia com o
+# pipeline canônico deploy.yml (RFC-001 §2.2). Disparo manual apenas, para
+# auditoria/manutenção histórica do manifest do ecossistema.
+
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:

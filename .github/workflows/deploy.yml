@@ -61,6 +61,7 @@ jobs:
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6 # BYPASS-001
         with:
           static_site_generator: astro
+          enablement: true # RFC-001 §2.2 — bootstrap Pages em modo Actions (acerbo: 404 do GET /pages → TypeError string-error no v6, ADR-008 D7)
 
       - name: Build
         env:
