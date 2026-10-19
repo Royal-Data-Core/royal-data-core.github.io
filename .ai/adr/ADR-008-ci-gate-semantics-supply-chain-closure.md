@@ -1,0 +1,26 @@
+# ADR-008 · Semântica do gate §C3 para manutenção de actions + fechamento INFRA-001 (majors node24 / SHA-pins)
+
+**Status:** Accept · **Data:** 2026-10-19 · **Ratificação:** operador humano (relatório de falha de CI no PR Dependabot #27, instrução direta de correção)
+
+## Contexto
+O PR #27 (dependabot: `actions/setup-python` 5→7) foi bloqueado pelo `guard` com `CONSTITUTION §C3 — mudança de topologia sem ADR`. Diagnóstico factual, 4 fatos verificados contra `ci.yml` e histórico de runs: (a) o gate dispara textualmente sobre QUALQUER diff em `.github/workflows/` — ele não distingue **bump de versão de action** (manutenção de dependência) de **redesign de CI/CD** (topologia, sentido normativo de §C3); PRs de Dependabot jamais carregarão `.ai/adr/`, logo todo bump de action fica permanentemente bloqueado — violation de ROI, não de segurança; (b) warnings de deprecado node20 em `actions/setup-node@v4` e `actions/upload-artifact@v4` (runtime forçado para node24 nos runners atuais); (c) notice do GitHub sobre migração `ubuntu-latest → Ubuntu 26` a partir de 2026-10-19; (d) BYPASS-001 aberto — 20/22 refs `uses:` despinadas — com a ferramenta canónica `scripts/pin-actions.sh` morta (`sed` com colisão de delimitador + extração cega à forma list-item `- uses:`).
+
+## Decisão
+- **D1 — Semântica do §C3:** bump/migração de versão de `actions/*` não é mudança de topologia. O `adr-gate` exoner PRs de manutenção authored por bots de ciclo fechado: **`dependabot[bot]`** e **`github-actions[bot]`** (whitelist literal — sem wildcard), lidos via `env:` conforme RFC-001 §2.6(4). Válido apenas em eventos `pull_request` (sem secrets — RFC-001 §2.6(5) proíbe `pull_request_target`). PRs humanos mantêm a exigência integral de ADR. Controles compensatórios ativos e NÃO tocados no guard: `verify-no-postinstall`, `npm audit --omit=dev`, gitleaks, `astro check`/lint/format/C1/C10. `pin:actions:check` entra como gate de bloqueio APÓS o merge de #27 (follow-up F-1 abaixo).
+- **D2 — Migração node24-native** (majors verificados via REST API `releases/latest`): `checkout` v3/v6→**v7** · `setup-node` v4 (+SHA `v4.1.0` em cd)→**v7** · `upload-artifact` v4→**v7** · `download-artifact` v4→**v8** · `cache` v4 (+SHA `v4.2.0`)→**v6** · `configure-pages`→**v6** · `upload-pages-artifact`→**v5** · `deploy-pages`→**v5**. Resultado esperado: zero warnings node20 no `guard`. `setup-python` fica sob posse do PR #27 (main NÃO toca a linha — evita conflito de merge).
+- **D3 — INFRA-001 FECHADO:** **41/42** refs `uses:` SHA-pinned (40-hex, resolvidos pela API com `# vX` de referência); **1 pendência consciente** = `setup-python@v5` em `validate-ecosystem.yml` (compatibilidade de merge com #27). Sequência pós-merge (F-1): Dependabot rebase → `@v7` → `npm run pin:actions` → wire `pin:actions:check` como step de bloqueio no `guard`. A ferramenta v2 expõe waiver auditável (`# pin-skip` inline ou `PIN_ACTIONS_SKIP`) para pendências com remissão a ADR. A tag de histórico `# BYPASS-001` nas linhas pinadas permanece como registro documental (não é runtime).
+- **D4 — Runner:** permanece `ubuntu-latest` (ADR-005). O notice de migração Ubuntu-26 é aceito; rollback documentado: fixar `ubuntu-24.04` por job se um workload quebrar na imagem 26 — decisão por sino, não preventiva.
+- **D5 — `scripts/pin-actions.sh` v2 (reconstruído):** `sed -E "s|…|"` dinâmico eliminado (colisão de delimitador = DOA em qualquer entrada); reescrita em bash puro via `BASH_REMATCH` (sem injeção por metacaracteres em repo/ref); extração casa `uses:` em list-item, mapping e flow (`# uses:` comentado é ignorado); resolução via REST `/commits/{ref}` + fallback `git ls-remote` (`PIN_ACTIONS_FALLBACK_GIT=1`); sha somente 40-hex de fonte verificável — nunca fabricado; `docker://` e `./…` fora de escopo (intocados, não contados). Self-test com fixture de 6 casos executado em `/tmp` (fora do repositório — política + `--check` cobrem regressão).
+
+## Consequências
+- Superfície de skip do gate limitada a 2 atores literais, auditável em logs (`::notice::` textual PINA a actor whitelist, não interpola valor de evento).
+- Manutenção futura: Dependabot atualiza refs SHA→SHA diretamente; o script v2 é a rota canónica para re-pin manual, migração de major ou quando `pin:actions:check` (pós-F-1) apontar pendência.
+- Nenhum efeito em budgets §C10 / Lighthouse / bundle: mudanças exclusivamente de infraestrutura de CI.
+
+## Alternativas Rejeitadas
+- Exigir ADR em todo PR do Dependabot: bloqueio permanente de manutenção (o caso #27 prova o ROI negativo).
+- Desligar o gate §C3 inteiro: violação de CONSTITUTION — proibido.
+- Pin por tag curta / badge de major: ambíguo e vulnerável em supply-chain; SHA + comentário de versão é o padrão.
+
+## Relacionados
+ADR-005 · ADR-007 · CONSTITUTION §C3/§C4 · RFC-001 §2.6/§2.7 · `scripts/pin-actions.sh` · INFRA-001 (BYPASS-001) · Dependabot PR #27
