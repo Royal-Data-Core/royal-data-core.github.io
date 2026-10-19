@@ -32,6 +32,9 @@ jobs:
         run: |
           grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs && \
             { echo "::error::CONSTITUTION §C1 violado"; exit 1; } || echo "static ✓"
+      - name: Install (frozen, no lifecycle scripts)
+        run: npm ci --ignore-scripts # ADR-001 D3/D4 — NUNCA `npm install`
+
       - name: Static battery (RFC-001 §2.2 — revalida TUDO sobre main)
         run: |
           npx astro sync
