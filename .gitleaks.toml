@@ -1,0 +1,27 @@
+# gitleaks config (v8.30) — RFC-001 §2.6(5) / CONSTITUTION SEC-1
+#
+# `[extend] useDefault = true` keeps the WHOLE default rule set active;
+# this file then adds exactly ONE audited waiver, narrowed by
+# (path AND literal) so nothing else is ever suppressed:
+#
+#   Commit 2a8f702 (2026-10-18) — `.opencode/agents/reviewer-gatekeeper.md:341`
+#   carries the reviewer agent's refusal-checklist TEACHING snippet:
+#       const API_KEY = "sk_live_abc123..."; // Hardcoded secret
+#   The literal fake value ("sk_live_abc123...", trailing ellipsis included)
+#   hits rule `generic-api-key` on entropy 3.69. It is NOT a live credential —
+#   full-history scan (8.30.1) reports this single finding only, verified
+#   2026-10-19. Any other artifact, in ANY path, still raises a finding.
+#
+# NOTE for future operators: `useDefault` merges defaults ONLY on gitleaks
+# releases that support [extend] (>= v8.30). Older pins (<= 8.21.x) treat a
+# custom config as a FULL replacement — verified live; do NOT downgrade the
+# pin without removing this file (a rules-less config = zero detections).
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "reviewer-gatekeeper.md refusal-checklist teaching example — fake sk_live_abc123... constant (L0 audit 2026-10-19)"
+condition = "AND"
+paths = ['''^\.opencode/agents/reviewer-gatekeeper\.md$''']
+regexes = ['''sk_live_abc123\.\.\.''']
