@@ -2,200 +2,137 @@
 
 # Royal Data Core
 
-**Engenharia de qualidade para software crítico.**
+**Engenharia de qualidade para software crítico** · Consultoria em testes
 
 [![CI](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml)
 [![Deploy](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml)
-![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Perf-≥95-2ea44f)
+[![Validate SDD](https://github.com/Royal-Data-Core/site-io/actions/workflows/validate-ecosystem.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/validate-ecosystem.yml)
+![Lighthouse Perf](https://img.shields.io/badge/Lighthouse_Perf-≥0.99-2ea44f)
 ![Lighthouse A11y](https://img.shields.io/badge/Lighthouse_A11y-100-2ea44f)
-![JS inicial](https://img.shields.io/badge/JS_inicial-≤50KB-informational)
+![JS inicial](https://img.shields.io/badge/JS_inicial-2.09KB-informational)
 ![Custo mensal](https://img.shields.io/badge/custo-R%240.00-success)
 
-**🌐 https://royaldatacore.github.io** · Consultoria em testes de software · Matão/SP
+🌐 https://royal-data-core.github.io/site-io/ · Matão/SP
 
 </div>
 
 ---
 
-## 🔍 Sobre este repositório
+## 🔍 O que é este repositório
 
-Este site é, deliberadamente, um **laboratório vivo de engenharia de qualidade**. Ele é o
-próprio case: 100 % estático, custo recorrente zero, pipeline determinístico, specs
-formais antes de código e auditoria de segurança em cada commit.
+Site institucional B2B (vitrine + blog técnico) do Royal Data Core, construído como
+**case público de engenharia de qualidade**: 100 % estático, custo recorrente zero,
+spec antes de código e auditoria em cada commit. O próprio site passa pelos gates
+que a consultoria propõe aos clientes — e os reports de CI são públicos.
 
-> Se você contrata QA, faz sentido exigir que o site do seu consultor passe pelos
-> gates que ele propõe para o seu produto. **Todos os relatórios deste repositório
-> são públicos.** Verifique você mesmo:
-> [CI runs](https://github.com/Royal-Data-Core/site-io/actions) ·
-> [Lighthouse](#-journal) · [specs](.ai/specs/) · [decisões arquiteturais](.ai/adr/)
+| Dimensão     | Snapshot medido (bateria local completa)                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------- |
+| Artefato     | 18 páginas estáticas (Astro SSG) · runtime JS não-hidratado, exceto busca (SPEC-007)            |
+| Bundle       | JS **2.09 KB** gzip (orçamento 50) · CSS **4.03 KB** gzip (orçamento 30)                        |
+| Lighthouse   | 9 URLs: perf **0.99–1.0** · a11y **1.0** · best-practices 1.0 · SEO 1.0 · LCP máx 1733 ms       |
+| Testes       | e2e **28/28** · a11y axe-core **16/16** (2 viewports) · unit+coverage **11/11** (≥80 % crítica) |
+| Links        | **336 checks / 0 broken** · escaneamento hermético (zero rede)                                  |
+| Supply chain | `npm audit --omit=dev` **0 vulnerabilidades** · 39/39 Actions SHA-pinadas · 0 lifecycle scripts |
+| Infra        | GitHub Pages / Actions (OIDC, least-privilege) · custo **R$ 0,00/mês**                          |
 
-### Metodologia
+## 🧱 Topologia publicada
 
-Desenvolvimento guiado por especificação (**SDD — Spec-Driven Development**) com um
-ecossistema de 14 agentes especializados orquestrados em DAG estrito. Nenhum código é
-escrito antes de existir spec aprovada; nenhum PR é mergeado sem cenário de falha testado.
+| Rota                       | Papel                                                 |
+| -------------------------- | ----------------------------------------------------- |
+| `/`                        | Vitrine — proposta de valor, prova (case), CTA        |
+| `/servicos/`               | Catálogo de serviços + pacote de engajamento          |
+| `/blog/` + `/blog/<slug>/` | Blog técnico S1 (3 posts, MDX, Shiki, Pagefind, tags) |
+| `/blog/tag/<tag>/`         | 8 páginas de tag                                      |
+| `/contato/`                | Canal de conversão (Formspree/Cal.com conforme D-03)  |
+| `/busca/`                  | Busca client-side Pagefind (zero query a servidores)  |
+| `/privacidade/`            | LGPD — política de privacidade                        |
+| `/404/`                    | Página de erro customizada                            |
 
-| Documento                                        | Papel                                              |
-| ------------------------------------------------ | -------------------------------------------------- |
-| [`.ai/SDD-CONTEXT.md`](.ai/SDD-CONTEXT.md)       | Dossiê factual — premissas, restrições, budgets    |
-| [`.ai/CONSTITUTION.md`](.ai/CONSTITUTION.md)     | Regras normativas imutáveis + ordem de precedência |
-| [`.ai/BLUEPRINT.md`](.ai/BLUEPRINT.md)           | Topologia de diretórios travada                    |
-| [`.ai/adr/`](.ai/adr/)                           | Architecture Decision Records                      |
-| [`.ai/specs/features/`](.ai/specs/features/)     | Contratos executáveis (Gherkin)                    |
-| [`.ai/specs/rfc/`](.ai/specs/rfc/)               | RFCs de infraestrutura                             |
-| [`.ai/ROADMAP.md`](.ai/ROADMAP.md)               | Roteiro sequencial de produção                     |
-| [`.ai/AGENT-PLAYBOOK.md`](.ai/AGENT-PLAYBOOK.md) | Roteamento operacional dos agentes                 |
+**Stack:** Astro `output: static` + Content Collections (MDX + Zod) · Tailwind CSS v4
+(utility-only) · TypeScript `strictest` · Pagefind · CSP meta nos HTML ·
+GitHub Pages (base `/site-io/`).
 
-## 📊 Project Status — Resumo Executivo
-
-> Atualizado: **2026-10-19** · rodada de restauração estrutural (sanity + SDD synthesis).
-
-| Dimensão                 | Status | Evidência (gates verdes)                                                                              |
-| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------- |
-| Site (S1 + S2 + S3 docs) | ✅     | 18 páginas estáticas — `/`, `/servicos`, `/blog[/slug]`, `/contato`, `/busca`, `/privacidade`, `/404` |
-| Pipeline de validação    | ✅     | check 0 err · lint 0 · format ✓ · lint:md/copy/topology 0                                             |
-| Testes                   | ✅     | unit+coverage **100 %** (SDD §4 ≥ 80 %) · e2e **28/28** · a11y **16/16** (2 viewports)                |
-| Acessibilidade legal     | ✅     | axe-core 0 violações WCAG 2.1 AA (paleta AA-tuned via ADR-007 D7)                                     |
-| Performance              | ✅     | JS 2.05 KB / CSS 4.65 KB gzip (§C10 ≤ 50/30 KB) · build ~1.5 s                                        |
-| Supply chain             | ✅     | `npm audit --omit=dev` = 0 · 401 pacotes, 0 lifecycle scripts                                         |
-| Runtime policy           | ✅     | Node LTS (22/24) + Current (26) — matriz em `build` (ADR-005)                                         |
-| Auditoria residual       | 🟡     | 5 HIGH dev-only (cadeia `braces` sem release limpa — ADR-006 em vigor)                                |
-| Infra pendente           | 🟡     | INFRA-001: 20/22 `actions/*` despinadas (deadline BYPASS-001)                                         |
-
-**Requer decisão humana (bloqueadores de Fase 3):** `D-01` handle/canonical do site · `D-03` email/WhatsApp reais (placeholders honestos publicados) · `D-04` redes sociais · rotação preventiva de `SSH_PRIVATE_KEY` (referência histórica nome-only).
-
----
-
-## 📓 Journal — Changelog Arquitetural
-
-> Ordem reversa (§C6). Uma entrada por merge em `main`.
-> Formato: `[AAAA-MM-DD] · [SPEC-ID|ADR-ID|RFC-ID] · descrição · PR`
-
-| Data         | Ref                                      | Mudança                                                                                                                                                                                                                                                                                         | PR                                                                     |
-| ------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| _2026-10-19_ | ADR-008 · INFRA-001 · SEC                | INFRA-001 100 % (42/42 SHA-pinned, check wired no guard), gitleaks 8.30.1 (extend + waiver auditado), dispatcher §10 corrigido (14+7 testes), deploy Pages unificado (zombie CD desativado, escopo `pages` no build), bump direto `setup-python@v7` (PR #4 fechado como superseded).            | —                                                                      |
-| _2026-10-19_ | SPEC-001…009 · ADR-005/006/007 · RFC-001 | Restauração estrutural: site estático S1+S2 (18 pág.), Node LTS+Current (ADR-005), audit 40→5 dev-only (ADR-006), scanner/gates corrigidos (ADR-007), suítes e2e+a11y mapeadas (28/28 · 16/16), coverage validator 100 %. Push direto ratificado pelo humano (revisão formal em PR postergada). | [`5e9eff9`](https://github.com/Royal-Data-Core/site-io/commit/5e9eff9) |
-| _2026-10-16_ | _—_                                      | _Ratificação da Constituição v3.0.0, 9 specs, 2 RFCs, 5 ADRs. Projeto ainda não buildado._                                                                                                                                                                                                      | _—_                                                                    |
-
-<!-- TEMPLATE DE ENTRADA (copiar e preencher a cada merge em main):
-| YYYY-MM-DD | SPEC-NNN | <descrição de 1 linha> | #NN |
--->
-
-### Métricas DORA (RFC-001 §2.8) — atualização mensal
-
-| Mês     | Deploys | Lead Time (mediana) | Change Failure Rate | MTTR | Actions min |
-| ------- | ------- | ------------------- | ------------------- | ---- | ----------- |
-| 2026-10 | —       | —                   | —                   | —    | —           |
-
-### Registro de Risco Residual ativo
-
-`RRR-01` clickjacking · `RRR-02` MIME sniffing · `RRR-03` Permissions-Policy ·
-`RRR-04` sem CSP reporting · `RRR-05` log de IP pelo GitHub · `RRR-06` código público ·
-`RRR-07` harvesting de email · `RRR-08` domínio `*.github.io` · `RRR-09` banda 100 GB
-→ detalhes e mitigação em [`.ai/SDD-CONTEXT.md §8`](.ai/SDD-CONTEXT.md#8--registro-de-risco-residual-rrr)
-
----
-
-## ⚙️ Stack
-
-| Camada            | Tecnologia                                                                               | Licença              |
-| ----------------- | ---------------------------------------------------------------------------------------- | -------------------- |
-| SSG               | [Astro 5](https://astro.build)                                                           | MIT                  |
-| CSS               | [Tailwind CSS 4](https://tailwindcss.com)                                                | MIT                  |
-| Conteúdo          | Astro Content Collections (MDX) + Zod                                                    | MIT                  |
-| Busca             | [Pagefind](https://pagefind.app)                                                         | MIT                  |
-| Testes E2E / A11y | [Playwright](https://playwright.dev) + [axe-core](https://github.com/dequelabs/axe-core) | Apache-2.0 / MPL-2.0 |
-| Unit + coverage   | [Vitest](https://vitest.dev)                                                             | MIT                  |
-| Performance       | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)                           | Apache-2.0           |
-| Link check        | [linkinator](https://github.com/JustinBeckwith/linkinator)                               | Apache-2.0           |
-| CI/CD             | GitHub Actions                                                                           | —                    |
-| Hosting           | GitHub Pages                                                                             | —                    |
-
-**Custo mensal recorrente: R$ 0,00.** Justificativa e alternativas rejeitadas em [`ADR-001`](.ai/adr/ADR-001-static-stack.md).
-
----
-
-## 🚀 Setup local
+## 🤖 Runbook
 
 ```bash
-# Pré-requisitos: Node >= 22, npm >= 10
-git clone https://github.com/Royal-Data-Core/site-io.git
-cd site-io
-cp .env.example .env          # preencha PUBLIC_CONTACT_EMAIL e PUBLIC_CONTACT_PHONE
-npm ci --ignore-scripts       # NUNCA `npm install` (ADR-001 D3)
-npm run dev                   # http://localhost:4321
+npm ci            # instalação determinística (lifecycle scripts verificados)
+npm run build     # astro build + pagefind + verificação de índice
+npm run preview   # serve dist/ respeitando SITE_BASE
 ```
 
-### Scripts
+Variáveis de contexto (ver `.env.example`): `SITE`, `SITE_BASE` (build) e
+`SITE_URL`, `SITE_BASE` (testes). O CI injeta os mesmos valores shell-side
+(origin/base computados do `GITHUB_REPOSITORY`, zero rede — ADR-008 D7).
 
-| Comando                     | Descrição                                               |
-| --------------------------- | ------------------------------------------------------- |
-| `npm run dev`               | Servidor de desenvolvimento com HMR                     |
-| `npm run build`             | Build Astro + índice Pagefind + verificação do índice   |
-| `npm run preview`           | Serve `dist/` localmente                                |
-| `npm run check`             | `astro check` + `tsc --noEmit`                          |
-| `npm run lint` / `lint:fix` | ESLint                                                  |
-| `npm run lint:copy`         | Gate de copy (proíbe jargão e alegação não-verificável) |
-| `npm run lint:security`     | Auditoria de `dist/`: CSP, SRI, trackers, budget        |
-| `npm run lint:topology`     | Gate de URLs hardcoded e formulários remotos            |
-| `npm run audit:bundle`      | Budget de JS/CSS gzip                                   |
-| `npm run verify:deps`       | Garante que `--ignore-scripts` é seguro (ADR-001 D4)    |
-| `npm run test:unit`         | Vitest + coverage (≥ 80 % no critical path)             |
-| `npm run test:e2e`          | Playwright (cenários Gherkin das SPECs)                 |
-| `npm run test:a11y`         | axe-core em 375×667 e 1280×800                          |
-| `npm run test:links`        | linkinator recursivo                                    |
-| `npm run test:lh`           | Lighthouse CI local                                     |
-| `npm run new:post`          | Scaffolding de novo artigo                              |
-| `npm run pin:actions`       | Converte tags de actions em SHA (INFRA-001)             |
+### Bateria de testes
+
+| Comando                 | Gate                                                  |
+| ----------------------- | ----------------------------------------------------- |
+| `npm run check`         | `astro check` + `tsc --noEmit` (strictest)            |
+| `npm run lint`          | ESLint `--max-warnings 0`                             |
+| `npm run format:check`  | Prettier                                              |
+| `npm run lint:md`       | markdownlint-cli2 (perfil documental)                 |
+| `npm run lint:topology` | ADR-004 — `withBase()` obrigatório em URL interna     |
+| `npm run lint:copy`     | CONSTITUTION §C9 — vocabulário de marketing proibido  |
+| `npm run test:unit`     | Vitest + cobertura v8 (≥80 %) na utils layer          |
+| `npm run test:e2e`      | Playwright (cenários Gherkin, 2 viewports)            |
+| `npm run test:a11y`     | Playwright + axe-core (WCAG 2.1 AA)                   |
+| `npm run test:links`    | linkinator hermético (espelho `/site-io/`, zero rede) |
+| `npm run test:lh`       | Lighthouse CI (orçamentos abaixo)                     |
+| `npm run test`          | unit + e2e + a11y                                     |
+
+Commits precisam de mensagem **Conventional Commits (EN)** — verificada por hook
+`commit-msg` (sem dependentes externos). `pre-commit` roda lint-staged
+(eslint + prettier + markdownlint nos arquivos staged).
+
+## 🚦 Pipeline
+
+| Workflow                 | Gatilho                         | Jobs (em ordem)                                                                                                                                                                                     |
+| ------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`                 | PR → main/develop · push update | `guard` (check · lint · format · md · topologia · C1 · gitleaks · pin-check) → `build` (matriz Node 22/24/26) → `verify` (unit·e2e·a11y·links, contexto de deploy idêntico ao build) ∥ `lighthouse` |
+| `deploy.yml`             | push main · manual              | `guard` (bateria estática completa + gitleaks) → `build` → `verify` ∥ `lighthouse` (visão espelhada `/site-io/`) → `deploy` (Pages, OIDC) → smoke test pós-publicação                               |
+| `validate-ecosystem.yml` | push/PR em `scripts/**`         | parser tests + analyst-integration tests                                                                                                                                                            |
+
+**Orçamentos (bloqueiam merge/deploy):** Lighthouse perf/bp **≥ 0.95**,
+a11y/SEO **= 1.0**; LCP **≤ 2500 ms** · CLS **≤ 0.1** · TBT **≤ 200 ms**
+(INP é métrica de campo — off no lab). Artifact ≤ 100 MB, repo ≤ 500 MB,
+build < 8 min. Ações pinadas por SHA completo (`pin:actions:check` como gate).
+
+## 📦 O que é público aqui — e o que NÃO é
+
+Este repositório carrega **só o produto**: site, tooling de pipeline e documentação
+operacional pública. O corpus interno (constituição normativa, ADRs, specs
+Gherkin, RFCs e brief de copy) é material de trabalho **local**, `gitignored`
+por decisão de privacidade (ADR-009 D1) — derivados públicos vivem neste README,
+nos summaries dos jobs e nos ADR-reports referenciados no journal.
+
+Pendências de decisão humana (não-bloqueantes, site funcional com fallbacks):
+`D-01` handle/canonical do site · `D-03` email/WhatsApp reais
+(placeholders honestos `[[EMAIL]]`/`[[PHONE]]` ativos) · `D-04` redes sociais
+(handle placeholder) · rotacionar a chave SSH de referência histórica.
+
+## 📊 Status
+
+> Rodada de saneamento e coerência de contexto — _2026-10-19_.
+
+| Área                  | Status | Evidência                                                                                                                                                                                                                                                         |
+| --------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build base-mounted    | ✅     | dist 18 HTML · Pagefind índice+wasm verificado (`build:pagefind`)                                                                                                                                                                                                 |
+| Bateria local         | ✅     | unit 11/11 · e2e 28/28 · a11y 16/16 · links 336/0 · LHCI 9 URLs verdes                                                                                                                                                                                            |
+| Pipeline              | ✅     | guard estendido (RFC-001 §2.2) · link-check hermético · hooks de commit ativos                                                                                                                                                                                    |
+| Despublicação interna | ✅     | `.ai/` + `.opencode/` fora do índice (47 arquivos), workflows rewireados                                                                                                                                                                                          |
+| Riscos residuais      | 🟡     | clickjacking · MIME sniffing · Permissions-Policy · CSP reporting · IP nos logs do Pages · código público · harvesting de email · domínio `*.github.io` · banda 100 GB — mitigação: CSP meta (SPEC-008), HSTS enforced, LGPD by design, 5 HIGH dev-only (ADR-006) |
+
+Métricas DORA (atualização mensal): Deploys — · Lead Time — · CFR — · MTTR —.
+
+## 🙌 Padrões
+
+- **Conventional commits (EN)** — `feat`, `fix`, `docs`, `chore`, … bloqueados por hook.
+- **Astro estático** — sem hidratação por default; busca = único script, same-origin.
+- **Tailwind utility-only** · IDs sem acento (ADR-000) · sem `style=""` inline.
+- **Privacidade por design** — sem trackers (analytics quando houver = GoatCounter/Umami) ·
+  sem cookies de identificação · formulário com honeypot + validação HTML5.
 
 ---
 
-## 🔒 Postura de segurança
-
-| Controle                                             | Status                                                              | Referência                                                                   |
-| ---------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| CSP estrita via `<meta>`                             | ✅ `default-src 'none'`                                             | [`SPEC-008`](.ai/specs/features/SPEC-008-csp-hardening.md)                   |
-| SRI em recursos externos                             | ✅ gate automático                                                  | `CONSTITUTION §C8`                                                           |
-| Cookies / trackers / analytics                       | ❌ **nenhum**                                                       | `CONSTITUTION §C7` (Kill Switch)                                             |
-| Coleta de dados pessoais                             | ❌ **nenhuma**                                                      | [`SPEC-009`](.ai/specs/features/SPEC-009-privacy-legal.md)                   |
-| Secrets no repo                                      | ❌ zero (`gitleaks` em todo PR)                                     | `RFC-001 §3`                                                                 |
-| HTTPS forçado                                        | ✅ Let's Encrypt via GitHub                                         | [`ADR-002 D3`](.ai/adr/ADR-002-pages-security-limits.md)                     |
-| Headers HTTP customizados                            | ⚠️ **impossível no GitHub Pages**                                   | [`ADR-002`](.ai/adr/ADR-002-pages-security-limits.md)                        |
-| `frame-ancestors` / `nosniff` / `Permissions-Policy` | ⚠️ risco residual aceito                                            | `RRR-01/02/03` · saída: [`RFC-002`](.ai/specs/rfc/RFC-002-edge-hardening.md) |
-| Supply chain                                         | `npm ci --ignore-scripts` + verificação de invariantes + Dependabot | [`ADR-001 D4`](.ai/adr/ADR-001-static-stack.md)                              |
-
-**Divulgação responsável:** `security@` (ver [`/contato`](https://royaldatacore.github.io/contato/)). Prazo de resposta alvo: 5 dias úteis.
-
----
-
-## 📄 Licença
-
-Código-fonte: **MIT** (`LICENSE`). Conteúdo textual (artigos, copy): **CC BY-NC-SA 4.0**.
-
----
-
-<div align="center">
-
-**ROYAL DATA CORE LTDA** · CNPJ 69.527.139/0001-94 · Matão/SP
-[Contato](https://royaldatacore.github.io/contato/) · [Privacidade](https://royaldatacore.github.io/privacidade/)
-
-</div>
-
----
-
-## 🛠 Scripts — contrato CLI (CONSTITUTION §C11c)
-
-Todo script é determinístico, versionado em `scripts/` e nunca integra o artefato publicado (§C11a–e).
-
-| Script                                   | Contrato                                                                                                                                               |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run new:post`                       | Scaffolding determinístico de novo artigo MDX com frontmatter validado pelo schema Zod (`src/content.config.ts`).                                      |
-| `npm run lint:copy`                      | Gate de copy: proíbe jargão técnico e alegação comercial não-verificável (Kill Switch AFA de falso marketing).                                         |
-| `npm run lint:topology`                  | Gate de topologia (SPEC-001 AC-001.9): URL root-absolute em `src/**` tem de passar por `withBase()` — imprime `file:line` + "ADR-004: use withBase()". |
-| `npm run lint:md`                        | markdownlint-cli2 (`.markdownlint-cli2.jsonc`): varre `**/*.md` e `.ai/**`; MD013 off, artefatos gerados ignorados.                                    |
-| `npm run lint:security` / `audit:bundle` | `scripts/audit-bundle.mjs` sobre `dist/`: budget JS/CSS gzip, script inline, `on*`, recurso externo, SRI e mixed content.                              |
-| `npm run verify:deps`                    | Garante a invariante da cadeia de suprimentos (`npm ci --ignore-scripts`, zero script de instalação proibido — ADR-001 D4).                            |
-| `npm run verify:pagefind`                | Falha rápido se o índice Pagefind não for gerado: `pagefind.js` + `pagefind-entry.json` + `wasm.*.pagefind` (SPEC-007).                                |
-| `npm run pin:actions`                    | `scripts/pin-actions.sh`: converte `uses:` por tag em SHA resolvido pela API do GitHub (INFRA-001; `--check` só relata).                               |
-| `scripts/generate-og.mjs`                | Gera `public/og-default.png` (1200×630, texto em SVG com system font stack — sem webfont externo); executar uma vez e commitar o PNG.                  |
-| `npm run test:lh`                        | `lhci autorun` com `lighthouserc.json` (budgets LCP/CLS/INP/TBT hard-fail — SDD-CONTEXT §4).                                                           |
+© Royal Data Core · Conventional commits · Astro SSG · R$ 0,00

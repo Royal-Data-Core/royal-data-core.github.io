@@ -1,6 +1,7 @@
 # RFC-001 §2.2 — Pipeline de validação (PR e develop)
 # BYPASS-001/INFRA-001: fechado neste ciclo — todas as actions pinadas por SHA completo via scripts/pin-actions.sh (npm run pin:actions)
-# ADR-008 D1: action-maintenance bots exempt from adr-gate (compensating: pin:actions:check + gitleaks + verify-no-postinstall)
+# ADR-008 D7: SDD corpus (.ai/) é interno e não publicado — §C3 (adr-gate) é
+# obrigação de origem; CI valida gates executáveis, não o corpus.
 name: CI
 
 on:
@@ -33,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
         with:
-          fetch-depth: 0 # necessário para gitleaks e adr-gate
+          fetch-depth: 0 # necessário para gitleaks (histórico completo)
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
@@ -60,40 +61,8 @@ jobs:
       - name: Format (Prettier --check)
         run: npm run format:check
 
-      - name: Markdown lint (.ai/ + content)
+      - name: Markdown lint (content)
         run: npm run lint:md
-
-      # CONSTITUTION §C3 — gate de ADR (ADR-008 D1: action-maintenance bots exempt)
-      - name: C3 · ADR required for topology changes
-        env:
-          PR_ACTOR: ${{ github.event.pull_request.user.login || github.actor }}
-        run: |
-          set -euo pipefail
-          # RFC-001 §2.6(4): event data routed via env: (never interpolated into run: scripts)
-          if [ "$PR_ACTOR" = "dependabot[bot]" ] || [ "$PR_ACTOR" = "github-actions[bot]" ]; then
-            echo "::notice::C3 adr-gate exempted via ADR-008 D1 — action-maintenance bot; dependency maintenance is not topology"
-            : > /tmp/changed.txt # guard artifact upload expects the file; waiver = zero-diff read
-            exit 0
-          fi
-          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
-          HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [ "$BASE" = "0000000000000000000000000000000000000000" ] || \
-             [ "$HEAD" = "0000000000000000000000000000000000000000" ]; then
-            echo "::notice::base/head indisponível (force-push inicial) — pulando adr-gate"
-            exit 0
-          fi
-          # RFC-001 §2.6(4): diff escrito em arquivo, nunca interpolado em run:
-          git diff --name-only "$BASE" "$HEAD" > /tmp/changed.txt
-          if grep -Eq '^(astro\.config\.mjs|package\.json|src/content\.config\.ts|\.github/workflows/)' /tmp/changed.txt; then
-            if ! grep -q '^\.ai/adr/' /tmp/changed.txt; then
-              echo "::error file=.ai/adr::CONSTITUTION §C3 — mudança de topologia sem ADR."
-              echo "Arquivos que disparam o gate:"
-              grep -E '^(astro\.config\.mjs|package\.json|src/content\.config\.ts|\.github/workflows/)' /tmp/changed.txt
-              echo "Crie .ai/adr/ADR-NNN-<slug>.md a partir de .ai/adr/ADR-TEMPLATE.md"
-              exit 1
-            fi
-            echo "::notice::adr-gate satisfeito — ADR presente no diff"
-          fi
 
       # CONSTITUTION §C1 — output mode estático
       - name: C1 · assert output mode is static
@@ -112,6 +81,10 @@ jobs:
             exit 1
           fi
 
+      # ADR-004 / SPEC-001 AC-001.9 — withBase() enforcement
+      - name: ADR-004 · lint topology (withBase enforcement)
+        run: npm run lint:topology
+
       - name: gitleaks (histórico completo)
         run: |
           curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" \
@@ -122,15 +95,6 @@ jobs:
       # RFC-001 §2.7 / INFRA-001 (ADR-008 D3 F-1) — pin-check as blocking gate
       - name: INFRA-001 · all uses refs SHA-pinned (blocking)
         run: npm run pin:actions:check
-
-      - name: Upload changed-files report
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
-        with:
-          name: guard-changed-files
-          path: /tmp/changed.txt
-          if-no-files-found: ignore
-          retention-days: 7
 
   # ────────────────────────────────────────────────────────────────
   # GATE 2 — Build + auditoria de bundle
@@ -251,6 +215,12 @@ jobs:
       - name: Install Playwright OS deps (cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+
+      - name: Deployment context (SITE_URL + SITE_BASE — matches build ctx)
+        run: |
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
+          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
       - name: Download dist
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001

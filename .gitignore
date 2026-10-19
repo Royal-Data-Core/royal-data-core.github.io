@@ -1,3 +1,7 @@
+# ── Internal SDD control plane — LOCAL ONLY, never published (ADR-008 D7) ──
+.ai/
+.opencode/
+
 # Project-specific ignores
 *.env
 /build/
@@ -9,10 +13,12 @@ coverage/
 playwright-report/
 test-results/
 .lighthouseci/
+.lhciview/
 .linkinator/
+.linkinator-mirror/
+.linkinator-cache/
 .astro/
 .log-extract/
 *.pyc
 __pycache__/
-.linkinator-cache/
 .DS_Store

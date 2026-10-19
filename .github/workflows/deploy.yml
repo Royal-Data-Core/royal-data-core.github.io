@@ -21,7 +21,7 @@ jobs:
   guard:
     name: guard · pre-deploy revalidation
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
         with:
@@ -32,6 +32,14 @@ jobs:
         run: |
           grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs && \
             { echo "::error::CONSTITUTION §C1 violado"; exit 1; } || echo "static ✓"
+      - name: Static battery (RFC-001 §2.2 — revalida TUDO sobre main)
+        run: |
+          npx astro sync
+          npm run check
+          npm run lint
+          npm run format:check
+          npm run lint:md
+          npm run lint:topology
       - name: gitleaks
         run: |
           curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" -o /tmp/g.tar.gz
@@ -45,7 +53,6 @@ jobs:
     needs: guard
     permissions:
       contents: read
-      pages: write # configure-pages fala com /pages — sem escopo: TypeError string-error (ADR-008 D7)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
@@ -112,6 +119,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
+      # RFC-001 §2.6(4) / ADR-008 D7 — deployment context via GITHUB_ENV
+      # (shell-side resolution, zero event interpolation in run:).
+      - name: Deployment context (SITE_URL + SITE_BASE)
+        run: |
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
+          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
       - run: npm ci --ignore-scripts
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
         id: pw-cache
@@ -156,10 +170,20 @@ jobs:
           path: .lighthouseci/
           key: lhci-main
           restore-keys: lhci-
+      # ADR-008 D7 — base-mounted views: production artifact is root-layout with
+      # base-prefixed routes; LHCI's built-in file server maps URL=path, so we
+      # audit a MIRRORED view (dist/* under site-io/) that matches the real
+      # Pages layout. 404 page is excluded from budgets (intentionally
+      # non-indexable, no canonical — SPEC-006 AC-006.3).
+      - name: Mirror artifact under site-io/ (base-mounted LHCI view)
+        run: |
+          mkdir -p .lhciview/site-io
+          cp -r dist/* .lhciview/site-io/
+          rm -f .lhciview/404.html .lhciview/site-io/404.html
       - name: LHCI (retry 1 — RFC-001 FM-08)
         run: |
-          npx @lhci/cli@0.15.x autorun --config=lighthouserc.json \
-            || npx @lhci/cli@0.14.x autorun --config=lighthouserc.json
+          npx @lhci/cli@0.15.x autorun --config=lighthouserc.prod.json \
+            || npx @lhci/cli@0.14.x autorun --config=lighthouserc.prod.json
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:

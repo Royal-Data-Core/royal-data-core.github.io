@@ -1,13 +1,13 @@
 // ADR-001 · ADR-004 · CONSTITUTION §C1 §C2
-// `site` e `base` sao injetados pelo CI via actions/configure-pages (ADR-004).
-// Localmente, use .env (ver .env.example).
+// `site` e `base` sao injetados pelo CI shell-side (origin/base determinísticos — ADR-008 D7).
+// Localmente, use .env (ver .env.example) ou exporte SITE/SITE_BASE.
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite"; // ADR-001 D2 — Tailwind v4 (NAO @astrojs/tailwind)
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 
-const SITE = process.env.SITE ?? "https://royaldatacore.github.io";
-const SITE_BASE = process.env.SITE_BASE ?? "/";
+const SITE = process.env.SITE ?? "https://royal-data-core.github.io";
+const SITE_BASE = process.env.SITE_BASE || "/";
 
 // SPEC-001 AC-001.N1 — falha rapida se site for invalido
 if (!/^https:\/\/[^\s/$.?#].[^\s]*$/i.test(SITE)) {
@@ -40,11 +40,6 @@ export default defineConfig({
       themes: { light: "github-light-high-contrast", dark: "github-dark" },
       wrap: true,
     },
-  },
-
-  image: {
-    // ADR-001 D4 — sharp distribui binario via optionalDependencies, sem postinstall
-    service: { entrypoint: "astro/assets/services/sharp" },
   },
 
   integrations: [
