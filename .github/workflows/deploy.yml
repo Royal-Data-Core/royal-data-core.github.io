@@ -59,10 +59,9 @@ jobs:
 
       - name: Configure GitHub Pages
         id: pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6 # BYPASS-001
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0 — revert from v6: determinístico TypeError (non-Error throw, pré-API) no v6; pages já em build_type=workflow via API (cf ADR-008 D7)
         with:
           static_site_generator: astro
-          enablement: true # RFC-001 §2.2 — build_type=workflow afirmado via API antes de implantação (compare ADR-008 D7)
 
       - name: Build
         env:
