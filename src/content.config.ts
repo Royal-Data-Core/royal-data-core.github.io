@@ -8,8 +8,8 @@
  * and this subagent may not write `.ai/adr/**`. Until ratified, /servicos renders
  * COPY-BRIEF data verbatim.
  */
-import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
 
 const blogSchema = z
   .object({
@@ -23,7 +23,7 @@ const blogSchema = z
       .max(6),
     coverAlt: z.string().min(10).max(200),
     coverSrc: z.string().optional(),
-    lang: z.enum(['pt-BR', 'en']).default('pt-BR'),
+    lang: z.enum(["pt-BR", "en"]).default("pt-BR"),
     draft: z.boolean().default(false),
     canonicalUrl: z.string().url().optional(),
     references: z
@@ -32,11 +32,11 @@ const blogSchema = z
   })
   .strict() // mission directive: strict schema
   .refine((post) => post.publishDate.getTime() <= Date.now(), {
-    message: 'SPEC-004: publishDate não pode estar no futuro',
+    message: "SPEC-004: publishDate não pode estar no futuro",
   });
 
 const blog = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/blog' }),
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/blog" }),
   schema: blogSchema,
 });
 

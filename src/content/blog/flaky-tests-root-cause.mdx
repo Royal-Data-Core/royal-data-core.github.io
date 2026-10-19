@@ -1,17 +1,17 @@
 ---
-title: 'Testes flaky: da causa raiz à quarentena'
-description: 'Flaky não se resolve com retry: é um bug no código, no dado ou no ambiente. Protocolo de isolamento de causa raiz e quarentena com prazo para suítes que ninguém confia.'
+title: "Testes flaky: da causa raiz à quarentena"
+description: "Flaky não se resolve com retry: é um bug no código, no dado ou no ambiente. Protocolo de isolamento de causa raiz e quarentena com prazo para suítes que ninguém confia."
 publishDate: 2026-10-12
-tags: ['testes-flaky', 'ci-cd', 'estrategia-de-testes']
-coverAlt: 'Artigo sem imagem de capa; exemplos de instrumentação aparecem como código no corpo.'
-lang: 'pt-BR'
+tags: ["testes-flaky", "ci-cd", "estrategia-de-testes"]
+coverAlt: "Artigo sem imagem de capa; exemplos de instrumentação aparecem como código no corpo."
+lang: "pt-BR"
 references:
-  - label: 'Martin Fowler — Non-Determinism in Automated Testing'
-    url: 'https://martinfowler.com/articles/nonDeterminism.html'
-  - label: 'Playwright docs — Retries como instrumentação'
-    url: 'https://playwright.dev/docs/retries'
-  - label: 'Vitest docs — vi.useFakeTimers (controle de tempo)'
-    url: 'https://vitest.dev/api/vi.html#vi-usefaketimers'
+  - label: "Martin Fowler — Non-Determinism in Automated Testing"
+    url: "https://martinfowler.com/articles/nonDeterminism.html"
+  - label: "Playwright docs — Retries como instrumentação"
+    url: "https://playwright.dev/docs/test-retries"
+  - label: "Vitest docs — vi.useFakeTimers (controle de tempo)"
+    url: "https://vitest.dev/api/vi.html#vi-usefaketimers"
 draft: false
 ---
 
@@ -73,13 +73,13 @@ Substituição de espera fixa por espera de evento:
 
 ```ts
 // Antes: o teste competia com a rede em tempo chutado.
-await page.goto('/checkout');
+await page.goto("/checkout");
 await page.waitForTimeout(3000);
-await expect(page.getByTestId('order-confirmed')).toBeVisible();
+await expect(page.getByTestId("order-confirmed")).toBeVisible();
 
 // Depois: espera o evento que sinaliza a transição de estado.
-await page.goto('/checkout');
-const confirmation = page.getByTestId('order-confirmed');
+await page.goto("/checkout");
+const confirmation = page.getByTestId("order-confirmed");
 await expect(confirmation).toBeVisible({ timeout: 15_000 });
 ```
 
@@ -87,7 +87,7 @@ Quando o problema é tempo em lógica que não é de interface, o controle fica 
 suíte, não no relógio:
 
 ```ts
-import { afterEach, beforeAll, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, expect, it, vi } from "vitest";
 
 beforeAll(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -96,8 +96,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it('expira a sessão após o intervalo configurado', () => {
-  vi.setSystemTime(new Date('2026-02-03T10:00:00Z'));
+it("expira a sessão após o intervalo configurado", () => {
+  vi.setSystemTime(new Date("2026-02-03T10:00:00Z"));
   session.start();
 
   vi.advanceTimersByTime(31 * 60 * 1000);

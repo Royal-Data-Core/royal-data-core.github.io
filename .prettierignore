@@ -1,0 +1,13 @@
+# Normative docs and generated artifacts are NOT prettier-normalized
+.ai/**
+.opencode/**
+.log-extract/**
+dist/
+coverage/
+playwright-report/
+test-results/
+.lighthouseci/
+.linkinator/
+.astro/
+node_modules/
+package-lock.json

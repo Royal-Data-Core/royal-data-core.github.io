@@ -4,24 +4,30 @@
  * (context.site includes the base per Astro) — all links become absolute https.
  * Drafts never appear (AC-004.2).
  */
-import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
-import { formatPublishDate } from '../lib/date';
+import rss from "@astrojs/rss";
+import { getCollection } from "astro:content";
+import { formatPublishDate } from "../lib/date";
 
-export async function GET(context: { site: URL | undefined }): Promise<Response> {
-  const postEntries = await getCollection('blog');
+export async function GET(context: {
+  site: URL | undefined;
+}): Promise<Response> {
+  const postEntries = await getCollection("blog");
   const published = postEntries
     .filter((post) => !post.data.draft)
-    .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+    .sort(
+      (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+    );
 
   if (!context.site) {
-    throw new Error("SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://");
+    throw new Error(
+      "SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://",
+    );
   }
 
   return rss({
-    title: 'Royal Data Core — artigos de engenharia de testes',
+    title: "Royal Data Core — artigos de engenharia de testes",
     description:
-      'Conteúdo técnico sobre estratégia de testes, automação e pipelines de QA. Sem rodeio.',
+      "Conteúdo técnico sobre estratégia de testes, automação e pipelines de QA. Sem rodeio.",
     site: context.site,
     items: published.map((post) => ({
       title: post.data.title,
@@ -30,7 +36,7 @@ export async function GET(context: { site: URL | undefined }): Promise<Response>
       pubDate: post.data.publishDate,
       content: `${post.data.description} — publicado em ${formatPublishDate(post.data.publishDate)}.`,
     })),
-    customData: '<language>pt-BR</language>',
+    customData: "<language>pt-BR</language>",
     trailingSlash: false as const,
     stylesheet: false as const,
   });

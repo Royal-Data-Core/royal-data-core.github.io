@@ -1,17 +1,17 @@
 ---
-title: 'Contratos de dados entre camadas de teste'
-description: 'Teste de integração não precisa levantar o sistema inteiro: ele precisa de uma promessa verificável sobre o dado que atravessa a borda. Contratos tornam essa promessa verificável.'
+title: "Contratos de dados entre camadas de teste"
+description: "Teste de integração não precisa levantar o sistema inteiro: ele precisa de uma promessa verificável sobre o dado que atravessa a borda. Contratos tornam essa promessa verificável."
 publishDate: 2026-10-15
-tags: ['estrategia-de-testes', 'contratos', 'integracao']
-coverAlt: 'Artigo sem imagem de capa; exemplos de contrato entre produtor e consumidor em código.'
-lang: 'pt-BR'
+tags: ["estrategia-de-testes", "contratos", "integracao"]
+coverAlt: "Artigo sem imagem de capa; exemplos de contrato entre produtor e consumidor em código."
+lang: "pt-BR"
 references:
-  - label: 'Martin Fowler — Contract Test'
-    url: 'https://martinfowler.com/bliki/ContractTest.html'
-  - label: 'Pact docs — consumer-driven contracts'
-    url: 'https://docs.pact.io/'
-  - label: 'Zod docs — schemas validados em runtime'
-    url: 'https://zod.dev/'
+  - label: "Martin Fowler — Contract Test"
+    url: "https://martinfowler.com/bliki/ContractTest.html"
+  - label: "Pact docs — consumer-driven contracts"
+    url: "https://docs.pact.io/"
+  - label: "Zod docs — schemas validados em runtime"
+    url: "https://zod.dev/"
 draft: false
 ---
 
@@ -55,12 +55,12 @@ tempo — justamente o ganho de tempo que faz a suíte caber na rotina.
 Com schemas Zod no lado do consumidor, o contrato é literalmente código:
 
 ```ts
-import { z } from 'zod';
+import { z } from "zod";
 
 const catalogoItem = z.object({
   sku: z.string(),
   precoCentavos: z.number().int().nonnegative(),
-  moeda: z.literal('BRL'),
+  moeda: z.literal("BRL"),
 });
 
 type CatalogoItem = z.infer<typeof catalogoItem>;

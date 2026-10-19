@@ -18,7 +18,8 @@
   --color-surface: #f8fafc;
 
   /* PERF-5: no webfonts. Tailwind default sans stack is already ui-sans-serif/system-ui. */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 }
 

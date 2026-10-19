@@ -13,32 +13,33 @@
  * publish a private address (COPY-BRIEF §12 note).
  */
 
-import { withBase } from './withBase';
+import { withBase } from "./withBase";
 
 /** Verified legal identity (SDD-CONTEXT §1 — factual source of truth). */
 export const ORGANIZATION = {
-  legalName: 'ROYAL DATA CORE LTDA',
-  name: 'Royal Data Core',
-  taxID: '69527139000194',
-  foundingDate: '2026-10-06',
-  addressLocality: 'Matão',
-  addressRegion: 'SP',
-  addressCountry: 'BR',
+  legalName: "ROYAL DATA CORE LTDA",
+  name: "Royal Data Core",
+  taxID: "69527139000194",
+  foundingDate: "2026-10-06",
+  addressLocality: "Matão",
+  addressRegion: "SP",
+  addressCountry: "BR",
   description:
-    'Consultoria especializada em testes de software: estratégia de QA, automação de testes e pipelines de qualidade.',
+    "Consultoria especializada em testes de software: estratégia de QA, automação de testes e pipelines de qualidade.",
   knowsAbout: [
-    'Software Testing',
-    'Test Automation',
-    'Quality Assurance',
-    'Playwright',
-    'CI/CD',
-    'Test Strategy',
-    'Shift-Left Testing',
-    'Core Web Vitals',
+    "Software Testing",
+    "Test Automation",
+    "Quality Assurance",
+    "Playwright",
+    "CI/CD",
+    "Test Strategy",
+    "Shift-Left Testing",
+    "Core Web Vitals",
   ],
 } as const;
 
-type JsonLdValue = string | number | boolean | null | JsonLdNode | Array<JsonLdValue>;
+type JsonLdValue =
+  string | number | boolean | null | JsonLdNode | Array<JsonLdValue>;
 
 export interface JsonLdNode {
   readonly [key: string]: JsonLdValue;
@@ -53,7 +54,7 @@ export const SPEC_JSONLD_ERROR =
  * before serialization. Any structural violation fails the build (exit != 0).
  */
 export function assertNoUndefined(value: JsonLdValue): void {
-  walk(value, '$');
+  walk(value, "$");
   function walk(node: unknown, path: string): void {
     if (node === undefined) {
       throw new Error(`${SPEC_JSONLD_ERROR} (path: ${path})`);
@@ -62,15 +63,13 @@ export function assertNoUndefined(value: JsonLdValue): void {
       node.forEach((item, index) => walk(item, `${path}[${index}]`));
       return;
     }
-    if (node !== null && typeof node === 'object') {
+    if (node !== null && typeof node === "object") {
       for (const key of Object.keys(node)) {
         walk((node as Record<string, unknown>)[key], `${path}.${key}`);
       }
     }
   }
 }
-
-
 
 /**
  * Serializes JSON-LD for `<script type="application/ld+json">`.
@@ -79,7 +78,7 @@ export function assertNoUndefined(value: JsonLdValue): void {
 export function serializeJsonLd(value: JsonLdValue): string {
   assertNoUndefined(value);
   const serialized = JSON.stringify(value, null, 2);
-  if (typeof serialized !== 'string') {
+  if (typeof serialized !== "string") {
     throw new Error(SPEC_JSONLD_ERROR);
   }
   if (/,\s*[}\]]/.test(serialized)) {
@@ -89,18 +88,27 @@ export function serializeJsonLd(value: JsonLdValue): string {
   try {
     JSON.parse(serialized);
   } catch (cause) {
-    throw Object.assign(new Error(`${SPEC_JSONLD_ERROR} (${(cause as Error).message})`), { cause });
+    throw Object.assign(
+      new Error(`${SPEC_JSONLD_ERROR} (${(cause as Error).message})`),
+      { cause },
+    );
   }
   return serialized;
 }
 
 function siteOrigin(siteUrl?: URL): string {
-  const raw = siteUrl ?? (import.meta.env.SITE ? new URL(import.meta.env.SITE) : undefined);
+  const raw =
+    siteUrl ??
+    (import.meta.env.SITE ? new URL(import.meta.env.SITE) : undefined);
   if (!raw) {
-    throw new Error("SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://");
+    throw new Error(
+      "SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://",
+    );
   }
-  if (raw.protocol !== 'https:') {
-    throw new Error("SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://");
+  if (raw.protocol !== "https:") {
+    throw new Error(
+      "SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://",
+    );
   }
   return raw.origin;
 }
@@ -111,29 +119,29 @@ function siteOrigin(siteUrl?: URL): string {
  */
 export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
   const origin = siteOrigin(siteUrl);
-  const home = `${origin}${withBase('/')}`;
+  const home = `${origin}${withBase("/")}`;
   return {
-    '@context': 'https://schema.org',
-    '@type': 'ProfessionalService',
-    '@id': `${origin}${withBase('/')}#organization`,
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "@id": `${origin}${withBase("/")}#organization`,
     name: ORGANIZATION.name,
     legalName: ORGANIZATION.legalName,
     taxID: ORGANIZATION.taxID,
     foundingDate: ORGANIZATION.foundingDate,
     description: ORGANIZATION.description,
     url: home,
-    image: `${origin}${withBase('/og-default.png')}`,
-    priceRange: 'sob consulta',
-    currenciesAccepted: 'BRL',
+    image: `${origin}${withBase("/og-default.png")}`,
+    priceRange: "sob consulta",
+    currenciesAccepted: "BRL",
     // COPY-BRIEF §12 canonical values; declared business channels, no numeric price claim.
-    paymentAccepted: 'Transferência, Boleto, PIX',
+    paymentAccepted: "Transferência, Boleto, PIX",
     address: {
-      '@type': 'PostalAddress',
+      "@type": "PostalAddress",
       addressLocality: ORGANIZATION.addressLocality,
       addressRegion: ORGANIZATION.addressRegion,
       addressCountry: ORGANIZATION.addressCountry,
     },
-    areaServed: { '@type': 'Country', name: 'Brasil' },
+    areaServed: { "@type": "Country", name: "Brasil" },
     knowsAbout: [...ORGANIZATION.knowsAbout],
   };
 }
@@ -145,15 +153,15 @@ export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
 export function buildWebSiteJsonLd(siteUrl: URL): JsonLdNode {
   const origin = siteOrigin(siteUrl);
   return {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
+    "@context": "https://schema.org",
+    "@type": "WebSite",
     name: ORGANIZATION.name,
-    url: `${origin}${withBase('/')}`,
-    inLanguage: 'pt-BR',
+    url: `${origin}${withBase("/")}`,
+    inLanguage: "pt-BR",
     potentialAction: {
-      '@type': 'SearchAction',
-      target: `${origin}${withBase('/busca')}?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
+      "@type": "SearchAction",
+      target: `${origin}${withBase("/busca")}?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
     },
   };
 }

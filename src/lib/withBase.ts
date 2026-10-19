@@ -10,21 +10,25 @@
  * adds zero runtime cost and works in both `.astro` templates and `.ts` modules.
  */
 
-const RAW_BASE: string = import.meta.env.BASE_URL ?? '/';
+const RAW_BASE: string = import.meta.env.BASE_URL ?? "/";
 
 /** Normalized base: always ends with "/" ("" would be invalid; "/" is the user-site case). */
 const BASE: string =
-  RAW_BASE.length > 1 && !RAW_BASE.endsWith('/') ? `${RAW_BASE}/` : RAW_BASE;
+  RAW_BASE.length > 1 && !RAW_BASE.endsWith("/") ? `${RAW_BASE}/` : RAW_BASE;
 
 /** Detects absolute/protocol URLs: mailto:, tel:, https:, data:, javascript:. */
 const ABSOLUTE_PATH_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
 
 export function withBase(path: string): string {
-  if (path.startsWith('#') || path.startsWith('//') || ABSOLUTE_PATH_RE.test(path)) {
+  if (
+    path.startsWith("#") ||
+    path.startsWith("//") ||
+    ABSOLUTE_PATH_RE.test(path)
+  ) {
     return path;
   }
-  const internal = path.startsWith('/') ? path : `/${path}`;
-  if (BASE === '/') {
+  const internal = path.startsWith("/") ? path : `/${path}`;
+  if (BASE === "/") {
     return internal;
   }
   // Idempotent: never attach the base prefix twice.

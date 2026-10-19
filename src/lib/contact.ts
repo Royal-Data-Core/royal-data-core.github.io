@@ -13,18 +13,20 @@
  * is ever made to the user.
  */
 
-import { withBase } from './withBase';
+import { withBase } from "./withBase";
 
-const RAW_EMAIL = (import.meta.env.PUBLIC_CONTACT_EMAIL ?? '').trim();
-const RAW_PHONE = (import.meta.env.PUBLIC_CONTACT_PHONE ?? '').trim();
+const RAW_EMAIL = (import.meta.env.PUBLIC_CONTACT_EMAIL ?? "").trim();
+const RAW_PHONE = (import.meta.env.PUBLIC_CONTACT_PHONE ?? "").trim();
 
 /** D-03 pending-decision placeholders (exact SSOT strings). */
-export const CONTACT_PLACEHOLDER_EMAIL = '[[EMAIL]]';
-export const CONTACT_PLACEHOLDER_PHONE = '[[PHONE]]';
+export const CONTACT_PLACEHOLDER_EMAIL = "[[EMAIL]]";
+export const CONTACT_PLACEHOLDER_PHONE = "[[PHONE]]";
 
 /** Real value or null. Never an invented value. */
-export const CONTACT_EMAIL: string | null = RAW_EMAIL.length > 0 ? RAW_EMAIL : null;
-export const CONTACT_PHONE: string | null = RAW_PHONE.length > 0 ? RAW_PHONE : null;
+export const CONTACT_EMAIL: string | null =
+  RAW_EMAIL.length > 0 ? RAW_EMAIL : null;
+export const CONTACT_PHONE: string | null =
+  RAW_PHONE.length > 0 ? RAW_PHONE : null;
 
 /** Display string: real value or the D-03 placeholder. */
 export const CONTACT_EMAIL_DISPLAY = CONTACT_EMAIL ?? CONTACT_PLACEHOLDER_EMAIL;
@@ -36,14 +38,18 @@ export const HAS_CONTACT_PHONE = CONTACT_PHONE !== null;
 
 /** RFC 3966 `tel:` URI from a digits-only phone with country code, e.g. "5511999999999". */
 export function buildTelHref(phone: string): string {
-  return `tel:+${phone.replace(/[^0-9]/g, '')}`;
+  return `tel:+${phone.replace(/[^0-9]/g, "")}`;
 }
 
 /** RFC 6068 `mailto:` URI with a pre-filled subject (ADR-003 D4 origin qualifier). */
-export function buildMailtoHref(email: string, subject: string, body?: string): string {
+export function buildMailtoHref(
+  email: string,
+  subject: string,
+  body?: string,
+): string {
   const params = new URLSearchParams({ subject });
   if (body) {
-    params.set('body', body);
+    params.set("body", body);
   }
   return `mailto:${email}?${params.toString()}`;
 }
@@ -61,7 +67,7 @@ export function defaultMailtoBody(originUrl: string): string {
  * `text` is mandatory and non-empty (SPEC-005 AC-005.4).
  */
 export function buildWhatsAppHref(phone: string, text: string): string {
-  return `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`;
 }
 
 /** Encodes every character (including supplementary planes) as decimal entities. */
@@ -73,7 +79,7 @@ export function encodeHtmlEntities(value: string): string {
   for (const char of value) {
     segments.push(`&#${char.codePointAt(0)};`);
   }
-  return segments.join('');
+  return segments.join("");
 }
 
 /**
@@ -85,9 +91,14 @@ export function buildMailtoHrefEncoded(
   email: string,
   subject: string,
   body?: string,
-): { href: string; hrefEncoded: string; textEncoded: string; addressDecoded: string } {
+): {
+  href: string;
+  hrefEncoded: string;
+  textEncoded: string;
+  addressDecoded: string;
+} {
   const href = buildMailtoHref(email, subject, body);
-  const sendLength = 'mailto:'.length;
+  const sendLength = "mailto:".length;
   return {
     href,
     hrefEncoded: `mailto:${encodeHtmlEntities(email)}${href.slice(sendLength + email.length)}`,
@@ -100,10 +111,10 @@ export function buildMailtoHrefEncoded(
  * ADR-003 D4 — qualified subject table (verbatim from the SSOT).
  */
 export const CONTACT_SUBJECTS = {
-  hero: 'Contato via site — Hero',
+  hero: "Contato via site — Hero",
   servicesB2B: (service: string) => `Consultoria QA B2B — ${service}`,
-  servicesClt: 'Oportunidade CLT QA — via site',
-  general: 'Contato geral — Royal Data Core',
+  servicesClt: "Oportunidade CLT QA — via site",
+  general: "Contato geral — Royal Data Core",
   post: (slug: string) => `Sobre o artigo: ${slug}`,
   brokenLink: (path: string) => `Link quebrado — ${path}`,
 } as const;
@@ -114,5 +125,5 @@ export const CONTACT_SUBJECTS = {
  * instead of emitting a dead `href`.
  */
 export function contactFallbackHref(): string {
-  return withBase('/contato');
+  return withBase("/contato");
 }

@@ -1,19 +1,19 @@
-import { defineConfig } from 'astro/tailwind';
+import { defineConfig } from "astro/tailwind";
 
 export default defineConfig({
-  content: ['./src/**/*.{js,ts,astro}'],
+  content: ["./src/**/*.{js,ts,astro}"],
   theme: {
     extend: {
       colors: {
-        primary: '#1a1a1a',
-        secondary: '#4a4a4a',
+        primary: "#1a1a1a",
+        secondary: "#4a4a4a",
       },
       spacing: {
-        xs: '0.5rem',
-        sm: '1rem',
+        xs: "0.5rem",
+        sm: "1rem",
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ["Inter", "sans-serif"],
       },
     },
   },
