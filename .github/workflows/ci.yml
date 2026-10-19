@@ -119,6 +119,10 @@ jobs:
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           /tmp/gitleaks detect --source . --no-banner --redact --exit-code 1
 
+      # RFC-001 §2.7 / INFRA-001 (ADR-008 D3 F-1) — pin-check as blocking gate
+      - name: INFRA-001 · all uses refs SHA-pinned (blocking)
+        run: npm run pin:actions:check
+
       - name: Upload changed-files report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001

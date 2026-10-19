@@ -28,8 +28,6 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
-      - run: echo 'Skipping npm steps due to missing package.json'
-      - run: echo 'Placeholder deployment steps (replace with actual deployment commands)'
       - name: C1 · assert static output
         run: |
           grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs && \
@@ -45,6 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     needs: guard
+    permissions:
+      contents: read
+      pages: write # configure-pages fala com /pages — sem escopo: TypeError string-error (ADR-008 D7)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
@@ -61,7 +62,7 @@ jobs:
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6 # BYPASS-001
         with:
           static_site_generator: astro
-          enablement: true # RFC-001 §2.2 — bootstrap Pages em modo Actions (acerbo: 404 do GET /pages → TypeError string-error no v6, ADR-008 D7)
+          enablement: true # RFC-001 §2.2 — build_type=workflow afirmado via API antes de implantação (compare ADR-008 D7)
 
       - name: Build
         env:
