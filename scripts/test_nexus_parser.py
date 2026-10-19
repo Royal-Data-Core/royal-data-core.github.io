@@ -198,10 +198,66 @@ def test_missing_v8_keys():
     print("✅ test_missing_v8_keys")
 
 
+def test_valid_consult():
+    """consult: target = agente consultado; question/requesting_agent obrigatórios."""
+    yaml_body = (
+        "action: consult\n"
+        "target_agent: spec-engineer\n"
+        "requesting_agent: frontend-astro\n"
+        "question: 'Edge case X: behavior Y or Z?'\n"
+        "constraints_enforced:\n"
+        "  - half_duplex_return_mandatory\n"
+        "bypass_pillars_verified: false\n"
+        "kill_switch_active: true"
+    )
+    response = _directive(yaml_body)
+    ok, msg = validate(response)
+    assert ok, f"Falha: {msg}"
+    print("✅ test_valid_consult")
+
+
+def test_valid_parallel_list():
+    """delegate com lista paralela (≤3) + parallel_safe=true."""
+    yaml_body = (
+        "action: delegate\n"
+        "target_agent:\n"
+        "  - content-strategist\n"
+        "  - frontend-astro\n"
+        "parallel_safe: true\n"
+        "constraints_enforced: []\n"
+        "bypass_pillars_verified: false\n"
+        "kill_switch_active: true"
+    )
+    response = _directive(yaml_body)
+    ok, msg = validate(response)
+    assert ok, f"Falha: {msg}"
+    print("✅ test_valid_parallel_list")
+
+
+def test_parallel_list_without_flag():
+    """Lista sem parallel_safe=true deve falhar."""
+    yaml_body = (
+        "action: delegate\n"
+        "target_agent:\n"
+        "  - content-strategist\n"
+        "  - frontend-astro\n"
+        "constraints_enforced: []\n"
+        "bypass_pillars_verified: false\n"
+        "kill_switch_active: true"
+    )
+    response = _directive(yaml_body)
+    ok, _ = validate(response)
+    assert not ok, "Lista sem parallel_safe deve falhar"
+    print("✅ test_parallel_list_without_flag")
+
+
 if __name__ == "__main__":
     test_valid_delegate()
     test_valid_block()
     test_valid_require_clarification()
+    test_valid_consult()
+    test_valid_parallel_list()
+    test_parallel_list_without_flag()
     test_invalid_agent()
     test_new_agents_v8()
     test_missing_fence()
@@ -210,4 +266,4 @@ if __name__ == "__main__":
     test_unknown_constraint_slug()
     test_kill_switch_must_be_true()
     test_missing_v8_keys()
-    print("\n🎉 Todos os 11 testes passaram!")
+    print("\n🎉 Todos os 14 testes passaram!")

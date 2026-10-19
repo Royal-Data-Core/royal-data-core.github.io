@@ -77,18 +77,52 @@ def validate(response: str) -> tuple[bool, str]:
         return False, f"❌ YAML deve ser um dicionário, não {type(data).__name__}"
 
     keys = set(data.keys())
-    if keys != ALLOWED_KEYS:
-        return False, f"❌ Chaves inválidas: {sorted(keys)}. Esperado: {sorted(ALLOWED_KEYS)}"
+
+    # Contrato §10: chaves conhecidas apenas; 3 delas condicionais.
+    unknown = keys - ALLOWED_KEYS
+    if unknown:
+        return False, f"❌ Chaves desconhecidas: {sorted(unknown)}. Permitidas: {sorted(ALLOWED_KEYS)}"
+
+    MANDATORY_CORE = {
+        "action", "target_agent", "constraints_enforced",
+        "bypass_pillars_verified", "kill_switch_active",
+    }
+    missing = MANDATORY_CORE - keys
+    if missing:
+        return False, f"❌ Chaves obrigatórias ausentes: {sorted(missing)}"
 
     action = data["action"]
     if action not in VALID_ACTIONS:
         return False, f"❌ Action inválido: {action}. Esperado: {sorted(VALID_ACTIONS)}"
 
+    # Contrato §10: question/requesting_agent são exclusivos de consult.
+    if action == "consult" and not {"question", "requesting_agent"} <= keys:
+        return False, "❌ consult exige 'question' e 'requesting_agent' (seção 10)"
+    if action != "consult" and {"question", "requesting_agent"} & keys:
+        return False, "❌ question/requesting_agent só são válidos em action=consult"
+
     target = data["target_agent"]
-    if target not in VALID_AGENTS:
+
+    # Contrato §10: target_agent escalar OU lista (≤3) de ações paralelas com
+    # parallel_safe=true; listas são restritas a delegate (topologia 0.4).
+    if isinstance(target, list):
+        if action != "delegate":
+            return False, f"❌ Topologia inválida: lista de target_agent apenas em delegate (recebido action={action})"
+        if not data.get("parallel_safe"):
+            return False, "❌ target_agent em lista exige parallel_safe: true"
+        if not isinstance(data["parallel_safe"], bool):
+            return False, "❌ parallel_safe deve ser booleano"
+        if len(target) > MAX_PARALLEL_AGENTS:
+            return False, f"❌ Máximo {MAX_PARALLEL_AGENTS} agents em paralelo, recebeu {len(target)}"
+        if len(set(target)) != len(target):
+            return False, "❌ target_agent em lista não pode ter duplicatas"
+        invalid_agents = [t for t in target if t not in VALID_AGENTS]
+        if invalid_agents:
+            return False, f"❌ Agentes inválidos: {invalid_agents}. Esperado: {sorted(VALID_AGENTS)}"
+    elif target not in VALID_AGENTS:
         return False, f"❌ Agent inválido: {target}. Esperado: {sorted(VALID_AGENTS)}"
 
-    if action != "delegate" and target != "Human":
+    if action in {"block", "require_clarification"} and target != "Human":
         return False, f"❌ Topologia inválida: action={action} exige target_agent=Human"
 
     constraints = data["constraints_enforced"]
