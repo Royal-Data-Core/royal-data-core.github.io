@@ -3,14 +3,14 @@ name: Validate SDD Ecosystem
 on:
   push:
     paths:
-      - '.opencode/agents/**'
-      - '.ai/**'
-      - 'scripts/**'
+      - ".opencode/agents/**"
+      - ".ai/**"
+      - "scripts/**"
   pull_request:
     paths:
-      - '.opencode/agents/**'
-      - '.ai/**'
-      - 'scripts/**'
+      - ".opencode/agents/**"
+      - ".ai/**"
+      - "scripts/**"
 
 jobs:
   validate:
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -31,18 +31,18 @@ jobs:
       - name: Run parser tests
         run: python scripts/test_nexus_parser.py
 
-      - name: Validate constitution.md exists
+      - name: Validate CONSTITUTION.md exists (SSOT normativa)
         run: |
-          if [ ! -f .ai/constitution.md ]; then
-            echo "❌ .ai/constitution.md não encontrado"
+          if [ ! -f .ai/CONSTITUTION.md ]; then
+            echo "❌ .ai/CONSTITUTION.md não encontrado"
             exit 1
           fi
-          echo "✅ constitution.md presente"
+          echo "✅ CONSTITUTION.md presente"
 
       - name: Check agent files
         run: |
           REQUIRED_AGENTS=(
-            "nexus-prime.system"
+            "nexus-prime"
             "architect-sdd"
             "spec-engineer"
             "frontend-astro"

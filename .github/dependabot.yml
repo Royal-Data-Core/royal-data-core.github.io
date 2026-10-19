@@ -13,14 +13,22 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
     labels: ["dependencies", "npm"]
-    reviewers: ["CHANGE-ME-owner"]          # ← substituir pelo handle GitHub (D-01)
+    reviewers: ["CHANGE-ME-owner"] # ← substituir pelo handle GitHub (D-01)
     groups:
       astro:
         patterns: ["astro", "@astrojs/*"]
       testing:
-        patterns: ["@playwright/*", "playwright", "vitest", "@vitest/*", "@axe-core/*"]
+        patterns:
+          ["@playwright/*", "playwright", "vitest", "@vitest/*", "@axe-core/*"]
       lint:
-        patterns: ["eslint*", "prettier*", "@typescript-eslint/*", "typescript", "markdownlint*"]
+        patterns:
+          [
+            "eslint*",
+            "prettier*",
+            "@typescript-eslint/*",
+            "typescript",
+            "markdownlint*",
+          ]
     ignore:
       # CONSTITUTION §C10: major de Astro pode alterar budgets; exige ADR antes
       - dependency-name: "astro"

@@ -1,8 +1,10 @@
-# SPEC-007 — Busca Full-Text Client-Side (Pagefind)
+## SPEC-007 — Busca Full-Text Client-Side (Pagefind)
 
-**ID:** SPEC-007 · **Versão:** 1.0.0 · **Status:** APPROVED-PENDING-AUDIT
+**ID:** SPEC-007 · **Versão:** 1.1.0 · **Status:** APPROVED-PENDING-AUDIT
 **Agente executor:** `frontend-astro` · **Auditor:** `spec-auditor`, `static-analysis-enforcer`
 **Dependências:** SPEC-001, SPEC-004, **SPEC-008 (exige `'wasm-unsafe-eval'`)**
+
+> **Emenda 2026-10-19 (v1.1.0, via ADR-007):** `pagefind` ^1.3.0 resolve hoje para 1.5.x, cujo binário Rust renomeia `pagefind.wasm` → `wasm.<lang>.pagefind`. ACs de artefato passam a globs version-agnostiq; `build:pagefind` fixa `--output-subdir _pagefind` (diretório `_pagefind/` permanece imutável, inclusive no path público `/_pagefind/`).
 
 ## Justificativa (F-13)
 Site estático não tem busca. Pagefind: FOSS (MIT), binário Rust, gera índice fragmentado em `dist/_pagefind/`, carrega sob demanda. **Zero custo, zero terceiro, zero PII.** Nenhuma query sai do navegador do usuário — compatibilidade total com `CONSTITUTION §C7`.
@@ -25,7 +27,7 @@ Feature: SPEC-007 — Busca Pagefind
     Given que "npm run build" foi executado
     When "dist/" é inspecionado
     Then "dist/_pagefind/pagefind.js" existe
-    And "dist/_pagefind/pagefind.wasm" existe
+    And "dist/_pagefind/" contém artefato wasm ("wasm.<lang>.pagefind" em pagefind >=1.4, ou "pagefind.wasm" em 1.3.x)
     And "dist/_pagefind/pagefind-entry.json" existe e faz parse como JSON
     And o tamanho total de "dist/_pagefind/" é <= 5 MB
     And NÃO existe referência a "pagefind" em nenhum host externo

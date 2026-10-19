@@ -11,6 +11,7 @@ test-results/
 .lighthouseci/
 .linkinator/
 .astro/
+.log-extract/
 *.pyc
 __pycache__/
 .linkinator-cache/

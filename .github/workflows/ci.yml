@@ -164,7 +164,7 @@ jobs:
       - name: SPEC-007/AC-007.N3 · verify Pagefind index exists
         run: |
           test -f dist/_pagefind/pagefind.js   || { echo "::error::SPEC-007: pagefind.js ausente"; exit 1; }
-          test -f dist/_pagefind/pagefind.wasm || { echo "::error::SPEC-007: pagefind.wasm ausente"; exit 1; }
+          ls dist/_pagefind/wasm.*.pagefind >/dev/null 2>&1 || test -f dist/_pagefind/pagefind.wasm || { echo "::error::SPEC-007: wasm do Pagefind ausente (wasm.*.pagefind)"; exit 1; }
           du -sh dist/_pagefind
           [ "$(du -sm dist/_pagefind | cut -f1)" -le 5 ] || { echo "::error::SPEC-007: índice > 5 MB"; exit 1; }
 
