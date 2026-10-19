@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
-      - uses: actions/cache@v4 # BYPASS-001
+      - uses: actions/cache@v6 # BYPASS-001
         with:
           path: .astro/
           key: astro-prod-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/setup-node@v4 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
-      - uses: actions/cache@v4 # BYPASS-001
+      - uses: actions/cache@v6 # BYPASS-001
         id: pw-cache
         with:
           path: ~/.cache/ms-playwright
@@ -146,7 +146,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@v4 # BYPASS-001
         with: { name: dist, path: dist/ }
-      - uses: actions/cache@v4 # BYPASS-001
+      - uses: actions/cache@v6 # BYPASS-001
         with:
           path: .lighthouseci/
           key: lhci-main
