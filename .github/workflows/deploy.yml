@@ -240,10 +240,17 @@ jobs:
           curl -sI -L "$URL?$BUSTER" | grep -i 'strict-transport-security' \
             && echo "✓ HSTS presente" \
             || echo "::warning::HSTS ausente — verifique Settings → Pages → Enforce HTTPS"
-          # ADR-002: confirmar que NÃO há header CSP (esperado) e que há no HTML
-          curl -s -L "$URL?$BUSTER" | grep -q 'http-equiv="Content-Security-Policy"' \
-            && echo "✓ CSP via meta presente (ADR-002 D1)" \
-            || { echo "::error::CSP-meta ausente no HTML publicado"; exit 1; }
+          # ADR-002: confirmar que NÃO há header CSP (esperado) e que há no HTML.
+          # Race pós-swap: Pages origin propaga o artefato novo de forma
+          # assíncrona — retry com backoff evita flaky determinístico.
+          for attempt in 1 2 3 4 5; do
+            if curl -s -L "$URL?$BUSTER" | grep -q 'http-equiv="Content-Security-Policy"'; then
+              echo "✓ CSP via meta presente (ADR-002 D1) — attempt $attempt"; break
+            fi
+            [ "$attempt" = "5" ] && { echo "::error::CSP-meta ausente no HTML publicado"; exit 1; }
+            echo "::warning::CSP ainda ausente (attempt $attempt) — propagação pós-deploy"
+            sleep $((attempt * 15))
+          done
 
       # §C6 — Journal: lembra o humano de registrar a entrada (não commita automaticamente,
       # pois commits via GITHUB_TOKEN não disparam rebuild do Pages)
