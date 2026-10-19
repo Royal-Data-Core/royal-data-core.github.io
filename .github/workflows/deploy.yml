@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v6 # BYPASS-001
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: echo 'Skipping npm steps due to missing package.json'
       - run: echo 'Placeholder deployment steps (replace with actual deployment commands)'
@@ -47,7 +47,7 @@ jobs:
     needs: guard
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
       - uses: actions/cache@v4 # BYPASS-001
@@ -105,7 +105,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
       - uses: actions/cache@v4 # BYPASS-001
@@ -141,7 +141,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with: { node-version: "24", cache: "npm" }
       - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@v4 # BYPASS-001

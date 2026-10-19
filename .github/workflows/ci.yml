@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0 # necessário para gitleaks e adr-gate
 
       - name: Setup Node
-        uses: actions/setup-node@v4 # BYPASS-001
+        uses: actions/setup-node@v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -133,7 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
@@ -212,7 +212,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6 # BYPASS-001
 
-      - uses: actions/setup-node@v4 # BYPASS-001
+      - uses: actions/setup-node@v7 # BYPASS-001
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
