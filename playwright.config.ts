@@ -7,16 +7,23 @@
  * load under it.
  */
 import { defineConfig } from "@playwright/test";
+import { SITE_BASE } from "./tests/base.js";
 
-// Local preview (astro preview serves dist/). Must match webServer.url.
-const PREVIEW_URL = "http://localhost:4321";
+// Local preview (astro preview serves dist/). The webServer.url readiness
+// check must hit the artifact base ("astropreview serves routes under it
+// when astro.config's base is non-empty; SITE_BASE is injected via
+// webServer.env). Tests always navigate via tests/base.ts helper R().
+const PREVIEW_HOST = "http://localhost:4321";
+const PREVIEW_URL =
+  SITE_BASE === "" ? PREVIEW_HOST : `${PREVIEW_HOST}${SITE_BASE}`;
 
 export default defineConfig({
   // Platform prep — serve the built artifact; astro preview is the mandated
   // server for static output (no server-side runtime, CONSTITUTION §C1).
   webServer: {
     command: "npx astro preview --port 4321",
-    url: `${PREVIEW_URL}`,
+    url: `${PREVIEW_URL}/`,
+    env: { SITE_BASE },
     reuseExistingServer: true,
     timeout: 60_000,
   },
@@ -39,7 +46,7 @@ export default defineConfig({
   workers: 4,
   expect: { timeout: 10000 },
   use: {
-    baseURL: `${PREVIEW_URL}`,
+    baseURL: PREVIEW_HOST,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

@@ -4,27 +4,32 @@
  * cards, reading time. Pagination is omitted while the collection has < 11
  * published posts (AC-004.3 is bound "Given 14 posts").
  */
-import { getCollection } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
-import { withBase } from '../../lib/withBase';
-import { readingMinutes } from '../../lib/date';
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { withBase } from "../../lib/withBase";
+import { readingMinutes } from "../../lib/date";
 
 const SITE_DESCRIPTION =
-  'Conteúdo técnico sobre automação, testes flaky, pipelines de QA, Playwright e engenharia de qualidade. Sem rodeio.';
+  "Conteúdo técnico sobre automação, testes flaky, pipelines de QA, Playwright e engenharia de qualidade. Sem rodeio.";
 
-const postEntries = await getCollection('blog');
+const postEntries = await getCollection("blog");
 const publishedPosts = postEntries
   .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 
 const allTags = new Set<string>();
-publishedPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag)));
+publishedPosts.forEach((post) =>
+  post.data.tags.forEach((tag) => allTags.add(tag)),
+);
 ---
 
-<BaseLayout title="Artigos sobre Testes de Software" description={SITE_DESCRIPTION}>
+<BaseLayout
+  title="Artigos sobre Testes de Software"
+  description={SITE_DESCRIPTION}
+>
   <div class="mx-auto max-w-5xl px-4 py-10">
-    <h1 class="text-3xl font-bold leading-tight tracking-tight text-slate-900">
+    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
       Artigos sobre testes de software
     </h1>
     <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
@@ -38,7 +43,7 @@ publishedPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag
           {Array.from(allTags).map((tag) => (
             <a
               href={withBase(`/blog/tag/${tag}`)}
-              class="mr-2 inline-flex min-h-[44px] items-center rounded-md text-sm text-brand-700 underline underline-offset-4 hover:text-brand-900"
+              class="text-brand-700 hover:text-brand-900 mr-2 inline-flex min-h-[44px] items-center rounded-md text-sm underline underline-offset-4"
             >
               {tag}
             </a>
@@ -49,7 +54,10 @@ publishedPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag
 
     {
       publishedPosts.length > 0 ? (
-        <div data-testid="post-list" class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          data-testid="post-list"
+          class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {publishedPosts.map((post) => (
             <PostCard
               title={post.data.title}
@@ -63,7 +71,8 @@ publishedPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag
         </div>
       ) : (
         <p class="mt-6 text-sm text-slate-700">
-          Ainda publicando os primeiros artigos. Volte em breve — ou assine o RSS.
+          Ainda publicando os primeiros artigos. Volte em breve — ou assine o
+          RSS.
         </p>
       )
     }
@@ -72,8 +81,8 @@ publishedPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag
       RSS:
       <a
         data-testid="rss-link"
-        href={withBase('/rss.xml')}
-        class="text-brand-700 underline underline-offset-4 hover:text-brand-900"
+        href={withBase("/rss.xml")}
+        class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
       >
         assinar via /rss.xml
       </a>

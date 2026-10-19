@@ -9,15 +9,15 @@
  * `ogType`, `excludeFromSearch` (justified extensions: homepage full-title route,
  * article og:type, Pagefind exclusion per AC-007.3).
  */
-import '../styles/global.css';
-import { withBase } from '../lib/withBase';
+import "../styles/global.css";
+import { withBase } from "../lib/withBase";
 import {
   buildOrganizationJsonLd,
   buildWebSiteJsonLd,
   serializeJsonLd,
-} from '../lib/jsonld';
-import SiteHeader from '../components/SiteHeader.astro';
-import SiteFooter from '../components/SiteFooter.astro';
+} from "../lib/jsonld";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 
 interface Props {
   /** Page title (PT-BR). Applied to template `${title} · Royal Data Core` unless `fullTitle`. */
@@ -30,7 +30,7 @@ interface Props {
   /** Homepage route: title prop is already the full brand title. */
   fullTitle?: boolean;
   /** Article pages emit the same browser-safe OG type. */
-  ogType?: 'website' | 'article';
+  ogType?: "website" | "article";
   /** Pagefind exclusion (`data-pagefind-ignore` on <body>, SPEC-007 AC-007.3). */
   excludeFromSearch?: boolean;
 }
@@ -41,37 +41,48 @@ const {
   ogImage,
   noIndex = false,
   fullTitle = false,
-  ogType = 'website',
+  ogType = "website",
   excludeFromSearch = false,
 } = Astro.props;
 
 const site = Astro.site;
-if (!site || site.protocol !== 'https:') {
-  throw new Error("SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://");
+if (!site || site.protocol !== "https:") {
+  throw new Error(
+    "SPEC-001: 'site' é obrigatório e deve ser URL absoluta https://",
+  );
 }
 
 // AC-001.2 — deterministic title template.
 const displayTitle = fullTitle ? title : `${title} · Royal Data Core`;
 
 // AC-001.3 — canonical derived from site + pathname; base-aware and slash-normalized.
-const rawBase = import.meta.env.BASE_URL ?? '/';
+// BASE_URL is inlined WITHOUT a guaranteed trailing slash ("/site-io") — normalize
+// it before stripping, otherwise slice() yields a leading "/" and the re-prefix
+// below produces "//route" (which withBase then treats as protocol-relative).
+const rawBaseRaw = import.meta.env.BASE_URL ?? "/";
+const rawBase =
+  rawBaseRaw.length > 1 && !rawBaseRaw.endsWith("/")
+    ? `${rawBaseRaw}/`
+    : rawBaseRaw;
 const pathname = Astro.url.pathname;
 let routePath = pathname;
-if (rawBase !== '/' && pathname.startsWith(rawBase)) {
+if (rawBase !== "/" && pathname.startsWith(rawBase)) {
   routePath = `/${pathname.slice(rawBase.length)}`;
 }
-routePath = routePath.replace(/\/+$/, '') || '/';
+routePath = routePath.replace(/\/+$/, "") || "/";
 const canonicalPath = withBase(routePath);
-const canonicalUrl = `${site.origin}${canonicalPath === '/' ? '/' : canonicalPath}`;
-const ogImageUrl = new URL(ogImage ? withBase(ogImage) : withBase('/og-default.png'), site)
-  .toString();
+const canonicalUrl = `${site.origin}${canonicalPath === "/" ? "/" : canonicalPath}`;
+const ogImageUrl = new URL(
+  ogImage ? withBase(ogImage) : withBase("/og-default.png"),
+  site,
+).toString();
 
 // AC-001.5 / AC-001.6 — base JSON-LD blocks (scripts exempt from the no-JS rule as ld+json).
 const jsonLdOrganization = serializeJsonLd(buildOrganizationJsonLd(site));
 const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
@@ -86,14 +97,14 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
     <meta name="description" content={description} />
     {noIndex ? <meta name="robots" content="noindex, follow" /> : null}
     {noIndex ? null : <link rel="canonical" href={canonicalUrl} />}
-    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
     <link
       rel="alternate"
       type="application/rss+xml"
       title="Royal Data Core — artigos"
-      href={withBase('/rss.xml')}
+      href={withBase("/rss.xml")}
     />
-    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+    <link rel="sitemap" href={withBase("/sitemap-index.xml")} />
     <meta property="og:title" content={displayTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
@@ -120,12 +131,12 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
   </head>
   <body
     class="flex min-h-screen flex-col bg-white font-sans text-slate-900 antialiased"
-    data-pagefind-ignore={excludeFromSearch ? '' : undefined}
+    data-pagefind-ignore={excludeFromSearch ? "" : undefined}
   >
     <a
       data-testid="skip-link"
       href="#conteudo-principal"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-brand-700 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
+      class="focus:bg-brand-700 sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
     >
       Pular para o conteúdo principal
     </a>

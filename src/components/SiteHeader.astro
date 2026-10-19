@@ -3,24 +3,28 @@
  * SPEC-001 — site header with the closed navigation set ( домой / serviços / blog / contato ).
  * Identifiers are EN (ADR-000): testids `nav-link-home` etc. even though routes are PT-BR.
  */
-import { withBase } from '../lib/withBase';
+import { withBase } from "../lib/withBase";
 
 const NAV_ITEMS = [
-  { label: 'Início', href: withBase('/'), testid: 'nav-link-home' },
-  { label: 'Serviços', href: withBase('/servicos'), testid: 'nav-link-services' },
-  { label: 'Blog', href: withBase('/blog'), testid: 'nav-link-blog' },
-  { label: 'Contato', href: withBase('/contato'), testid: 'nav-link-contact' },
+  { label: "Início", href: withBase("/"), testid: "nav-link-home" },
+  {
+    label: "Serviços",
+    href: withBase("/servicos"),
+    testid: "nav-link-services",
+  },
+  { label: "Blog", href: withBase("/blog"), testid: "nav-link-blog" },
+  { label: "Contato", href: withBase("/contato"), testid: "nav-link-contact" },
 ] as const;
 ---
 
-<header data-testid="site-header" class="border-b border-slate-200 bg-surface">
+<header data-testid="site-header" class="bg-surface border-b border-slate-200">
   <nav
     data-testid="nav-primary"
     aria-label="Navegação principal"
     class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3"
   >
     <a
-      href={withBase('/')}
+      href={withBase("/")}
       class="inline-flex min-h-[44px] items-center rounded-md px-1 text-base font-bold tracking-tight text-slate-900"
     >
       Royal Data Core
@@ -32,7 +36,7 @@ const NAV_ITEMS = [
             <a
               href={item.href}
               data-testid={item.testid}
-              class="inline-flex min-h-[44px] items-center rounded-md px-3 text-sm font-medium text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline"
+              class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md px-3 text-sm font-medium text-slate-700 underline-offset-4 hover:underline"
             >
               {item.label}
             </a>

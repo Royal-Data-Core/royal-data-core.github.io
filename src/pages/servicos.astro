@@ -6,22 +6,22 @@
  * NOTE: services Content Collection awaits a ratified ADR (§C3) — data below is
  * the COPY-BRIEF SSOT rendered verbatim.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ServiceCard from '../components/ServiceCard.astro';
-import { withBase } from '../lib/withBase';
-import { defaultMailtoBody } from '../lib/contact';
-import { serializeJsonLd } from '../lib/jsonld';
-import type { JsonLdNode } from '../lib/jsonld';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ServiceCard from "../components/ServiceCard.astro";
+import { withBase } from "../lib/withBase";
+import { defaultMailtoBody } from "../lib/contact";
+import { serializeJsonLd } from "../lib/jsonld";
+import type { JsonLdNode } from "../lib/jsonld";
 
 const SITE_DESCRIPTION =
-  'Diagnóstico de qualidade, automação de testes e QA embarcado. Modelos por projeto, retainer, alocação ou mentoria. B2B e CLT.';
+  "Diagnóstico de qualidade, automação de testes e QA embarcado. Modelos por projeto, retainer, alocação ou mentoria. B2B e CLT.";
 
-const site = import.meta.env.SITE ?? 'https://royaldatacore.github.io';
-const mailtoBody = defaultMailtoBody(`${site}${withBase('/servicos')}`);
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+const mailtoBody = defaultMailtoBody(`${site}${withBase("/servicos")}`);
 
 interface ServiceItem {
   slug: string;
-  audience: 'b2b' | 'clt';
+  audience: "b2b" | "clt";
   eyebrow: string;
   title: string;
   description: string;
@@ -31,123 +31,139 @@ interface ServiceItem {
 }
 
 const qaDiagnostic: ServiceItem = {
-  slug: 'qa-diagnostic',
-  audience: 'b2b',
-  eyebrow: 'B2B · por projeto',
-  title: 'Diagnóstico de qualidade',
+  slug: "qa-diagnostic",
+  audience: "b2b",
+  eyebrow: "B2B · por projeto",
+  title: "Diagnóstico de qualidade",
   description:
-    'Mapeamento da situação atual de testes do seu produto: cobertura real, gaps de risco, débito técnico de QA e o que automatizar primeiro para ter retorno mais rápido.',
+    "Mapeamento da situação atual de testes do seu produto: cobertura real, gaps de risco, débito técnico de QA e o que automatizar primeiro para ter retorno mais rápido.",
   deliverables: [
-    'relatório de gaps priorizado por risco',
-    'matriz de cobertura de testes',
-    'plano de automação em 3 horizontes',
-    'estimativa de esforço por iniciativa',
+    "relatório de gaps priorizado por risco",
+    "matriz de cobertura de testes",
+    "plano de automação em 3 horizontes",
+    "estimativa de esforço por iniciativa",
   ],
-  ctaLabel: 'Solicitar diagnóstico',
-  ctaSubject: 'Consultoria QA B2B — Diagnóstico de qualidade',
+  ctaLabel: "Solicitar diagnóstico",
+  ctaSubject: "Consultoria QA B2B — Diagnóstico de qualidade",
 };
 
 const testAutomation: ServiceItem = {
-  slug: 'test-automation',
-  audience: 'b2b',
-  eyebrow: 'B2B · projeto ou retainer',
-  title: 'Automação que sobrevive ao tempo',
+  slug: "test-automation",
+  audience: "b2b",
+  eyebrow: "B2B · projeto ou retainer",
+  title: "Automação que sobrevive ao tempo",
   description:
-    'Implementação de suítes de teste automatizadas que não viram fonte de flakes. Pirâmide de testes aplicada de verdade: unitários rápidos, integração confiável, E2E cirúrgico — cada camada no lugar certo.',
+    "Implementação de suítes de teste automatizadas que não viram fonte de flakes. Pirâmide de testes aplicada de verdade: unitários rápidos, integração confiável, E2E cirúrgico — cada camada no lugar certo.",
   deliverables: [
-    'suíte automatizada em CI',
-    'configuração de pipeline com gates de qualidade',
-    'seleção e instrumentação de ferramentas',
-    'documentação de manutenção',
-    'transferência de conhecimento para o time',
+    "suíte automatizada em CI",
+    "configuração de pipeline com gates de qualidade",
+    "seleção e instrumentação de ferramentas",
+    "documentação de manutenção",
+    "transferência de conhecimento para o time",
   ],
-  ctaLabel: 'Discutir automação',
-  ctaSubject: 'Consultoria QA B2B — Automação de testes',
+  ctaLabel: "Discutir automação",
+  ctaSubject: "Consultoria QA B2B — Automação de testes",
 };
 
 const embeddedQa: ServiceItem = {
-  slug: 'embedded-qa',
-  audience: 'clt',
-  eyebrow: 'CLT / alocação · mentoria',
-  title: 'QA dentro do seu time',
+  slug: "embedded-qa",
+  audience: "clt",
+  eyebrow: "CLT / alocação · mentoria",
+  title: "QA dentro do seu time",
   description:
-    'Atuação como engenheiro de testes dedicado, ou mentoria para formar capacidade de QA dentro do time que você já tem. Cultura de qualidade não se terceiriza para sempre — se constrói.',
+    "Atuação como engenheiro de testes dedicado, ou mentoria para formar capacidade de QA dentro do time que você já tem. Cultura de qualidade não se terceiriza para sempre — se constrói.",
   deliverables: [
-    'atuação embarcada no squad',
-    'revisão de estratégia de testes',
-    'mentoria individual e em grupo',
-    'critérios de aceite e definição de pronto',
-    'acompanhamento de métricas de qualidade',
+    "atuação embarcada no squad",
+    "revisão de estratégia de testes",
+    "mentoria individual e em grupo",
+    "critérios de aceite e definição de pronto",
+    "acompanhamento de métricas de qualidade",
   ],
-  ctaLabel: 'Conversar sobre alocação',
-  ctaSubject: 'Oportunidade CLT QA — via site',
+  ctaLabel: "Conversar sobre alocação",
+  ctaSubject: "Oportunidade CLT QA — via site",
 };
 
 // SPEC-003 AC-003.3 — closed list "Por projeto | Retainer mensal | Alocação | Mentoria".
 const engagementModels = [
-  { badge: 'Por projeto', meaning: 'Escopo e prazo definidos, entregável único, valor fechado' },
-  { badge: 'Retainer mensal', meaning: 'Horas reservadas por mês, prioridade na agenda' },
-  { badge: 'Alocação', meaning: 'Dedicação integral ao seu time (CLT ou PJ)' },
-  { badge: 'Mentoria', meaning: 'Encontros recorrentes de orientação técnica' },
+  {
+    badge: "Por projeto",
+    meaning: "Escopo e prazo definidos, entregável único, valor fechado",
+  },
+  {
+    badge: "Retainer mensal",
+    meaning: "Horas reservadas por mês, prioridade na agenda",
+  },
+  { badge: "Alocação", meaning: "Dedicação integral ao seu time (CLT ou PJ)" },
+  { badge: "Mentoria", meaning: "Encontros recorrentes de orientação técnica" },
 ] as const;
 
 // COPY-BRIEF §2 — FAQ verbatim; rendered text MUST match JSON-LD (same array drives both).
 const faq = [
   {
-    question: 'Vocês publicam preços?',
+    question: "Vocês publicam preços?",
     answer:
-      'Não. Escopo de QA varia demais com stack, cobertura atual e criticidade do produto para uma tabela fazer sentido. A primeira conversa serve exatamente para dimensionar.',
+      "Não. Escopo de QA varia demais com stack, cobertura atual e criticidade do produto para uma tabela fazer sentido. A primeira conversa serve exatamente para dimensionar.",
   },
   {
-    question: 'Trabalha com quais stacks?',
+    question: "Trabalha com quais stacks?",
     answer:
-      'Playwright, Cypress, Selenium, Jest, Vitest, Pytest, JUnit. Em CI: GitHub Actions, GitLab CI, Jenkins. A ferramenta segue o problema, não o contrário.',
+      "Playwright, Cypress, Selenium, Jest, Vitest, Pytest, JUnit. Em CI: GitHub Actions, GitLab CI, Jenkins. A ferramenta segue o problema, não o contrário.",
   },
   {
-    question: 'Atende remotamente?',
+    question: "Atende remotamente?",
     answer:
-      'Sim. Base em Matão/SP, atendimento remoto para todo o Brasil. Presencial sob combinação para região de Araraquara/São Carlos/Ribeirão Preto.',
+      "Sim. Base em Matão/SP, atendimento remoto para todo o Brasil. Presencial sob combinação para região de Araraquara/São Carlos/Ribeirão Preto.",
   },
   {
-    question: 'Emite nota fiscal?',
-    answer: 'Sim. Royal Data Core LTDA, CNPJ 69.527.139/0001-94.',
+    question: "Emite nota fiscal?",
+    answer: "Sim. Royal Data Core LTDA, CNPJ 69.527.139/0001-94.",
   },
   {
-    question: 'Assina NDA?',
-    answer: 'Sim, antes de qualquer discussão técnica detalhada.',
+    question: "Assina NDA?",
+    answer: "Sim, antes de qualquer discussão técnica detalhada.",
   },
 ] as const;
 
 const faqJsonLd: JsonLdNode = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
   mainEntity: faq.map((item) => ({
-    '@type': 'Question',
+    "@type": "Question",
     name: item.question,
-    acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
   })),
 };
 ---
 
 <BaseLayout title="Serviços" description={SITE_DESCRIPTION}>
-  <script slot="head" type="application/ld+json" is:inline set:html={serializeJsonLd(faqJsonLd)} />
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={serializeJsonLd(faqJsonLd)}
+  />
 
   <div class="mx-auto max-w-5xl px-4 py-10">
-    <h1 class="text-3xl font-bold leading-tight tracking-tight text-slate-900">Serviços</h1>
+    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
+      Serviços
+    </h1>
     <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700">
-      Três formas de trabalhar juntos, conforme o momento do seu produto. Nenhuma exige
-      contrato de longo prazo para começar. Preço sob consulta — cada escopo é diferente
-      e não faz sentido publicar tabela.
+      Três formas de trabalhar juntos, conforme o momento do seu produto.
+      Nenhuma exige contrato de longo prazo para começar. Preço sob consulta —
+      cada escopo é diferente e não faz sentido publicar tabela.
     </p>
 
     <section class="mt-8" aria-labelledby="audience-b2b">
-      <h2 id="audience-b2b" class="text-2xl font-bold leading-tight text-slate-900">
+      <h2
+        id="audience-b2b"
+        class="text-2xl leading-tight font-bold text-slate-900"
+      >
         Para empresas (B2B)
       </h2>
       <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
-        Contratos PJ, escopo definido, entregáveis mensuráveis. Ideal para times que
-        precisam de capacidade de QA pontual ou de um diagnóstico externo independente
-        antes de uma decisão de investimento em qualidade.
+        Contratos PJ, escopo definido, entregáveis mensuráveis. Ideal para times
+        que precisam de capacidade de QA pontual ou de um diagnóstico externo
+        independente antes de uma decisão de investimento em qualidade.
       </p>
       <div class="mt-4 grid gap-5 md:grid-cols-2">
         <ServiceCard
@@ -157,7 +173,9 @@ const faqJsonLd: JsonLdNode = {
           title={qaDiagnostic.title}
           description={qaDiagnostic.description}
           deliverables={qaDiagnostic.deliverables}
-          ctas={[{ label: qaDiagnostic.ctaLabel, subject: qaDiagnostic.ctaSubject }]}
+          ctas={[
+            { label: qaDiagnostic.ctaLabel, subject: qaDiagnostic.ctaSubject },
+          ]}
           mailtoBody={mailtoBody}
         />
         <ServiceCard
@@ -167,19 +185,28 @@ const faqJsonLd: JsonLdNode = {
           title={testAutomation.title}
           description={testAutomation.description}
           deliverables={testAutomation.deliverables}
-          ctas={[{ label: testAutomation.ctaLabel, subject: testAutomation.ctaSubject }]}
+          ctas={[
+            {
+              label: testAutomation.ctaLabel,
+              subject: testAutomation.ctaSubject,
+            },
+          ]}
           mailtoBody={mailtoBody}
         />
       </div>
     </section>
 
     <section class="mt-8" aria-labelledby="audience-clt">
-      <h2 id="audience-clt" class="text-2xl font-bold leading-tight text-slate-900">
+      <h2
+        id="audience-clt"
+        class="text-2xl leading-tight font-bold text-slate-900"
+      >
         Para times (CLT / alocação)
       </h2>
       <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
-        Contratação CLT, alocação dedicada ou mentoria recorrente. Ideal para empresas
-        construindo a primeira função de QA ou fortalecendo um time de testes já existente.
+        Contratação CLT, alocação dedicada ou mentoria recorrente. Ideal para
+        empresas construindo a primeira função de QA ou fortalecendo um time de
+        testes já existente.
       </p>
       <div class="mt-4 grid gap-5 md:grid-cols-2">
         <ServiceCard
@@ -189,14 +216,19 @@ const faqJsonLd: JsonLdNode = {
           title={embeddedQa.title}
           description={embeddedQa.description}
           deliverables={embeddedQa.deliverables}
-          ctas={[{ label: embeddedQa.ctaLabel, subject: embeddedQa.ctaSubject }]}
+          ctas={[
+            { label: embeddedQa.ctaLabel, subject: embeddedQa.ctaSubject },
+          ]}
           mailtoBody={mailtoBody}
         />
       </div>
     </section>
 
     <section class="mt-8" aria-labelledby="engagement-models">
-      <h2 id="engagement-models" class="text-2xl font-bold leading-tight text-slate-900">
+      <h2
+        id="engagement-models"
+        class="text-2xl leading-tight font-bold text-slate-900"
+      >
         Modelos de contratação
       </h2>
       <div class="mt-3 overflow-x-auto">
@@ -227,7 +259,10 @@ const faqJsonLd: JsonLdNode = {
     </section>
 
     <section class="mt-8" aria-labelledby="faq-heading">
-      <h2 id="faq-heading" class="text-2xl font-bold leading-tight text-slate-900">
+      <h2
+        id="faq-heading"
+        class="text-2xl leading-tight font-bold text-slate-900"
+      >
         Perguntas frequentes
       </h2>
       <dl class="mt-3 space-y-4">
@@ -235,7 +270,9 @@ const faqJsonLd: JsonLdNode = {
           faq.map((item) => (
             <div>
               <dt class="font-semibold text-slate-900">{item.question}</dt>
-              <dd class="mt-1 text-sm leading-relaxed text-slate-700">{item.answer}</dd>
+              <dd class="mt-1 text-sm leading-relaxed text-slate-700">
+                {item.answer}
+              </dd>
             </div>
           ))
         }

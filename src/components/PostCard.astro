@@ -4,8 +4,8 @@
  * Date: "DD de mês de AAAA" via deterministic `Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })`.
  * href ALWAYS via withBase() (AC-001.9).
  */
-import { withBase } from '../lib/withBase';
-import { formatPublishDate, toIsoDate } from '../lib/date';
+import { withBase } from "../lib/withBase";
+import { formatPublishDate, toIsoDate } from "../lib/date";
 
 interface Props {
   title: string;
@@ -16,7 +16,8 @@ interface Props {
   description?: string;
 }
 
-const { title, publishDate, href, slug, readingTimeMinutes, description } = Astro.props;
+const { title, publishDate, href, slug, readingTimeMinutes, description } =
+  Astro.props;
 const headingTestId = slug ? `post-title-${slug}` : undefined;
 const dateTestId = slug ? `post-date-${slug}` : undefined;
 ---
@@ -30,19 +31,25 @@ const dateTestId = slug ? `post-date-${slug}` : undefined;
       {formatPublishDate(publishDate)}
     </time>
     {
-      typeof readingTimeMinutes === 'number' ? (
-        <span data-testid="post-reading-time">{readingTimeMinutes} min de leitura</span>
+      typeof readingTimeMinutes === "number" ? (
+        <span data-testid="post-reading-time">
+          {readingTimeMinutes} min de leitura
+        </span>
       ) : null
     }
   </p>
-  <h3 class="text-lg font-bold leading-snug text-slate-900">
+  <h2 class="text-lg leading-snug font-bold text-slate-900">
     <a
       href={withBase(href)}
       data-testid={headingTestId}
-      class="inline-flex rounded-md underline-offset-4 hover:text-brand-700 hover:underline"
+      class="hover:text-brand-700 inline-flex rounded-md underline-offset-4 hover:underline"
     >
       {title}
     </a>
-  </h3>
-  {description ? <p class="text-sm leading-relaxed text-slate-700">{description}</p> : null}
+  </h2>
+  {
+    description ? (
+      <p class="text-sm leading-relaxed text-slate-700">{description}</p>
+    ) : null
+  }
 </article>

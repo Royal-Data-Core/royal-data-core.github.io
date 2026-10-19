@@ -4,7 +4,7 @@
  * Canals: mailto (entity-encoded) OR /contato fallback when D-03 is pending;
  * WhatsApp deep-link when the phone exists, honest pending note otherwise.
  */
-import { withBase } from '../lib/withBase';
+import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
   CONTACT_PLACEHOLDER_EMAIL,
@@ -12,30 +12,34 @@ import {
   HAS_CONTACT_EMAIL,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
-} from '../lib/contact';
+} from "../lib/contact";
 
 const encodedMailto =
-  CONTACT_EMAIL && buildMailtoHrefEncoded(CONTACT_EMAIL, 'Contato geral — Royal Data Core');
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
 const whatsappHref =
-  typeof import.meta.env.PUBLIC_CONTACT_PHONE === 'string'
+  typeof import.meta.env.PUBLIC_CONTACT_PHONE === "string"
     ? buildWhatsAppHref(
         import.meta.env.PUBLIC_CONTACT_PHONE,
-        'Olá! Gostaria de conversar com a Royal Data Core (contato enviado pelo site).',
+        "Olá! Gostaria de conversar com a Royal Data Core (contato enviado pelo site).",
       )
     : null;
 ---
 
 <section
   data-testid="final-cta"
-  class="rounded-lg border border-slate-200 bg-surface p-6"
+  class="bg-surface rounded-lg border border-slate-200 p-6"
   aria-labelledby="final-cta-heading"
 >
-  <h2 id="final-cta-heading" class="text-2xl font-bold leading-tight text-slate-900">
+  <h2
+    id="final-cta-heading"
+    class="text-2xl leading-tight font-bold text-slate-900"
+  >
     Seu produto merece mais que "testamos e funcionou"
   </h2>
   <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
-    Se você tem uma release crítica chegando, uma suíte de testes que ninguém confia,
-    ou um time sem estratégia de QA clara — vale uma conversa.
+    Se você tem uma release crítica chegando, uma suíte de testes que ninguém
+    confia, ou um time sem estratégia de QA clara — vale uma conversa.
   </p>
   <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
     {
@@ -44,16 +48,16 @@ const whatsappHref =
           data-testid="contact-cta-mail"
           href={encodedMailto.hrefEncoded}
           aria-label={encodedMailto.addressDecoded}
-          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md bg-brand-700 px-5 text-sm font-semibold text-white underline-offset-4 hover:bg-brand-900"
+          class="bg-brand-700 hover:bg-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-5 text-sm font-semibold text-white underline-offset-4"
         >
           Enviar email
         </a>
       ) : (
         <a
           data-testid="contact-cta-mail"
-          href={withBase('/contato')}
+          href={withBase("/contato")}
           title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 underline-offset-4 hover:border-brand-700 hover:text-brand-700"
+          class="hover:border-brand-700 hover:text-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 underline-offset-4"
         >
           Enviar email
         </a>
@@ -66,7 +70,7 @@ const whatsappHref =
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-brand-700 px-5 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+          class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-5 text-sm font-semibold underline-offset-4 hover:text-white"
         >
           WhatsApp
         </a>
@@ -76,13 +80,17 @@ const whatsappHref =
   {
     !HAS_CONTACT_EMAIL || whatsappHref === null ? (
       <p class="mt-2 text-xs text-slate-600">
-        Canal {whatsappHref === null ? 'de WhatsApp' : 'de email'} em definição
-        ({whatsappHref === null ? CONTACT_PLACEHOLDER_PHONE : CONTACT_PLACEHOLDER_EMAIL})
-        — decisão D-03 pendente.
+        Canal {whatsappHref === null ? "de WhatsApp" : "de email"} em definição
+        (
+        {whatsappHref === null
+          ? CONTACT_PLACEHOLDER_PHONE
+          : CONTACT_PLACEHOLDER_EMAIL}
+        ) — decisão D-03 pendente.
       </p>
     ) : null
   }
   <p class="mt-3 text-sm text-slate-700">
-    Sem formulário, sem CRM, sem sequência de emails automática. Você fala comigo.
+    Sem formulário, sem CRM, sem sequência de emails automática. Você fala
+    comigo.
   </p>
 </section>

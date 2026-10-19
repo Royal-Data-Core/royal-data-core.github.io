@@ -11,8 +11,8 @@
  * (AFA Kill Switch invariant).
  */
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
+import { ASTRO_ASSET_RE, R, SITE_BASE, SITE_URL } from "../base";
 
-const SITE = "https://royaldatacore.github.io";
 const HOME_TITLE = "Royal Data Core — Consultoria em Testes de Software";
 const SERVICES_TITLE = "Serviços · Royal Data Core";
 const H1_HERO = "Engenharia de qualidade para software crítico";
@@ -33,21 +33,27 @@ type ScriptAudit = {
 
 /** First post-card href on /blog (exactly one path segment after /blog/). */
 async function resolveFirstPostHref(page: Page): Promise<string> {
-  await page.goto("/blog");
-  const href = await page.evaluate<string | null>(() => {
+  await page.goto(R("/blog"));
+  const href = await page.evaluate<string | null>((base) => {
     const links = Array.from(
       document.querySelectorAll("[data-testid='post-card'] a"),
     );
     const post = links
       .map((a) => a.getAttribute("href") ?? "")
-      .find((h) => /^\/blog\/[^/]+$/.test(h));
+      .find((h) => new RegExp(`^${base}/blog/[^/]+$`).test(h));
     return post ?? null;
-  });
+  }, SITE_BASE);
   expect(
     href,
     "SPEC-002/AC-002.4: /blog deve expor >= 1 post-card linkado a /blog/<slug>",
   ).toBeTruthy();
-  return href as string;
+  // DOM hrefs carry the artifact base — return BASE-RELATIVE so callers can
+  // wrap uniformly with R() (mixing prefixed values into expandRoutes would
+  // double-prefix under a non-empty SITE_BASE).
+  const relative = (href as string).startsWith(SITE_BASE)
+    ? (href as string).slice(SITE_BASE.length)
+    : (href as string);
+  return relative;
 }
 
 function expandRoutes(
@@ -59,10 +65,9 @@ function expandRoutes(
   );
 }
 
-/** Normalized site path from the preview URL (trailing slash collapsed). */
-function normalizePath(pathname: string): string {
-  return pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
-}
+/** A11y/e2e no longer normalize the served path: canonical/og:url are compared
+ * against the raw served pathname (base + trailing included). Kept only for
+ * 404 route edge labels if needed in future — removed 2026-10-19 (unused). */
 
 async function parseAllJsonLd(page: Page): Promise<JsonLdBlock[]> {
   return page.evaluate<JsonLdBlock[]>(() => {
@@ -99,7 +104,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
     page,
   }) => {
     for (const route of HEAD_ROUTES) {
-      await page.goto(route);
+      await page.goto(R(route));
       const head = await page.evaluate(() => {
         const first = document.head.firstElementChild;
         const children = Array.from(document.head.children);
@@ -142,13 +147,13 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
   test("AC-001.2 — <title> template determinístico: home exata, /servicos exata, comprimento 20–60", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const homeTitle = await page.title();
     await expect
       .soft(homeTitle, "AC-001.2 — <title> da homepage deve ser exato")
       .toBe(HOME_TITLE);
 
-    await page.goto("/servicos");
+    await page.goto(R("/servicos"));
     const servicesTitle = await page.title();
     await expect
       .soft(servicesTitle, "AC-001.2 — <title> de /servicos deve ser exato")
@@ -184,13 +189,16 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
       firstPostHref,
     );
     for (const route of canonicalRoutes) {
-      const response = await page.goto(route);
+      const response = await page.goto(R(route));
       const hrefs = await page
         .locator("link[rel='canonical']")
         .getAttribute("href");
       const count = await page.locator("link[rel='canonical']").count();
-      const pathname = normalizePath(new URL(page.url()).pathname);
-      const expectedHref = `${SITE}${pathname}`;
+      // The deployed canonical = SITE_URL + the served path EXACTLY (build keeps
+      // the base prefix and the trailing slash on index routes) — so the served
+      // URL pathname is the source of truth; no trailing normalization.
+      const pathname = new URL(page.url()).pathname;
+      const expectedHref = `${SITE_URL}${pathname}`;
       await expect
         .soft(count, `${route}: AC-001.3 — exatamente 1 link[rel=canonical]`)
         .toBe(1);
@@ -214,7 +222,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
         .toBe(false);
     }
     // SPEC-006.3: a 404 NÃO emite canonical — o contrato de 1 canonical vale só para rotas indexáveis.
-    await page.goto("/listing-a-ghost-route-n");
+    await page.goto(R("/listing-a-ghost-route-n"));
     await expect
       .soft(
         await page.locator("link[rel='canonical']").count(),
@@ -228,8 +236,10 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
   }) => {
     const firstPostHref = await resolveFirstPostHref(page);
     for (const route of expandRoutes(OG_ROUTES, firstPostHref)) {
-      await page.goto(route);
-      const pathname = normalizePath(new URL(page.url()).pathname);
+      await page.goto(R(route));
+      // Served URL pathname IS the og:url reference (base + trailing slash
+      // preserved — matches the build's canonical assembly).
+      const pathname = new URL(page.url()).pathname;
       for (const prop of [
         "og:title",
         "og:description",
@@ -266,8 +276,8 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
         .getAttribute("content");
       await expect
         .soft(
-          ogUrl === `${SITE}${pathname}`,
-          `${route}: AC-001.4 — og:url deve ser ${SITE}${pathname} (recebido: ${ogUrl})`,
+          ogUrl === `${SITE_URL}${pathname}`,
+          `${route}: AC-001.4 — og:url deve ser ${SITE_URL}${pathname} (recebido: ${ogUrl})`,
         )
         .toBe(true);
       const ogType = await page
@@ -281,7 +291,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
         .toBe(true);
     }
     // SPEC-001 Gherkin: og:image aponta para arquivo existente em dist/ com dimensões 1200x630.
-    const ogImage = await page.request.get("/og-default.png");
+    const ogImage = await page.request.get(R("/og-default.png"));
     await expect
       .soft(
         ogImage.status(),
@@ -302,7 +312,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
   test("AC-001.5 — JSON-LD Organization/ProfessionalService (home): legalName, taxID, foundingDate, address; sem numberOfEmployees", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const blocks = await parseAllJsonLd(page);
     const parseFailures = blocks.filter(
       (block): block is { ok: false; error: string } => !block.ok,
@@ -369,7 +379,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
   test("AC-001.6 — JSON-LD WebSite com potentialAction SearchAction e target /busca?q={search_term_string} (home)", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const blocks = await parseAllJsonLd(page);
     const websites = blocks.filter(
       (block): block is { ok: true; data: Record<string, unknown> } =>
@@ -403,7 +413,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
     page,
   }) => {
     for (const route of HEAD_ROUTES) {
-      await page.goto(route);
+      await page.goto(R(route));
       const skip = page.locator("[data-testid='skip-link']");
       await expect
         .soft(await skip.count(), `${route}: AC-001.7 — skip-link presente`)
@@ -440,7 +450,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
     page,
   }) => {
     for (const route of HEAD_ROUTES) {
-      await page.goto(route);
+      await page.goto(R(route));
       const scripts = await auditScripts(page);
       const inlineNonLd = scripts.filter(
         (script) =>
@@ -463,7 +473,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
         .toEqual([]);
     }
     // SPEC-007: /busca é a única rota com ilha autorizada — script[src] permitido APENAS no <body>, mesmo origin /_astro/.
-    await page.goto("/busca");
+    await page.goto(R("/busca"));
     const buscaScripts = await auditScripts(page);
     await expect
       .soft(
@@ -477,7 +487,7 @@ test.describe("SPEC-001 — Base Layout, SEO Técnico e JSON-LD (estrutura)", ()
     await expect
       .soft(
         islandSrc.length > 0 &&
-          islandSrc.every((src) => (src ?? "").startsWith("/_astro/")),
+          islandSrc.every((src) => ASTRO_ASSET_RE.test(src ?? "")),
         `AC-001.8/SPEC-007 — /busca: script[src] deve ser mesmo origin /_astro/ (recebido: ${JSON.stringify(islandSrc)})`,
       )
       .toBe(true);
@@ -497,7 +507,7 @@ test.describe("SPEC-002 — Homepage / Landing (superfície S1)", () => {
   test("AC-002.1 — exatamente 1 h1 com texto exato; <= 12 headings; sem salto de nível; todo h2 após um h1", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const headings = await page.evaluate<HeadingNode[]>(() =>
       Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6")).map((el) => ({
         level: Number(el.tagName.charAt(1)),
@@ -552,7 +562,7 @@ test.describe("SPEC-002 — AC-002.2 (viewport 375x667 pinado por AC, SDD-CONTEX
   test("AC-002.2 — CTAs primários inteiros no viewport inicial 375x667 e área clicável >= 44x44 (contraste de texto delegado ao axe color-contrast em tests/a11y)", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const viewport = page.viewportSize();
     expect(
       viewport,
@@ -588,7 +598,7 @@ test.describe("SPEC-002 — Provas reutilizadas pelo Lighthouse (S1)", () => {
   test('AC-002.3 — badge de prova estático "build: passing"; zero <img src*=img.shields.io>; zero recurso de host de terceiro (home)', async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const badge = page.locator("[data-testid='proof-build-status']");
     await expect
       .soft(badge, "AC-002.3 — [data-testid='proof-build-status'] visível")
@@ -614,10 +624,7 @@ test.describe("SPEC-002 — Provas reutilizadas pelo Lighthouse (S1)", () => {
         if (name.startsWith("data:")) return false;
         try {
           const origin = new URL(name).origin;
-          return (
-            origin !== window.location.origin &&
-            origin !== "https://royaldatacore.github.io"
-          );
+          return origin !== window.location.origin && origin !== SITE_URL;
         } catch {
           return false;
         }
@@ -634,7 +641,7 @@ test.describe("SPEC-002 — Provas reutilizadas pelo Lighthouse (S1)", () => {
   test("AC-002.4 — [data-testid=recent-posts] com >= 1 post-card, ordenado por publishDate DESC, link de card em /blog/<slug>", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(R("/"));
     const recent = page.locator("[data-testid='recent-posts']");
     await expect
       .soft(recent, "AC-002.4 — seção de posts recentes visível")
@@ -646,13 +653,17 @@ test.describe("SPEC-002 — Provas reutilizadas pelo Lighthouse (S1)", () => {
         `AC-002.4 — >= 1 [data-testid='post-card'] (recebido: ${cardCount}, content publica 3)`,
       )
       .toBe(true);
-    const postLinks = await page.evaluate(() =>
-      Array.from(document.querySelectorAll("[data-testid='post-card'] a"))
-        .map((anchor) => anchor.getAttribute("href"))
-        .filter(
-          (href): href is string =>
-            href !== null && /^\/blog\/[^/]+$/.test(href),
-        ),
+    // POST_HREF_RE cannot cross the evaluate boundary (browser context) — the
+    // base fragment is passed as an argument and re-assembled in-page.
+    const postLinks = await page.evaluate(
+      (base) =>
+        Array.from(document.querySelectorAll("[data-testid='post-card'] a"))
+          .map((anchor) => anchor.getAttribute("href"))
+          .filter(
+            (href): href is string =>
+              href !== null && new RegExp(`^${base}/blog/[^/]+$`).test(href),
+          ),
+      SITE_BASE,
     );
     await expect
       .soft(
@@ -708,7 +719,7 @@ test.describe("SPEC-006 — 404 custom · SPEC-008 — CSP em runtime (RRR-04)",
   test("SPEC-006 — rota fantasma responde HTTP 404 e entrega conteúdo de recuperação com testids 404-*", async ({
     page,
   }) => {
-    const response = await page.goto("/listing-a-ghost-route-n");
+    const response = await page.goto(R("/listing-a-ghost-route-n"));
     const status = response?.status() ?? 0;
     const servesRealStatus = status === 404;
     test.info().annotations.push({
@@ -778,7 +789,7 @@ test.describe("SPEC-006 — 404 custom · SPEC-008 — CSP em runtime (RRR-04)",
       };
       page.on("console", consoleCollector);
       page.on("pageerror", pageErrorCollector);
-      await page.goto(route, { waitUntil: "networkidle" });
+      await page.goto(R(route), { waitUntil: "networkidle" });
       if (route === "/busca") {
         // Hidrata a ilha Pagefind para varredura sob a CSP real (script-src 'self' 'wasm-unsafe-eval').
         const searchInput = page.locator("[data-testid='search-input']");

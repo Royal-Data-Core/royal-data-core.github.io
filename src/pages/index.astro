@@ -3,83 +3,91 @@
  * SPEC-002 — Homepage (superfície S1). Estrutura PAS: hero → prova → serviços →
  * posts recentes → CTA final. Zero JS (AC-001.8); Copy = COPY-BRIEF §1 verbatim.
  */
-import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ServiceCard from '../components/ServiceCard.astro';
-import PostCard from '../components/PostCard.astro';
-import ProofBadges from '../components/ProofBadges.astro';
-import CtaSection from '../components/CtaSection.astro';
-import { withBase } from '../lib/withBase';
-import { readingMinutes } from '../lib/date';
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ServiceCard from "../components/ServiceCard.astro";
+import PostCard from "../components/PostCard.astro";
+import ProofBadges from "../components/ProofBadges.astro";
+import CtaSection from "../components/CtaSection.astro";
+import { withBase } from "../lib/withBase";
+import { readingMinutes } from "../lib/date";
 import {
   CONTACT_EMAIL,
   buildMailtoHrefEncoded,
   contactFallbackHref,
-} from '../lib/contact';
+} from "../lib/contact";
 
 const SITE_DESCRIPTION =
-  'Estratégia de testes, automação e QA para times que não podem entregar defeito em produção. Matão/SP, atendimento remoto em todo o Brasil.';
+  "Estratégia de testes, automação e QA para times que não podem entregar defeito em produção. Matão/SP, atendimento remoto em todo o Brasil.";
 
 const heroMailto =
-  CONTACT_EMAIL && buildMailtoHrefEncoded(CONTACT_EMAIL, 'Contato via site — Hero');
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato via site — Hero");
 
 // SPEC-002 AC-002.N1 — the build fails closed when there is nothing to show.
-const postEntries = await getCollection('blog');
+const postEntries = await getCollection("blog");
 const publishedPosts = postEntries
   .filter((post) => !post.data.draft)
-  .sort(
-    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
-  );
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 if (publishedPosts.length === 0) {
-  throw new Error('SPEC-002: homepage requer >= 1 post publicado; encontrei 0');
+  throw new Error("SPEC-002: homepage requer >= 1 post publicado; encontrei 0");
 }
 const recentPosts = publishedPosts.slice(0, 3);
 
 // COPY-BRIEF §1 — verbatim card data (services Collection awaits ratified ADR, §C3).
 const services = [
   {
-    slug: 'qa-diagnostic',
-    eyebrow: 'B2B · por projeto',
-    title: 'Diagnóstico de qualidade',
+    slug: "qa-diagnostic",
+    eyebrow: "B2B · por projeto",
+    title: "Diagnóstico de qualidade",
     description:
-      'Mapeamento da situação atual de testes do seu produto: cobertura real, gaps de risco, débito técnico de QA e o que automatizar primeiro para ter retorno mais rápido.',
+      "Mapeamento da situação atual de testes do seu produto: cobertura real, gaps de risco, débito técnico de QA e o que automatizar primeiro para ter retorno mais rápido.",
     deliverables: [
-      'relatório de gaps priorizado por risco',
-      'matriz de cobertura de testes',
-      'plano de automação em 3 horizontes',
-      'estimativa de esforço por iniciativa',
+      "relatório de gaps priorizado por risco",
+      "matriz de cobertura de testes",
+      "plano de automação em 3 horizontes",
+      "estimativa de esforço por iniciativa",
     ],
-    cta: { label: 'Solicitar diagnóstico', subject: 'Consultoria QA B2B — Diagnóstico de qualidade' },
+    cta: {
+      label: "Solicitar diagnóstico",
+      subject: "Consultoria QA B2B — Diagnóstico de qualidade",
+    },
   },
   {
-    slug: 'test-automation',
-    eyebrow: 'B2B · projeto ou retainer',
-    title: 'Automação que sobrevive ao tempo',
+    slug: "test-automation",
+    eyebrow: "B2B · projeto ou retainer",
+    title: "Automação que sobrevive ao tempo",
     description:
-      'Implementação de suítes de teste automatizadas que não viram fonte de flakes. Pirâmide de testes aplicada de verdade: unitários rápidos, integração confiável, E2E cirúrgico — cada camada no lugar certo.',
+      "Implementação de suítes de teste automatizadas que não viram fonte de flakes. Pirâmide de testes aplicada de verdade: unitários rápidos, integração confiável, E2E cirúrgico — cada camada no lugar certo.",
     deliverables: [
-      'suíte automatizada em CI',
-      'configuração de pipeline com gates de qualidade',
-      'seleção e instrumentação de ferramentas',
-      'documentação de manutenção',
-      'transferência de conhecimento para o time',
+      "suíte automatizada em CI",
+      "configuração de pipeline com gates de qualidade",
+      "seleção e instrumentação de ferramentas",
+      "documentação de manutenção",
+      "transferência de conhecimento para o time",
     ],
-    cta: { label: 'Discutir automação', subject: 'Consultoria QA B2B — Automação de testes' },
+    cta: {
+      label: "Discutir automação",
+      subject: "Consultoria QA B2B — Automação de testes",
+    },
   },
   {
-    slug: 'embedded-qa',
-    eyebrow: 'CLT / alocação · mentoria',
-    title: 'QA dentro do seu time',
+    slug: "embedded-qa",
+    eyebrow: "CLT / alocação · mentoria",
+    title: "QA dentro do seu time",
     description:
-      'Atuação como engenheiro de testes dedicado, ou mentoria para formar capacidade de QA dentro do time que você já tem. Cultura de qualidade não se terceiriza para sempre — se constrói.',
+      "Atuação como engenheiro de testes dedicado, ou mentoria para formar capacidade de QA dentro do time que você já tem. Cultura de qualidade não se terceiriza para sempre — se constrói.",
     deliverables: [
-      'atuação embarcada no squad',
-      'revisão de estratégia de testes',
-      'mentoria individual e em grupo',
-      'critérios de aceite e definição de pronto',
-      'acompanhamento de métricas de qualidade',
+      "atuação embarcada no squad",
+      "revisão de estratégia de testes",
+      "mentoria individual e em grupo",
+      "critérios de aceite e definição de pronto",
+      "acompanhamento de métricas de qualidade",
     ],
-    cta: { label: 'Conversar sobre alocação', subject: 'Oportunidade CLT QA — via site' },
+    cta: {
+      label: "Conversar sobre alocação",
+      subject: "Oportunidade CLT QA — via site",
+    },
   },
 ] as const;
 ---
@@ -89,10 +97,10 @@ const services = [
   description={SITE_DESCRIPTION}
   fullTitle
 >
-  <section class="mx-auto max-w-5xl px-4 pb-10 pt-10 sm:pt-14">
+  <section class="mx-auto max-w-5xl px-4 pt-10 pb-10 sm:pt-14">
     <h1
       data-testid="hero-headline"
-      class="max-w-3xl text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl"
+      class="max-w-3xl text-3xl leading-tight font-bold tracking-tight text-slate-900 sm:text-4xl"
     >
       Engenharia de qualidade para software crítico
     </h1>
@@ -100,15 +108,15 @@ const services = [
       data-testid="hero-subheadline"
       class="mt-4 max-w-2xl text-base leading-relaxed text-slate-700"
     >
-      Consultoria especializada em testes de software para times que não podem entregar
-      defeito em produção. Estratégia de testes, automação e pipelines de QA — do
-      diagnóstico à operação.
+      Consultoria especializada em testes de software para times que não podem
+      entregar defeito em produção. Estratégia de testes, automação e pipelines
+      de QA — do diagnóstico à operação.
     </p>
     <div class="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
       <a
         data-testid="cta-primary-services"
-        href={withBase('/servicos')}
-        class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-brand-700 px-5 py-3 text-sm font-semibold text-white underline-offset-4 hover:bg-brand-900"
+        href={withBase("/servicos")}
+        class="bg-brand-700 hover:bg-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-5 py-3 text-sm font-semibold text-white underline-offset-4"
       >
         Ver serviços
       </a>
@@ -118,7 +126,7 @@ const services = [
             data-testid="cta-primary-contact"
             href={heroMailto.hrefEncoded}
             aria-label={heroMailto.addressDecoded}
-            class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border border-brand-700 px-5 py-3 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border px-5 py-3 text-sm font-semibold underline-offset-4 hover:text-white"
           >
             Falar comigo
           </a>
@@ -127,7 +135,7 @@ const services = [
             data-testid="cta-primary-contact"
             href={contactFallbackHref()}
             title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-            class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border border-brand-700 px-5 py-3 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border px-5 py-3 text-sm font-semibold underline-offset-4 hover:text-white"
           >
             Falar comigo
           </a>
@@ -135,19 +143,27 @@ const services = [
       }
     </div>
     <p class="mt-3 text-xs text-slate-600">
-      Resposta em até 1 dia útil. Sem formulário, sem cadastro, sem rastreamento.
+      Resposta em até 1 dia útil. Sem formulário, sem cadastro, sem
+      rastreamento.
     </p>
   </section>
 
-  <section class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10" aria-labelledby="proof-heading">
-    <h2 id="proof-heading" class="text-2xl font-bold leading-tight text-slate-900">
+  <section
+    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    aria-labelledby="proof-heading"
+  >
+    <h2
+      id="proof-heading"
+      class="text-2xl leading-tight font-bold text-slate-900"
+    >
       Este site é o meu próprio caso de teste
     </h2>
     <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
-      Toda página que você visita aqui passou pelos mesmos gates que eu aplico em
-      projetos de cliente: Lighthouse ≥ 95 em mobile, acessibilidade WCAG 2.1 AA nota
-      100, zero JavaScript desnecessário, CSP estrita, pipeline com testes
-      automatizados antes de cada deploy. Os relatórios são públicos. Pode auditar.
+      Toda página que você visita aqui passou pelos mesmos gates que eu aplico
+      em projetos de cliente: Lighthouse ≥ 95 em mobile, acessibilidade WCAG 2.1
+      AA nota 100, zero JavaScript desnecessário, CSP estrita, pipeline com
+      testes automatizados antes de cada deploy. Os relatórios são públicos.
+      Pode auditar.
     </p>
     <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
       <ProofBadges />
@@ -155,15 +171,21 @@ const services = [
         href="https://github.com/royaldatacore"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-3 text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-3 text-sm font-semibold underline underline-offset-4"
       >
         Ver pipeline no GitHub
       </a>
     </div>
   </section>
 
-  <section class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10" aria-labelledby="services-heading">
-    <h2 id="services-heading" class="text-2xl font-bold leading-tight text-slate-900">
+  <section
+    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    aria-labelledby="services-heading"
+  >
+    <h2
+      id="services-heading"
+      class="text-2xl leading-tight font-bold text-slate-900"
+    >
       Como posso ajudar
     </h2>
     <div data-testid="services-grid" class="mt-5 grid gap-5 md:grid-cols-3">
@@ -182,16 +204,22 @@ const services = [
     </div>
     <p class="mt-5">
       <a
-        href={withBase('/servicos')}
-        class="inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+        href={withBase("/servicos")}
+        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
       >
         Ver todos os serviços e modelos de contratação
       </a>
     </p>
   </section>
 
-  <section class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10" aria-labelledby="blog-heading">
-    <h2 id="blog-heading" class="text-2xl font-bold leading-tight text-slate-900">
+  <section
+    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    aria-labelledby="blog-heading"
+  >
+    <h2
+      id="blog-heading"
+      class="text-2xl leading-tight font-bold text-slate-900"
+    >
       Do caderno de engenharia
     </h2>
     <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
@@ -213,21 +241,22 @@ const services = [
         </div>
       ) : (
         <p class="mt-5 text-sm text-slate-700">
-          Ainda publicando os primeiros artigos. Volte em breve — ou assine o RSS.
+          Ainda publicando os primeiros artigos. Volte em breve — ou assine o
+          RSS.
         </p>
       )
     }
     <p class="mt-5">
       <a
-        href={withBase('/blog')}
-        class="inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
+        href={withBase("/blog")}
+        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
       >
         Ver todos os artigos
       </a>
     </p>
   </section>
 
-  <section class="mx-auto max-w-5xl px-4 pb-12 pt-4">
+  <section class="mx-auto max-w-5xl px-4 pt-4 pb-12">
     <CtaSection />
   </section>
 </BaseLayout>

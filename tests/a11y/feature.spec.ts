@@ -14,6 +14,7 @@
  */
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { R, SITE_BASE } from "../base";
 
 const CRITICAL_WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 const SKIP_TEXT = "Pular para o conteúdo principal";
@@ -33,21 +34,26 @@ type Violation = Awaited<
 
 /** Primeiro link de post da listagem /blog — derivado do DOM, não hard-coded. */
 async function resolveFirstPostHref(page: Page): Promise<string> {
-  await page.goto("/blog");
-  const href = await page.evaluate<string | null>(() => {
+  await page.goto(R("/blog"));
+  const href = await page.evaluate<string | null>((base) => {
     const links = Array.from(
       document.querySelectorAll("[data-testid='post-card'] a"),
     );
     const post = links
       .map((a) => a.getAttribute("href") ?? "")
-      .find((h) => /^\/blog\/[^/]+$/.test(h));
+      .find((h) => new RegExp(`^${base}/blog/[^/]+$`).test(h));
     return post ?? null;
-  });
+  }, SITE_BASE);
   expect(
     href,
     "A11Y: /blog deve expor >= 1 post-card linkado a /blog/<slug>",
   ).toBeTruthy();
-  return href as string;
+  // DOM hrefs carry the artifact base — return BASE-RELATIVE so callers wrap
+  // uniformly with R() (avoids double prefix in mixed route arrays).
+  const relative = (href as string).startsWith(SITE_BASE)
+    ? (href as string).slice(SITE_BASE.length)
+    : (href as string);
+  return relative;
 }
 
 /**
@@ -91,7 +97,7 @@ async function scanAndAssert(page: Page, route: string): Promise<void> {
 test.describe("A11y — WCAG 2.1 AA zero violações críticas por rota (axe-core)", () => {
   for (const route of STATIC_ROUTES) {
     test(`axe scan — ${route}`, async ({ page }) => {
-      await page.goto(route);
+      await page.goto(R(route));
       await scanAndAssert(page, route);
     });
   }
@@ -100,7 +106,7 @@ test.describe("A11y — WCAG 2.1 AA zero violações críticas por rota (axe-cor
     page,
   }) => {
     const postHref = await resolveFirstPostHref(page);
-    await page.goto(postHref);
+    await page.goto(R(postHref));
     await scanAndAssert(page, postHref);
   });
 });
@@ -112,7 +118,7 @@ test.describe("A11y — SPEC-001/AC-001.7 skip-link é o primeiro elemento focá
     const postHref = await resolveFirstPostHref(page);
     const routes = [...STATIC_ROUTES, postHref];
     for (const route of routes) {
-      await page.goto(route);
+      await page.goto(R(route));
       if (route === "/busca") {
         // SPEC-007/AC-007.5 sobrepõe a premissa de foco inicial nesta rota: o
         // input ganha foco automaticamente (autofocus nativo verificado em

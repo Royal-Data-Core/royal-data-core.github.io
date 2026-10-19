@@ -5,12 +5,12 @@
  * CTA: entity-encoded mailto (SPEC-005 AC-005.3) when the email channel exists;
  * otherwise routes to /contato, where the pending state (D-03) is explained.
  */
-import { withBase } from '../lib/withBase';
+import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
   HAS_CONTACT_EMAIL,
   buildMailtoHrefEncoded,
-} from '../lib/contact';
+} from "../lib/contact";
 
 interface ServiceCta {
   /** Visible label (COPY-BRIEF verbatim, PT-BR). */
@@ -29,13 +29,21 @@ interface Props {
   deliverables?: ReadonlyArray<string>;
   ctas: ReadonlyArray<ServiceCta>;
   /** SPEC-003 AC-003.2 — textual audience marker (non-color signal). */
-  audience?: 'b2b' | 'clt';
+  audience?: "b2b" | "clt";
   /** Optional pre-filled mailto body (AC-005.2: razão social + origin URL). */
   mailtoBody?: string;
 }
 
-const { slug, title, description, eyebrow, deliverables, ctas, audience, mailtoBody } =
-  Astro.props;
+const {
+  slug,
+  title,
+  description,
+  eyebrow,
+  deliverables,
+  ctas,
+  audience,
+  mailtoBody,
+} = Astro.props;
 
 // Fail closed on missing labels (§C9 + SPEC-001): no undefined reaches the template.
 ctas.forEach((cta, index) => {
@@ -47,7 +55,7 @@ ctas.forEach((cta, index) => {
 });
 
 const mailtoCta = CONTACT_EMAIL
-  ? ctas.find((cta) => typeof cta.subject === 'string')
+  ? ctas.find((cta) => typeof cta.subject === "string")
   : undefined;
 
 const encodedMailto =
@@ -62,13 +70,17 @@ const encodedMailto =
 
 <article
   data-testid={`service-card-${slug}`}
-  class="flex h-full flex-col gap-3 rounded-lg border border-slate-200 bg-surface p-5"
-  {...(audience ? { 'data-audience': audience } : {})}
+  class="bg-surface flex h-full flex-col gap-3 rounded-lg border border-slate-200 p-5"
+  {...audience ? { "data-audience": audience } : {}}
 >
-  {eyebrow ? (
-    <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">{eyebrow}</p>
-  ) : null}
-  <h3 class="text-lg font-bold leading-snug text-slate-900">{title}</h3>
+  {
+    eyebrow ? (
+      <p class="text-xs font-semibold tracking-wide text-slate-600 uppercase">
+        {eyebrow}
+      </p>
+    ) : null
+  }
+  <h3 class="text-lg leading-snug font-bold text-slate-900">{title}</h3>
   <p class="text-sm leading-relaxed text-slate-700">{description}</p>
   {
     deliverables && deliverables.length > 0 ? (
@@ -89,25 +101,28 @@ const encodedMailto =
           <a
             data-testid={`service-cta-${slug}`}
             href={withBase(cta.href)}
-            class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-brand-700 px-4 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-4 text-sm font-semibold underline-offset-4 hover:text-white"
           >
             {cta.label}
           </a>
-        ) : HAS_CONTACT_EMAIL && CONTACT_EMAIL && encodedMailto && cta.subject ? (
+        ) : HAS_CONTACT_EMAIL &&
+          CONTACT_EMAIL &&
+          encodedMailto &&
+          cta.subject ? (
           <a
             data-testid={`service-cta-${slug}`}
             href={encodedMailto.hrefEncoded}
             aria-label={encodedMailto.addressDecoded}
-            class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-brand-700 px-4 text-sm font-semibold text-brand-700 underline-offset-4 hover:bg-brand-700 hover:text-white"
+            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-4 text-sm font-semibold underline-offset-4 hover:text-white"
           >
             {cta.label}
           </a>
         ) : (
           <a
             data-testid={`service-cta-${slug}`}
-            href={withBase('/contato')}
+            href={withBase("/contato")}
             title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-            class="inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 underline-offset-4 hover:border-brand-700 hover:text-brand-700"
+            class="hover:border-brand-700 hover:text-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 underline-offset-4"
           >
             {cta.label}
           </a>

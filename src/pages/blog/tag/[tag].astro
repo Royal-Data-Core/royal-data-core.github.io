@@ -3,24 +3,28 @@
  * SPEC-004 — /blog/tag/[tag]: static tag listing; links from post-tags resolve
  * to real files in dist (AC-004.4) and none index lowercase tags only.
  */
-import { getCollection } from 'astro:content';
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import PostCard from '../../../components/PostCard.astro';
-import { withBase } from '../../../lib/withBase';
-import { readingMinutes } from '../../../lib/date';
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PostCard from "../../../components/PostCard.astro";
+import { withBase } from "../../../lib/withBase";
+import { readingMinutes } from "../../../lib/date";
 
-export async function getStaticPaths(): Promise<Array<{ params: { tag: string } }>> {
-  const postEntries = await getCollection('blog');
+export async function getStaticPaths(): Promise<
+  Array<{ params: { tag: string } }>
+> {
+  const postEntries = await getCollection("blog");
   const published = postEntries.filter((post) => !post.data.draft);
   const allTags = new Set<string>();
-  published.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag)));
+  published.forEach((post) =>
+    post.data.tags.forEach((tag) => allTags.add(tag)),
+  );
   return Array.from(allTags).map((tag) => ({
     params: { tag },
   }));
 }
 
 const { tag } = Astro.params;
-const postEntries = await getCollection('blog');
+const postEntries = await getCollection("blog");
 const posts = postEntries
   .filter((post) => !post.data.draft && post.data.tags.includes(tag as string))
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
@@ -32,20 +36,28 @@ const posts = postEntries
 >
   <div class="mx-auto max-w-5xl px-4 py-10">
     <nav aria-label="Trilha de navegação" class="text-sm">
-      <a href={withBase('/blog')} class="text-brand-700 underline underline-offset-4 hover:text-brand-900">
+      <a
+        href={withBase("/blog")}
+        class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
+      >
         Todos os artigos
       </a>
       <span aria-hidden="true"> → </span>
       <span class="text-slate-700">tag: {tag}</span>
     </nav>
 
-    <h1 class="mt-4 text-3xl font-bold leading-tight tracking-tight text-slate-900">
+    <h1
+      class="mt-4 text-3xl leading-tight font-bold tracking-tight text-slate-900"
+    >
       Artigos com a tag "{tag}"
     </h1>
 
     {
       posts.length > 0 ? (
-        <div data-testid="post-list" class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          data-testid="post-list"
+          class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {posts.map((post) => (
             <PostCard
               title={post.data.title}
@@ -58,7 +70,9 @@ const posts = postEntries
           ))}
         </div>
       ) : (
-        <p class="mt-6 text-sm text-slate-700">Nenhum artigo publicado com esta tag ainda.</p>
+        <p class="mt-6 text-sm text-slate-700">
+          Nenhum artigo publicado com esta tag ainda.
+        </p>
       )
     }
   </div>
