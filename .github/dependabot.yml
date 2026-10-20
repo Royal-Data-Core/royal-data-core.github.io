@@ -1,9 +1,12 @@
 # RFC-001 §2.6(2) — supply-chain: dependabot para npm E github-actions
 # ADR-010 D15: a fonte precisa gerar apenas estados peer-válidos — um PR
 # inválido é recusado pelo guard (npm ci ERESOLVE) e vira ruído semanal
-# permanente. Typescript held: @astrojs/check@0.9.11 declara peer
-# typescript ^5.0.0||^6.0.0 (evidência de registro 2026-10-20); TS7 exige
-# ADR próprio antes da bump (analogia §C10).
+# permanente. Política estrutural: majors npm held (dois datapoints no
+# mesmo ciclo 2026-10-20 — typescript 7 vs peer ^5||^6 do @astrojs/check
+# 0.9.11; eslint 10 vs peer ^3..^9 do eslint-plugin-jsx-a11y@6.10.2 —
+# obrigam locks legacy-peer-deps). Majors entram por upgrade path manual
+# (ADR + bateria completa) quando o ecossistema ratificar os peers;
+# minors/patches continuam voando no ciclo semanal.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -30,14 +33,13 @@ updates:
         patterns:
           ["eslint*", "prettier*", "@typescript-eslint/*", "markdownlint*"]
     ignore:
-      # CONSTITUTION §C10: major de Astro pode alterar budgets; exige ADR antes
-      - dependency-name: "astro"
-        update-types: ["version-update:semver-major"]
-      # ADR-010 D15 — typescript held: peer ^5||^6 do @astrojs/check (0.9.11
-      # é o latest) exclui 7.x; minor/patch dentro de ^5.7.0 continuam voando.
-      # Reverter ambos os pontos (group pattern + ignore) após @astrojs/check
-      # ratificar peer TS7 — ADR + bateria completa antes.
-      - dependency-name: "typescript"
+      # ADR-010 D15 — majors npm held: cada major chega antes de o
+      # ecossistema de plugins ratificar o peer correspondente (evidências
+      # 2026-10-20 no comentário do topo). Reversão por caso: quando o
+      # plugin relevante ratificar o peer da major, aplicar manualmente
+      # via ADR próprio + bateria completa. Minors/patches NÃO são
+      # afetados — CVE patches seguem no ciclo semanal.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
