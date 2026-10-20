@@ -4,11 +4,10 @@
 
 **Engenharia de qualidade para software crítico** · Consultoria em testes
 
-[![CI](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/ci.yml)
-[![Deploy](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml/badge.svg)](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml)
+[![Pipeline main · battery + deploy + smoke](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml)
 ![Lighthouse Perf](https://img.shields.io/badge/Lighthouse_Perf-0.99→1.0-2ea44f)
 ![Lighthouse A11y](https://img.shields.io/badge/Lighthouse_A11y-100-2ea44f)
-![JS inicial](https://img.shields.io/badge/JS_inicial-2.09KB-informational)
+![JS inicial](https://img.shields.io/badge/JS_inicial-2.12KB-informational)
 ![Auditoria do artefato](https://img.shields.io/badge/auditoria_arte-0_violacoes-success)
 ![Custo mensal](https://img.shields.io/badge/custo-R%240.00-success)
 
@@ -135,6 +134,13 @@ que a bateria consegue validar — majors npm **held** (upgrade path manual,
 ADR-gated: o ecossistema ratifica peers depois do major; minors/patches voam
 no ciclo semanal segunda 06:00 BRT). Primeiro PR de dependência GREEN foi
 mergeado nativamente (#18, bateria 9/9).
+
+**Badge público:** um só, apontando para `deploy.yml?branch=main` — status real
+da main a cada push (battery + publish + smoke num run único, sem confiar em
+verde anterior). `ci.yml` não tem badge: seus runs diretos são de PR/develop,
+e o estado da main pelo badge de PR seria ruído permanente (runs de PRs
+fechados). A bateria da main roda como filha `workflow_call` do Deploy, que não
+gera run próprio para badge — por isso o badge pai é o único representante fiel.
 
 ## 📦 O que é público aqui — e o que NÃO é
 
