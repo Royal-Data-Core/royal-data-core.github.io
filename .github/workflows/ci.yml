@@ -315,11 +315,25 @@ jobs:
           key: lhci-${{ github.ref_name }}
           restore-keys: lhci-
 
-      # RFC-001 FM-08: retry 1 tolerates throttling flakiness on shared runners
-      - name: Lighthouse CI (mobile, hard budgets)
+      # RFC-001 FM-08: retry 1 tolerates throttling flakiness on shared runners.
+      # ADR-008 D7 — base-mounted views: production artifact is root-layout with
+      # base-prefixed routes; LHCI's built-in file server maps URL=path, so we
+      # audit a MIRRORED view (dist/* under site-io/) that matches the real
+      # Pages layout. 404 page is excluded from budgets (intentionally
+      # non-indexable, no canonical — SPEC-006 AC-006.3). This recipe is the
+      # only one with a green remote execution (2026-10-19, 5m38) — the
+      # direct-dist view never ran remotely (ADR-010 D12: zero-output hang);
+      # stdbuf -oL keeps progress visible even when the job is killed late.
+      - name: Mirror artifact under site-io/ (base-mounted LHCI view)
         run: |
-          npx @lhci/cli@0.15.x autorun --config=lighthouserc.json \
-            || npx @lhci/cli@0.15.x autorun --config=lighthouserc.json
+          mkdir -p .lhciview/site-io
+          cp -r dist/* .lhciview/site-io/
+          rm -f .lhciview/404.html .lhciview/site-io/404.html
+
+      - name: LHCI (retry 1 — RFC-001 FM-08)
+        run: |
+          stdbuf -oL npx @lhci/cli@0.15.x autorun --config=lighthouserc.prod.json \
+            || stdbuf -oL npx @lhci/cli@0.14.x autorun --config=lighthouserc.prod.json
 
       - name: Upload LHCI report
         if: always()
