@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /_pagefind/
-
-Sitemap: https://royaldatacore.github.io/sitemap-index.xml
