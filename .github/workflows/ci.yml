@@ -196,6 +196,10 @@ jobs:
           path: dist/
           retention-days: 3
           if-no-files-found: error
+          # v7 (v4+) drops dotfiles by default — .nojekyll is a contract for
+          # GitHub Pages (no Jekyll processing); deployment sanity raises on
+          # its absence (RFC-001 FM-06), so the artifact must carry it.
+          include-hidden-files: true
 
   # ────────────────────────────────────────────────────────────────
   # GATE 3 — Runtime suites in PARALLEL (ADR-010): unit / e2e / a11y / links.
