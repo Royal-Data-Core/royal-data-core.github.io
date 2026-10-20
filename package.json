@@ -67,6 +67,7 @@
     "prettier": "^3.4.0",
     "prettier-plugin-astro": "^0.14.0",
     "prettier-plugin-tailwindcss": "^0.6.0",
+    "proxy-agent": "8.0.2",
     "sharp": "^0.35.5",
     "typescript": "^5.7.0",
     "vitest": "^5.0.5"

@@ -164,10 +164,13 @@ jobs:
       - name: SPEC-008 · bundle + external-resource audit
         run: node scripts/audit-bundle.mjs --dist dist
 
-      - name: CONSTITUTION §C5 · repo size gate (500 MB)
+      - name: CONSTITUTION §C5 · repo content gate (500 MB)
         run: |
-          SIZE_MB=$(du -sm . | cut -f1)
-          echo "repo size: ${SIZE_MB} MB"
+          # §C5 counts the REPO, not the runner workspace: node_modules and
+          # .git are platform artifacts (~680 MB) that would falsely trip the
+          # threshold after the npm@10..12 lock alignment (ADR-010 D11).
+          SIZE_MB=$(du -sm --exclude=node_modules --exclude=.git . | cut -f1)
+          echo "repo content size: ${SIZE_MB} MB (node_modules/.git excluded by definition)"
           [ "$SIZE_MB" -le 500 ] || { echo "::error::§C5 — repo ${SIZE_MB} MB > 500 MB"; exit 1; }
           DIST_MB=$(du -sm dist | cut -f1)
           echo "dist size: ${DIST_MB} MB"
