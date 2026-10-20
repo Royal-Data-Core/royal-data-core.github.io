@@ -118,6 +118,19 @@ jobs:
             sleep 10
           done
 
+      # IndexNow — notify participating engines (Bing, Yandex, Seznam, Naver;
+      # DuckDuckGo reads Bing) that the just-published artifact's URLs exist.
+      # Protocol: key file hosted WITHIN the host + keyLocation declared per
+      # submission (root hosting impossible under the /site-io/ project path).
+      # The key file is public by protocol (ownership proof — not a secret).
+      # NON-BLOCKING: continue-on-error — a notification hiccup never fails a
+      # green publish. Runs only after the full smoke above succeeds.
+      - name: Notify IndexNow (post-publish, non-blocking)
+        continue-on-error: true
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: npm run notify:indexnow
+
       # §C6 — Journal: reminds the human to register the entry (does not commit
       # automatically: GITHUB_TOKEN commits do not trigger Pages rebuilds)
       - name: Journal reminder (§C6)

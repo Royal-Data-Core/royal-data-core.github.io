@@ -17,6 +17,7 @@
     "build:pagefind": "pagefind --site dist --output-subdir _pagefind",
     "verify:pagefind": "node -e \"const fs=require('node:fs');for(const p of ['dist/_pagefind/pagefind.js','dist/_pagefind/pagefind-entry.json']){if(!fs.existsSync(p)){console.error('[SPEC-007] indice Pagefind nao gerado: '+p);process.exit(1)}}const wasm=fs.readdirSync('dist/_pagefind').some(n=>n.startsWith('wasm.')&&n.endsWith('.pagefind'))||fs.existsSync('dist/_pagefind/pagefind.wasm');if(!wasm){console.error('[SPEC-007] wasm do Pagefind ausente em dist/_pagefind/');process.exit(1)}console.log('✓ pagefind index ok')\"",
     "preview": "astro preview",
+    "notify:indexnow": "node scripts/notify-indexnow.mjs",
     "check": "astro check && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

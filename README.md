@@ -79,17 +79,18 @@ O CI injeta os mesmos valores shell-side (origin/base computados do
 
 ### §Scripts — automação versionada (CONSTITUTION §C11c)
 
-| Script                      | Função                                                                                   |
-| --------------------------- | ---------------------------------------------------------------------------------------- |
-| `audit-bundle.mjs`          | Auditoria determinística do artefato: budgets, CSP, externos, SRI, `data-testid`         |
-| `verify-no-postinstall.mjs` | Invariante ADR-001 D4 — nenhum lifecycle script (torna `npm ci --ignore-scripts` seguro) |
-| `test-links.mjs`            | Gate hermético de integridade de links (espelho `/site-io/`, zero rede)                  |
-| `lint-copy.mjs`             | §C9 — vocabulário de marketing não verificável (gate bloqueante no guard CI)             |
-| `lint-topology.mjs`         | ADR-004 — `withBase()` obrigatório em URL interna                                        |
-| `generate-og.mjs`           | Regenera `public/og-default.png` (sharp local, sem rede) — run-once                      |
-| `new-post.mjs`              | Scaffolding de post (frontmatter Zod + slug)                                             |
-| `commit-msg-check.mjs`      | Hook `commit-msg` — Conventional Commits (EN) sem dependências externas                  |
-| `pin-actions.sh`            | RFC-001 §2.7 — pin de Actions por SHA-40 via API oficial; `--check` = gate               |
+| Script                      | Função                                                                                               |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `audit-bundle.mjs`          | Auditoria determinística do artefato: budgets, CSP, externos, SRI, `data-testid`                     |
+| `verify-no-postinstall.mjs` | Invariante ADR-001 D4 — nenhum lifecycle script (torna `npm ci --ignore-scripts` seguro)             |
+| `test-links.mjs`            | Gate hermético de integridade de links (espelho `/site-io/`, zero rede)                              |
+| `lint-copy.mjs`             | §C9 — vocabulário de marketing não verificável (gate bloqueante no guard CI)                         |
+| `lint-topology.mjs`         | ADR-004 — `withBase()` obrigatório em URL interna                                                    |
+| `generate-og.mjs`           | Regenera `public/og-default.png` (sharp local, sem rede) — run-once                                  |
+| `new-post.mjs`              | Scaffolding de post (frontmatter Zod + slug)                                                         |
+| `notify-indexnow.mjs`       | IndexNow — notifica Bing/Yandex/Seznam/Naver a cada publish (key file + `keyLocation`, non-blocking) |
+| `commit-msg-check.mjs`      | Hook `commit-msg` — Conventional Commits (EN) sem dependências externas                              |
+| `pin-actions.sh`            | RFC-001 §2.7 — pin de Actions por SHA-40 via API oficial; `--check` = gate                           |
 
 ### Bateria de testes
 
