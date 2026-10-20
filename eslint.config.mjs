@@ -14,9 +14,17 @@ import globals from "globals";
 
 /**
  * Generated artifacts and caches are never hand-written sources; excluding
- * them keeps the guard job inside its 6-minute budget (§C5).
+ * them keeps the guard job inside its 6-minute budget (§C5). `.ai/**` and
+ * `.opencode/**` are local-only internal corpus (ADR-009 D1): ignoring them
+ * makes `npm run lint` deterministic across operator/CI environments — the
+ * gate evaluates the identical file set whether or not the local corpus is
+ * present on disk.
  */
 const ignoredPaths = [
+  ".ai/**",
+  ".opencode/**",
+  "specs/**",
+  "specs-*/**",
   "dist/**",
   ".astro/**",
   "node_modules/**",

@@ -1,24 +1,82 @@
-# ── Internal SDD control plane — LOCAL ONLY, never published (ADR-008 D7) ──
+# ══════════════════════════════════════════════════════════════════
+# ROYAL DATA CORE / site-io — single source of truth for what is
+# NEVER published. Policy (ADR-009 D1 / RFC-001): the repo surface is
+# PRODUCT ONLY — site, pipeline tooling, public operational docs.
+# Any artifact below is either internal work material or waste.
+# gitleaks (full history) is the backstop for everything textual.
+# ══════════════════════════════════════════════════════════════════
+
+# ── 1. Internal SDD control plane — LOCAL ONLY, never published ─────
+# Constitution, RFCs, ADRs, Gherkin specs, runbooks, copy brief,
+# decision reports and the local agent-host plan de controle.
 .ai/
 .opencode/
+/specs/
+/specs-*/
 
-# Project-specific ignores
-*.env
-/build/
-/node_modules/
+# ── 2. Secrets and credentials (contract = .env.example ONLY) ───────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.jks
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.gitleaks-report.json
+.gitleaks-report.*
 
-# Build/test artifacts + caches (never committed)
+# ── 3. Node / package manager debris ────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# ── 4. SSG build + test artifacts (regenerated per run) ─────────────
 dist/
+out/
+build/
+.astro/
 coverage/
 playwright-report/
+blob-report/
 test-results/
 .lighthouseci/
 .lhciview/
 .linkinator/
 .linkinator-mirror/
 .linkinator-cache/
-.astro/
 .log-extract/
-*.pyc
+*.lrc
+
+# ── 5. Language toolchains beyond Node (local experiments) ──────────
 __pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# ── 6. Linters / editors / OS junk ──────────────────────────────────
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.orig
+*.tmp
+*.log
+.cache/

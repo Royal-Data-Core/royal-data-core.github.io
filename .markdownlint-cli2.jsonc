@@ -1,18 +1,22 @@
 // static-analysis-enforcer — lint:md (CONSTITUTION §C12.7 · §C11c)
-// Escopo: **/*.md + .ai/**/*.md; artefatos/generated dirs ignorados.
+// Escopo: **/*.md — a SUPERFÍCIE PUBLICADA do produto (README, .github,
+// qualquer doc pública futura). O corpus interno (.ai/**, .opencode/**,
+// /specs/**, /specs-*/**) é LOCAL-ONLY (ADR-009 D1): os ignores abaixo são
+// uma INVARIANTE — esta gate precisa avaliar exatamente o mesmo conjunto de
+// arquivos no operator local (com corpus) e no checkout de CI (sem corpus).
+// Artefatos/generated dirs ignorados.
 //
-// Regras off — cada uma com justificativa de corpus pré-existente (não são
-// gates de segurança; Kill Switch vive em lint:security/test:lh):
-//   MD013 — tabelas Gherkin/fences das SDDs excedem 80 col por design.
-//   MD022/MD031/MD032/MD058 — blank-lines-around-* : corpus autorado sem
-//           essa convenção (674 ocorrências agregadas; fix seria reescrever .ai).
-//   MD060 — table-column-style dispara em TODA tabela do corpus (381).
-//   MD040 — fences anônimos em runbooks/specs são o padrão do corpus.
-//   MD041 — docs SDD abrem com "## SPEC-nnn"; PR template abre "## 🔗".
-//   MD033/MD034/MD051 — README pré-existente usa <div> de badges, URL bare
-//           na v1 e âncora "#-journal"; conteúdo que não pode ser reescrito
-//           por este agente (append-only).
-//   MD047 — runbook pré-existente termina sem newline (fora do escopo de edição).
+// Regras off — cada uma com justificativa de formato autorado do README
+// (não são gates de segurança; Kill Switch vive em lint:security/test:lh):
+//   MD013 — tabelas raio-X excedem 80 col por design.
+//   MD022/MD031/MD032/MD058 — blank-lines-around-* : README autorado sem
+//           essa convenção; fix agora é nossa responsabilidade direta —
+//           documentada, não herdada de corpus interno.
+//   MD060 — table-column-style dispara em TODA tabela do README.
+//   MD040 — fences anônimos nos runbooks são o padrão do documento.
+//   MD041 — README abre com <div> de badges; PR template abre "## 🔗".
+//   MD033/MD034/MD051 — README usa <div> de badges e URL bare na seção topo.
+//   MD047 — arquivos que terminam sem newline são de conteúdo gerado.
 {
   "config": {
     "MD013": false,
@@ -29,7 +33,10 @@
     "MD060": false,
   },
   "ignores": [
+    ".ai/**",
     ".opencode/**",
+    "specs/**",
+    "specs-*/**",
     ".log-extract/**",
     "dist/**",
     "coverage/**",
