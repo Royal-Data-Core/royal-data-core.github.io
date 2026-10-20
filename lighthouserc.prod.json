@@ -4,7 +4,7 @@
       "staticDistDir": ".lhciview",
       "maxAutodiscoverUrls": 0,
       "staticDirFileDiscoveryDepth": 3,
-      "autodiscoverUrlBlocklist": [".*404\\.html$", ".*tag.*"]
+      "autodiscoverUrlBlocklist": [".*404\\.html$"]
     },
     "assert": {
       "assertions": {

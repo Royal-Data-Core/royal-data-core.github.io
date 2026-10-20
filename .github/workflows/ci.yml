@@ -357,6 +357,13 @@ jobs:
           MIRROR_DIR=".lhciview${SITE_BASE%/}"
           mkdir -p "$MIRROR_DIR"
           cp -r dist/* "$MIRROR_DIR/"
+          # Tag pages reuse the /blog/ listing template — budgets cover
+          # representative templates only; tags are fully covered by the
+          # links/e2e/a11y gates. Cut at the MIRROR, not the config: LHCI's
+          # autodiscoverUrlBlocklist did NOT apply under 0.15.x (17 URLs
+          # collected with ".*tag.*" listed — flag evidence 2026-10-20) and
+          # the 17-URL set leaves <1 min of margin in the 12-min job ceiling.
+          rm -rf "$MIRROR_DIR/blog/tag"
           rm -f .lhciview/404.html "$MIRROR_DIR/404.html"
 
       - name: LHCI (retry 1 — RFC-001 FM-08)
