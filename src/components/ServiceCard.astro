@@ -112,7 +112,7 @@ const encodedMailto =
           <a
             data-testid={`service-cta-${slug}`}
             href={encodedMailto.hrefEncoded}
-            aria-label={encodedMailto.addressDecoded}
+            aria-label={`${cta.label} — ${encodedMailto.addressDecoded}`}
             class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-4 text-sm font-semibold underline-offset-4 hover:text-white"
           >
             {cta.label}

@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildMailtoHref,
   buildMailtoHrefEncoded,
+  buildPhoneDisplay,
   buildTelHref,
   buildWhatsAppHref,
   CONTACT_EMAIL,
@@ -17,6 +18,7 @@ import {
   CONTACT_PHONE_DISPLAY,
   CONTACT_PLACEHOLDER_EMAIL,
   CONTACT_PLACEHOLDER_PHONE,
+  CONTACT_SOCIALS,
   CONTACT_SUBJECTS,
   contactFallbackHref,
   defaultMailtoBody,
@@ -101,8 +103,9 @@ describe("buildMailtoHrefEncoded — harvesting obfuscation", () => {
     expect(encoded.href).toMatch(/[\w.+-]+@[\w-]+\./);
   });
 
-  it("entity-encodes ONLY the address so naive harvesting regex fails", () => {
-    expect(encoded.hrefEncoded.startsWith("mailto:&#")).toBe(true);
+  it("percent-encodes ONLY the @ in the href — harvest-proof AND click-functional", () => {
+    expect(encoded.hrefEncoded.startsWith("mailto:contato%40")).toBe(true);
+    expect(encoded.hrefEncoded).toContain("royaldatacore.com.br?");
     expect(encoded.hrefEncoded).not.toMatch(/[\w.+-]+@[\w-]+\./);
     expect(encoded.textEncoded).toBe(encodeHtmlEntities(email));
     expect(encoded.addressDecoded).toBe(email);
@@ -159,11 +162,45 @@ describe("env-present path — real values flow through honestly", () => {
     expect(mod.CONTACT_EMAIL_DISPLAY).toBe("contato@royaldatacore.com.br");
   });
 
+  it("formats the verified BR mobile shape for display (D-03)", async () => {
+    vi.resetModules();
+    vi.stubEnv("PUBLIC_CONTACT_PHONE", "5516997148778");
+    const mod = await import("./contact");
+    expect(mod.CONTACT_PHONE).toBe("5516997148778");
+    expect(mod.HAS_CONTACT_PHONE).toBe(true);
+    expect(mod.CONTACT_PHONE_DISPLAY).toBe("+55 (16) 99714-8778");
+  });
+
+  it("exposes the verified social channels (D-04)", () => {
+    expect(CONTACT_SOCIALS.instagram).toBe(
+      "https://www.instagram.com/royaldatacore",
+    );
+    expect(CONTACT_SOCIALS.linkedin).toBe(
+      "https://www.linkedin.com/in/leonardo-setti",
+    );
+    expect(CONTACT_SOCIALS.github).toBe("https://github.com/royaldatacore");
+  });
+
   it("trims and still rejects blank env strings as pending", async () => {
     vi.resetModules();
     vi.stubEnv("PUBLIC_CONTACT_PHONE", "   ");
     const mod = await import("./contact");
     expect(mod.CONTACT_PHONE).toBeNull();
     expect(mod.CONTACT_PHONE_DISPLAY).toBe(CONTACT_PLACEHOLDER_PHONE);
+  });
+});
+
+describe("buildPhoneDisplay (D-03 display formatting)", () => {
+  it("formats the verified 12-digit BR mobile", () => {
+    expect(buildPhoneDisplay("5516997148778")).toBe("+55 (16) 99714-8778");
+  });
+
+  it("strips user-provided separators before formatting", () => {
+    expect(buildPhoneDisplay("+55 16 99714-8778")).toBe("+55 (16) 99714-8778");
+  });
+
+  it("returns unknown shapes raw — never invents a grouping", () => {
+    expect(buildPhoneDisplay("551199999999")).toBe("551199999999");
+    expect(buildPhoneDisplay("")).toBe("");
   });
 });

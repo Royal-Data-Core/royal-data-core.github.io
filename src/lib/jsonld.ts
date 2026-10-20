@@ -1,11 +1,13 @@
 /**
  * SPEC-001 AC-001.5 / AC-001.6 — typed schema.org JSON-LD builders.
  *
- * Entity data is VERIFIED data from `SDD-CONTEXT §1`; nothing unverifiable is
+ * Entity data is VERIFIED data; nothing unverifiable is
  * emitted (AC-001.5 hard rule + CONSTITUTION §C9):
  * - `numberOfEmployees`, `aggregateRating`, `review`, `award`, `alumniOf` — forbidden;
- * - `sameAs` — omitted until D-01 (GitHub handle) and D-04 (LinkedIn) are answered,
- *   because COPY-BRIEF values for those handles are placeholders;
+ * - `sameAs` — live since D-03/D-04 (2026-10-20): Instagram brand + LinkedIn
+ *   founder profile + the already-public GitHub profile (verified URLs only);
+ * - `telephone`/`email` — live since D-03 (2026-10-20): emitted ONLY when the
+ *   verified values are present at build time (same honest branching as the UI);
  * - `serviceArea` GeoCircle — omitted until D-02 verifies Matão coordinates.
  *   Omission is safer than emitting data the source itself flags as "verificar".
  *
@@ -14,6 +16,12 @@
  */
 
 import { withBase } from "./withBase";
+import {
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+  CONTACT_SOCIALS,
+  buildPhoneDisplay,
+} from "./contact";
 
 /** Verified legal identity (SDD-CONTEXT §1 — factual source of truth). */
 export const ORGANIZATION = {
@@ -143,6 +151,14 @@ export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
     },
     areaServed: { "@type": "Country", name: "Brasil" },
     knowsAbout: [...ORGANIZATION.knowsAbout],
+    // SameAs is NOT an unverifiable vanity claim anymore: every URL below is
+    // verified and already published on the official /contato page.
+    sameAs: [...Object.values(CONTACT_SOCIALS)],
+    // D-03 (2026-10-20) — honest branching: fields appear only with verified
+    // values at build time (Google LocalBusiness style: `email` plain, E.164
+    // display via buildPhoneDisplay).
+    ...(CONTACT_EMAIL ? { email: CONTACT_EMAIL } : {}),
+    ...(CONTACT_PHONE ? { telephone: buildPhoneDisplay(CONTACT_PHONE) } : {}),
   };
 }
 

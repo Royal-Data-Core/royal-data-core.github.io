@@ -1,11 +1,12 @@
 /**
  * SPEC-005 / ADR-003 — contact channel resolution.
  *
- * D-03 (SDD-CONTEXT §9) is PENDING: `PUBLIC_CONTACT_EMAIL` / `PUBLIC_CONTACT_PHONE`
- * may be absent at build time. When absent, the SSOT prescribes the literal
- * placeholders `[[EMAIL]]` / `[[PHONE]]` (COPY-BRIEF / SDD-CONTEXT D-03 default).
- * Inventing a real address or number would violate CONSTITUTION §C9 and
- * SDD-CONTEXT §1's binding directive — so we never do.
+ * D-03 (SDD-CONTEXT §9) RESOLVED 2026-10-20: `PUBLIC_CONTACT_EMAIL` /
+ * `PUBLIC_CONTACT_PHONE` are now set at build time (CI workflow env + local
+ * `.env`). The SSOT placeholder path still exists for builds without the
+ * values (literal `[[EMAIL]]` / `[[PHONE]]`) — inventing a real address or
+ * number would violate CONSTITUTION §C9 and SDD-CONTEXT §1's binding
+ * directive, and it still never happens.
  *
  * RRR-07 / ADR-003 D3: when a real email exists it is entity-encoded at BUILD
  * time (both `href` and visible text) so naive harvesting regexes over raw HTML
@@ -28,9 +29,38 @@ export const CONTACT_EMAIL: string | null =
 export const CONTACT_PHONE: string | null =
   RAW_PHONE.length > 0 ? RAW_PHONE : null;
 
+/**
+ * D-04 (resolved 2026-10-20) — verified social channels: brand Instagram,
+ * founder LinkedIn (operator ratified the strategy: a personal profile labeled
+ * as founder is the strongest B2B trust anchor available; a company page can
+ * replace it later), and the already-public GitHub profile. Used by /contato,
+ * the footer and the JSON-LD `sameAs`. Verified data only (CONSTITUTION §C9).
+ */
+export const CONTACT_SOCIALS = {
+  github: "https://github.com/royaldatacore",
+  instagram: "https://www.instagram.com/royaldatacore",
+  linkedin: "https://www.linkedin.com/in/leonardo-setti",
+} as const;
+
+/**
+ * Display formatter for the verified Brazilian mobile shape: country (2) +
+ * DDD (2) + 9-digit number = 13 digits, e.g. "5516997148778" →
+ * "+55 (16) 99714-8778". Any other shape is displayed raw — never invented.
+ */
+export function buildPhoneDisplay(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (digits.length === 13 && digits.startsWith("55")) {
+    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  }
+  return phone;
+}
+
 /** Display string: real value or the D-03 placeholder. */
 export const CONTACT_EMAIL_DISPLAY = CONTACT_EMAIL ?? CONTACT_PLACEHOLDER_EMAIL;
-export const CONTACT_PHONE_DISPLAY = CONTACT_PHONE ?? CONTACT_PLACEHOLDER_PHONE;
+/** Phone display: placeholder when pending; formatted BR mobile when real. */
+export const CONTACT_PHONE_DISPLAY = CONTACT_PHONE
+  ? buildPhoneDisplay(CONTACT_PHONE)
+  : CONTACT_PLACEHOLDER_PHONE;
 
 /** Build-time flag so templates can branch honestly instead of emitting broken hrefs. */
 export const HAS_CONTACT_EMAIL = CONTACT_EMAIL !== null;
@@ -63,7 +93,7 @@ export function defaultMailtoBody(originUrl: string): string {
 }
 
 /**
- * ADR-003 D1/D3 — official WhatsApp deep-link with pre-filled text.
+ * ADR-003 D3 — official WhatsApp deep-link with pre-filled text.
  * `text` is mandatory and non-empty (SPEC-005 AC-005.4).
  */
 export function buildWhatsAppHref(phone: string, text: string): string {
@@ -83,9 +113,17 @@ export function encodeHtmlEntities(value: string): string {
 }
 
 /**
- * Entity-encoded `mailto:` href (ADR-003 D3): encode ONLY the address; keep
- * `mailto:`/`?`/`%XX` visible so the URI stays parseable for humans and the
- * browser. Regex `/[\w.+-]+@[\w-]+\./` then finds no match in raw HTML.
+ * Harvest-safe `mailto:` href (ADR-003 D3, rev. 2026-10-20): the address is
+ * PERCENT-ENCODED ("@" → %40) so the regex `/[\w.+-]+@[\w-]+\./` finds no
+ * match in raw HTML, while the URI stays 100% functional — browsers/mail
+ * clients decode percent-octets per RFC 6068 at click time.
+ * History: the previous approach encoded the address as HTML entities
+ * (`&#114;…`) for the href ATTRIBUTE, but Astro's attribute binder re-escapes
+ * `&` (source showed `&amp;#114;`) → the browser never decoded the address
+ * and the mailto was dead on click. Latent since ADR-003 because no real
+ * anchor existed before D-03; `%40` lives in URI space and is idempotent.
+ * The VISIBLE text still uses `textEncoded` (entity-encoded, set:html) —
+ * text NODES decode correctly, attributes do not.
  */
 export function buildMailtoHrefEncoded(
   email: string,
@@ -101,7 +139,7 @@ export function buildMailtoHrefEncoded(
   const sendLength = "mailto:".length;
   return {
     href,
-    hrefEncoded: `mailto:${encodeHtmlEntities(email)}${href.slice(sendLength + email.length)}`,
+    hrefEncoded: `mailto:${email.replace("@", "%40")}${href.slice(sendLength + email.length)}`,
     textEncoded: encodeHtmlEntities(email),
     addressDecoded: email,
   };

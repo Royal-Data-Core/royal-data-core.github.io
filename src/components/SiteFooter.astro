@@ -2,7 +2,9 @@
 /**
  * SPEC-009 AC-009.1 — legal footer on every route: razão social, CNPJ, Matão/SP,
  * privacy link, ≥1 contact channel, build-time year. Zero trackers (§C7).
- * D-03 pending: without PUBLIC_CONTACT_* the block shows the SSOT placeholders.
+ * D-03 resolved 2026-10-20: real channels + verified social links (footer
+ * `footer-social-*` testids — /contato owns the `contact-*` ids for its cards).
+ * Placeholder branches remain for env-less builds (SSOT honesty).
  */
 import { withBase } from "../lib/withBase";
 import {
@@ -14,7 +16,6 @@ import {
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
-  encodeHtmlEntities,
 } from "../lib/contact";
 
 const currentYear = new Date().getFullYear(); // build time only — never runtime JS
@@ -52,17 +53,19 @@ const whatsappHref =
       {
         HAS_CONTACT_EMAIL && CONTACT_EMAIL && encodedMailto ? (
           <a
-            data-testid="contact-email-link"
+            data-testid="footer-contact-email-link"
             href={encodedMailto.hrefEncoded}
             aria-label={encodedMailto.addressDecoded}
             class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
             set:html={encodedMailto.textEncoded}
           />
         ) : HAS_CONTACT_EMAIL && CONTACT_EMAIL ? (
-          <span data-testid="contact-email-link">{CONTACT_EMAIL_DISPLAY}</span>
+          <span data-testid="footer-contact-email-link">
+            {CONTACT_EMAIL_DISPLAY}
+          </span>
         ) : (
           <span
-            data-testid="contact-email-link"
+            data-testid="footer-contact-email-link"
             title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
           >
             {CONTACT_EMAIL_DISPLAY}
@@ -72,8 +75,8 @@ const whatsappHref =
       {
         HAS_CONTACT_PHONE && CONTACT_PHONE && whatsappHref ? (
           <a
-            data-testid="contact-whatsapp-link"
-            href={encodeHtmlEntities(whatsappHref)}
+            data-testid="footer-contact-whatsapp-link"
+            href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
             class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
@@ -81,17 +84,43 @@ const whatsappHref =
             WhatsApp
           </a>
         ) : HAS_CONTACT_PHONE && CONTACT_PHONE ? (
-          <span data-testid="contact-whatsapp-link">
+          <span data-testid="footer-contact-whatsapp-link">
             {CONTACT_PHONE_DISPLAY}
           </span>
         ) : (
           <span
-            data-testid="contact-whatsapp-link"
+            data-testid="footer-contact-whatsapp-link"
             title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
           >
             {CONTACT_PHONE_DISPLAY}
           </span>
         )
+      }
+      {
+        [
+          {
+            label: "GitHub",
+            href: "https://github.com/royaldatacore",
+          },
+          {
+            label: "Instagram",
+            href: "https://www.instagram.com/royaldatacore",
+          },
+          {
+            label: "LinkedIn",
+            href: "https://www.linkedin.com/in/leonardo-setti",
+          },
+        ].map((social) => (
+          <a
+            data-testid={`footer-social-${social.label.toLowerCase()}`}
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+          >
+            {social.label}
+          </a>
+        ))
       }
     </div>
     <nav

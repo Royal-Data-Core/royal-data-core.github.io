@@ -5,6 +5,7 @@
  * COPY-BRIEF §4 verbatim.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
@@ -155,22 +156,45 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
         </li>
         <li class="bg-surface rounded-lg border border-slate-200 p-4">
           <p class="text-sm font-semibold text-slate-900">LinkedIn</p>
-          <p class="mt-2">
-            <span
-              data-testid="contact-linkedin-link"
-              class="text-sm text-slate-700"
-            >
-              Perfil em definição — decisão D-04 pendente (SDD-CONTEXT §9).
-            </span>
+          <a
+            data-testid="contact-linkedin-link"
+            href="https://www.linkedin.com/in/leonardo-setti"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+          >
+            linkedin.com/in/leonardo-setti
+          </a>
+          <p class="mt-2 text-xs text-slate-600">
+            Perfil profissional do fundador.
           </p>
         </li>
         <li class="bg-surface rounded-lg border border-slate-200 p-4">
+          <p class="text-sm font-semibold text-slate-900">Instagram</p>
+          <a
+            data-testid="contact-instagram-link"
+            href="https://www.instagram.com/royaldatacore"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+          >
+            @royaldatacore
+          </a>
+          <p class="mt-2 text-xs text-slate-600">Perfil oficial da marca.</p>
+        </li>
+        <li class="bg-surface rounded-lg border border-slate-200 p-4">
           <p class="text-sm font-semibold text-slate-900">vCard</p>
-          <p class="mt-2">
-            <span class="text-sm text-slate-700">
-              O arquivo <code>contato.vcf</code> será publicado quando o email e o
-              telefone oficiais forem definidos (decisão D-03).
-            </span>
+          <a
+            data-testid="contact-vcard-link"
+            href={withBase("/contato.vcf")}
+            download="contato.vcf"
+            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+          >
+            Baixar contato.vcf
+          </a>
+          <p class="mt-2 text-xs text-slate-600">
+            Cartão profissional com os dados oficiais — clique e salve o contato
+            completo.
           </p>
         </li>
       </ul>

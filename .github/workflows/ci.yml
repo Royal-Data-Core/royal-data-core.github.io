@@ -160,6 +160,11 @@ jobs:
         env:
           SITE: ${{ steps.pages.outputs.origin }}
           SITE_BASE: ${{ steps.pages.outputs.base_path }}
+          # D-03 resolved 2026-10-20 — official PUBLIC contact channels (public
+          # by design, SEC-1 unchanged); the SSOT module (src/lib/contact.ts)
+          # renders the real hrefs when present, `[[EMAIL]]`/`[[PHONE]]` when not.
+          PUBLIC_CONTACT_EMAIL: royaldatacore@gmail.com
+          PUBLIC_CONTACT_PHONE: "5516997148778"
         run: npm run build
 
       - name: SPEC-007/AC-007.N3 · verify Pagefind index exists

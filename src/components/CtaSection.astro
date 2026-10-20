@@ -7,9 +7,11 @@
 import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
+  CONTACT_PHONE,
   CONTACT_PLACEHOLDER_EMAIL,
   CONTACT_PLACEHOLDER_PHONE,
   HAS_CONTACT_EMAIL,
+  HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
 } from "../lib/contact";
@@ -18,9 +20,9 @@ const encodedMailto =
   CONTACT_EMAIL &&
   buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
 const whatsappHref =
-  typeof import.meta.env.PUBLIC_CONTACT_PHONE === "string"
+  HAS_CONTACT_PHONE && CONTACT_PHONE
     ? buildWhatsAppHref(
-        import.meta.env.PUBLIC_CONTACT_PHONE,
+        CONTACT_PHONE,
         "Olá! Gostaria de conversar com a Royal Data Core (contato enviado pelo site).",
       )
     : null;
@@ -47,7 +49,7 @@ const whatsappHref =
         <a
           data-testid="contact-cta-mail"
           href={encodedMailto.hrefEncoded}
-          aria-label={encodedMailto.addressDecoded}
+          aria-label={`Enviar email — ${encodedMailto.addressDecoded}`}
           class="bg-brand-700 hover:bg-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-5 text-sm font-semibold text-white underline-offset-4"
         >
           Enviar email

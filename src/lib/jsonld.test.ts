@@ -45,11 +45,23 @@ describe("buildOrganizationJsonLd (AC-001.5)", () => {
       "reviews",
       "award",
       "alumniOf",
-      "sameAs",
       "serviceArea",
     ] as const) {
       expect(node).not.toHaveProperty(forbidden);
     }
+  });
+
+  it("sameAs carries exactly the verified social channels (D-04)", () => {
+    expect(node.sameAs).toEqual([
+      "https://github.com/royaldatacore",
+      "https://www.instagram.com/royaldatacore",
+      "https://www.linkedin.com/in/leonardo-setti",
+    ]);
+  });
+
+  it("omits telephone/email in pending mode — no invented contact data", () => {
+    expect(node.telephone).toBeUndefined();
+    expect(node.email).toBeUndefined();
   });
 
   it("publishes only the verified address triad (no streetAddress)", () => {
