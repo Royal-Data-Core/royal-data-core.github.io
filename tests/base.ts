@@ -10,7 +10,7 @@
 export const SITE_BASE = (process.env.SITE_BASE ?? "").replace(/\/+$/, "");
 /* SITE_URL — canonical origin (real Pages origin; see .env.example). */
 export const SITE_URL =
-  process.env.SITE_URL ?? "https://royal-data-core.github.io";
+  process.env.SITE_URL ?? "https://royaldatacore.github.io";
 
 const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

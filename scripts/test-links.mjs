@@ -20,7 +20,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { LinkChecker } from "linkinator";
 
-const SITE_URL = process.env.SITE_URL ?? "https://royal-data-core.github.io";
+const SITE_URL = process.env.SITE_URL ?? "https://royaldatacore.github.io";
 const SITE_BASE = (process.env.SITE_BASE ?? "").replace(/\/+$/, "");
 const DIST = "dist";
 const MIRROR = ".linkinator-mirror";
@@ -53,7 +53,8 @@ if (SITE_BASE && SITE_BASE !== "/") {
 /** Absolute origins are skipped — the gate must never depend on remote I/O. */
 const SKIPS = [
   `${SITE_URL}(/.*)?`, // canonical / og:url / JSON-LD (own origin)
-  "https://royaldatacore\\.github\\.io(/.*)?", // legacy stale origin, belt&braces
+  "https://royaldatacore\\.github\\.io(/.*)?", // own origin (hyphenless apex), belt&braces
+  "https://royal-data-core\\.github\\.io(/.*)?", // legacy hyphenful origin (pre-rename)
   "https?://[^/]*linkedin\\.com(/.*)?",
   "https?://wa\\.me(/.*)?",
   "https?://([a-zA-Z0-9.-]*\\.)?github\\.com(/.*)?",

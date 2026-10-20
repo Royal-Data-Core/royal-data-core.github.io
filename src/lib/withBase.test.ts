@@ -22,7 +22,7 @@ describe("withBase — root-hosted (BASE_URL=)", () => {
   it.each([
     ["mailto:contato@example.com", "mailto:contato@example.com"],
     ["tel:+5511999999999", "tel:+5511999999999"],
-    ["https://royal-data-core.github.io", "https://royal-data-core.github.io"],
+    ["https://royaldatacore.github.io", "https://royaldatacore.github.io"],
     ["data:text/plain,hi", "data:text/plain,hi"],
   ])("passes through absolute scheme %s untouched", (input, expected) => {
     expect(withBase(input)).toBe(expected);

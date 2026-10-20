@@ -4,14 +4,14 @@
 
 **Engenharia de qualidade para software crítico** · Consultoria em testes
 
-[![Pipeline main · battery + deploy + smoke](https://github.com/Royal-Data-Core/royal-data-core.github.io/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Royal-Data-Core/royal-data-core.github.io/actions/workflows/deploy.yml)
+[![Pipeline main · battery + deploy + smoke](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/royaldatacore/royaldatacore.github.io/actions/workflows/deploy.yml)
 ![Lighthouse Perf](https://img.shields.io/badge/Lighthouse_Perf-0.99→1.0-2ea44f)
 ![Lighthouse A11y](https://img.shields.io/badge/Lighthouse_A11y-100-2ea44f)
 ![JS inicial](https://img.shields.io/badge/JS_inicial-2.12KB-informational)
 ![Auditoria do artefato](https://img.shields.io/badge/auditoria_arte-0_violacoes-success)
 ![Custo mensal](https://img.shields.io/badge/custo-R%240.00-success)
 
-🌐 https://royal-data-core.github.io/ · Matão/SP
+🌐 https://royaldatacore.github.io/ · Matão/SP
 
 </div>
 
@@ -195,6 +195,7 @@ Métricas DORA (atualização mensal): Deploys — · Lead Time — · CFR — �
 
 Mais recente no topo. Uma entrada por mudança relevante merged em `main`.
 
+- [2026-10-20] · [rebrand-apex] · chore(rebrand): migração de apex `royal-data-core.github.io` → `royaldatacore.github.io` (sem hífens) — 9 artefatos locais/defaults/fixtures/vcf/viva-URL reescritos; CI inocente (site/base derivados de `GITHUB_REPOSITORY_OWNER`, ADR-008 D7 ⇒ zero mudança de workflow); origem nova: HTML head/canonical/og/jsonld/robots/sitemap (17/17) + sweep dist: 0 ocorrências hifenadas · gates locais: check 0/0 · unit 63/63 · e2e 38/38 (build fiel ao CI) · a11y 16/16 · links 509/0 · LHCI prod 27/27 asserts (achado lateral NÃO-rebrand: bloco local `lighthouserc.json` falha no 404 — blocklist inerte 0.15.x, mesmo bug de ADR-008 D7 flag; receita prod = o gate canônico) · rename do org GH operador-side pendente (org + repo 1:1) ⇒ live flip em ~2 min pós-push · [7bed9ea](https://github.com/royaldatacore/royaldatacore.github.io/commit/7bed9ea)
 - [2026-10-20] · [d-03-d04-closed] · feat(contact): **D-03/D-04 encerradas** — canais oficiais reais (email `royaldatacore@gmail.com`, WhatsApp/telefone `+5516997148778`), redes sociais verificadas (Instagram `@royaldatacore`, LinkedIn fundador `/in/leonardo-setti` — estratégia ratificada pelo operador) + artefato prometido `contato.vcf` ao vivo · **REV ADR-003 D3**: ofuscação de href migrada de entidades (`&#…`) para percent-encode do `@` (`%40`) — o Astro re-escapava entidades em atributo e o mailto nunca era clicável (latente: nenhuma âncora real existia ante D-03) · **WCAG 2.5.3 remediato**: `aria-label=addr` sem o texto visível violava Label-in-Name (axe ×5 assim que âncoras reais renderizaram) · gates: unit 63/63 · e2e 38/38 (novo contact.spec) · a11y 16/16 · links 509/0 · [3577f26](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/3577f26)
 - [2026-10-20] · [d-05-closed] · chore(docs): GSC **propriedade URL-prefix VERIFICADA no apex** (confirmação do operador; token desde a meta [d3152df](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/d3152df)) — submissão de `sitemap-index.xml` + request-indexing (+ remoção da propriedade Domain/TXT) são cliques no console do operador · sitemap-0.xml 17/17 URLs na raiz, zero remanescente `/site-io/`; head na verificação: 13e8bf0\n- [2026-10-20] · [apex-migration] · chore(repo): rename `site-io` → `royal-data-core.github.io` (org-site) — site na RAIZ `https://royal-data-core.github.io/`; base `/` derivada shell-side (caso especial org-site nos 3 gates, [431547d](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/431547d)); smoke apex 12/12 ✓ incl. key file no root (IndexNow Option 1) + GSC meta ao vivo · [d3152df](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/d3152df) · [c37509c](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/c37509c)
 - [2026-10-20] · [indexnow] · ci(deploy): passo pós-publish **non-blocking** notifica IndexNow (Bing/Yandex/Seznam/Naver) — key file público + `keyLocation` sob `/site-io/` (spec Option 2; root impossível em project pages); URLs = sitemap do artefato validado (17, /404 filtrada); prova real: HTTP 202 · 17 URLs · [bddbeb1](https://github.com/Royal-Data-Core/site-io/commit/bddbeb1)

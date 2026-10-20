@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite"; // ADR-001 D2 — Tailwind v4 (NAO 
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 
-const SITE = process.env.SITE ?? "https://royal-data-core.github.io";
+const SITE = process.env.SITE ?? "https://royaldatacore.github.io";
 const SITE_BASE = process.env.SITE_BASE || "/";
 
 // SPEC-001 AC-001.N1 — falha rapida se site for invalido

@@ -72,9 +72,9 @@ describe("buildMailtoHref (RFC 6068)", () => {
 
 describe("defaultMailtoBody (SPEC-005 AC-005.2)", () => {
   it("carries razão social and the origin URL", () => {
-    const body = defaultMailtoBody("https://royal-data-core.github.io");
+    const body = defaultMailtoBody("https://royaldatacore.github.io");
     expect(body).toContain("Royal Data Core LTDA");
-    expect(body).toContain("https://royal-data-core.github.io");
+    expect(body).toContain("https://royaldatacore.github.io");
   });
 });
 

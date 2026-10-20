@@ -13,7 +13,7 @@ import {
   type JsonLdNode,
 } from "./jsonld";
 
-const SITE = new URL("https://royal-data-core.github.io");
+const SITE = new URL("https://royaldatacore.github.io");
 const ORIGIN = SITE.origin;
 
 describe("verified identity constants (SDD-CONTEXT §1)", () => {
