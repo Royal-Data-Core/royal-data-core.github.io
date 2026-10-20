@@ -49,16 +49,16 @@ gates que a consultoria propõe aos clientes — e os reports de CI são públic
 
 ## 🧱 Topologia publicada
 
-| Rota                       | Papel                                                |
-| -------------------------- | ---------------------------------------------------- |
-| `/`                        | Vitrine — proposta de valor, prova (case), CTA       |
-| `/servicos/`               | Catálogo de serviços + pacote de engajamento         |
-| `/blog/` + `/blog/<slug>/` | Blog técnico S1 (3 posts, MDX, Shiki, tags)          |
-| `/blog/tag/<tag>/`         | 8 páginas de tag                                     |
-| `/contato/`                | Canal de conversão (Formspree/Cal.com conforme D-03) |
-| `/busca/`                  | Busca client-side Pagefind (zero query a servidores) |
-| `/privacidade/`            | LGPD — política de privacidade                       |
-| `/404/`                    | Página de erro customizada                           |
+| Rota                       | Papel                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `/`                        | Vitrine — proposta de valor, prova (case), CTA                               |
+| `/servicos/`               | Catálogo de serviços + pacote de engajamento                                 |
+| `/blog/` + `/blog/<slug>/` | Blog técnico S1 (3 posts, MDX, Shiki, tags)                                  |
+| `/blog/tag/<tag>/`         | 8 páginas de tag                                                             |
+| `/contato/`                | Canal de conversão: mailto/WhatsApp direto — sem formulário/CRM (ADR-003 D1) |
+| `/busca/`                  | Busca client-side Pagefind (zero query a servidores)                         |
+| `/privacidade/`            | LGPD — política de privacidade                                               |
+| `/404/`                    | Página de erro customizada                                                   |
 
 **Stack:** Astro 7 + Content Collections (MDX + Zod) · Tailwind CSS v4 (utility-only) ·
 TypeScript `strictest` · Pagefind · CSP meta · GitHub Pages (org-site —
@@ -155,11 +155,15 @@ README (topologia, orçamentos, §Scripts, journal) e nos sumários dos jobs.
 Pendências de decisão humana (não-bloqueantes, site funcional com fallbacks
 honestos `[[EMAIL]]`/`[[PHONE]]`):
 `D-01` handle/canonical do site · `D-02` coordenadas de Matão (serviceArea)
-(despejo de GeoCircle aguardando verificação) · `D-03` email/WhatsApp reais ·
-`D-04` redes sociais (handle placeholder) · rotacionar a chave SSH histórica ·
+(despejo de GeoCircle aguardando verificação) · rotacionar a chave SSH histórica ·
 purgar blobs de `.ai/`/`.opencode/` do histórico git (os arquivos fora do
 índice permanecem acessíveis no histórico — ver entrada de journal de
 2026-10-19; comando documentado no relatório de decisão).
+
+D-03/D-04 **resolvidas** (2026-10-20): canais oficiais (email, WhatsApp/
+telefone) e redes sociais verificadas (Instagram @royaldatacore, LinkedIn
+fundador, GitHub) — placeholders vivem apenas em builds sem env (SSOT
+honesto).
 
 ## 📊 Status
 
@@ -191,6 +195,7 @@ Métricas DORA (atualização mensal): Deploys — · Lead Time — · CFR — �
 
 Mais recente no topo. Uma entrada por mudança relevante merged em `main`.
 
+- [2026-10-20] · [d-03-d04-closed] · feat(contact): **D-03/D-04 encerradas** — canais oficiais reais (email `royaldatacore@gmail.com`, WhatsApp/telefone `+5516997148778`), redes sociais verificadas (Instagram `@royaldatacore`, LinkedIn fundador `/in/leonardo-setti` — estratégia ratificada pelo operador) + artefato prometido `contato.vcf` ao vivo · **REV ADR-003 D3**: ofuscação de href migrada de entidades (`&#…`) para percent-encode do `@` (`%40`) — o Astro re-escapava entidades em atributo e o mailto nunca era clicável (latente: nenhuma âncora real existia ante D-03) · **WCAG 2.5.3 remediato**: `aria-label=addr` sem o texto visível violava Label-in-Name (axe ×5 assim que âncoras reais renderizaram) · gates: unit 63/63 · e2e 38/38 (novo contact.spec) · a11y 16/16 · links 509/0 · [3577f26](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/3577f26)
 - [2026-10-20] · [d-05-closed] · chore(docs): GSC **propriedade URL-prefix VERIFICADA no apex** (confirmação do operador; token desde a meta [d3152df](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/d3152df)) — submissão de `sitemap-index.xml` + request-indexing (+ remoção da propriedade Domain/TXT) são cliques no console do operador · sitemap-0.xml 17/17 URLs na raiz, zero remanescente `/site-io/`; head na verificação: 13e8bf0\n- [2026-10-20] · [apex-migration] · chore(repo): rename `site-io` → `royal-data-core.github.io` (org-site) — site na RAIZ `https://royal-data-core.github.io/`; base `/` derivada shell-side (caso especial org-site nos 3 gates, [431547d](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/431547d)); smoke apex 12/12 ✓ incl. key file no root (IndexNow Option 1) + GSC meta ao vivo · [d3152df](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/d3152df) · [c37509c](https://github.com/Royal-Data-Core/royal-data-core.github.io/commit/c37509c)
 - [2026-10-20] · [indexnow] · ci(deploy): passo pós-publish **non-blocking** notifica IndexNow (Bing/Yandex/Seznam/Naver) — key file público + `keyLocation` sob `/site-io/` (spec Option 2; root impossível em project pages); URLs = sitemap do artefato validado (17, /404 filtrada); prova real: HTTP 202 · 17 URLs · [bddbeb1](https://github.com/Royal-Data-Core/site-io/commit/bddbeb1)
 - [2026-10-20] · [pipeline-status] · ci(badge): README passa a carregar um único badge de pipeline — `deploy.yml?branch=main` (battery+publish+smoke a cada push); badge de `ci.yml` removido (runs diretos = PR/develop; badge herdava falha de PRs fechados do Dependabot e `?event=workflow_call` = "no status": filhos não são runs próprios) · [6afb215](https://github.com/Royal-Data-Core/site-io/commit/6afb215)
