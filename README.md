@@ -173,6 +173,7 @@ Métricas DORA (atualização mensal): Deploys — · Lead Time — · CFR — �
 
 Mais recente no topo. Uma entrada por mudança relevante merged em `main`.
 
+- [2026-10-20] · [ADR-010 D11] · fix: lock alinhado cross-npm 10/11/12 (proxy-agent@8.0.2 satisfaz peer opcional de @puppeteer/browsers) + gate §C5 mede o repo (exclui node_modules/.git) · [5f2f98d](https://github.com/Royal-Data-Core/site-io/commit/5f2f98d)
 - [2026-10-20] · [ADR-010] · pipeline: battery canônica única (workflow_call), verify paralela unit|e2e|a11y|links, deploy thin-caller, smoke backoff limitado, §C9 lint:copy bloqueia CI · [a004ea8](https://github.com/Royal-Data-Core/site-io/commit/a004ea8)
 - [2026-10-20] · [ADR-009 D1] · chore: `.gitignore` = política de publicação única; gates lint:md/eslint determinísticos (superfície publicada); `globals` declarado; alias `audit:bundle` removido · [2eab70f](https://github.com/Royal-Data-Core/site-io/commit/2eab70f)
 - [2026-10-20] · [§C12.3] · test(unit): cobertura real em src/lib (56 specs, 95 %/85.5 %/100 %/94.9 %); validator morto + tailwind.config.ts removidos · [1849be7](https://github.com/Royal-Data-Core/site-io/commit/1849be7)
