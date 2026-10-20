@@ -4,14 +4,14 @@
 
 **Engenharia de qualidade para software crítico** · Consultoria em testes
 
-[![Pipeline main · battery + deploy + smoke](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Royal-Data-Core/site-io/actions/workflows/deploy.yml)
+[![Pipeline main · battery + deploy + smoke](https://github.com/Royal-Data-Core/royal-data-core.github.io/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Royal-Data-Core/royal-data-core.github.io/actions/workflows/deploy.yml)
 ![Lighthouse Perf](https://img.shields.io/badge/Lighthouse_Perf-0.99→1.0-2ea44f)
 ![Lighthouse A11y](https://img.shields.io/badge/Lighthouse_A11y-100-2ea44f)
 ![JS inicial](https://img.shields.io/badge/JS_inicial-2.12KB-informational)
 ![Auditoria do artefato](https://img.shields.io/badge/auditoria_arte-0_violacoes-success)
 ![Custo mensal](https://img.shields.io/badge/custo-R%240.00-success)
 
-🌐 https://royal-data-core.github.io/site-io/ · Matão/SP
+🌐 https://royal-data-core.github.io/ · Matão/SP
 
 </div>
 
@@ -61,7 +61,8 @@ gates que a consultoria propõe aos clientes — e os reports de CI são públic
 | `/404/`                    | Página de erro customizada                           |
 
 **Stack:** Astro 7 + Content Collections (MDX + Zod) · Tailwind CSS v4 (utility-only) ·
-TypeScript `strictest` · Pagefind · CSP meta · GitHub Pages (base `/site-io/`).
+TypeScript `strictest` · Pagefind · CSP meta · GitHub Pages (org-site —
+apex `/`, sem prefixo de path).
 
 ## 🤖 Runbook
 
