@@ -1,4 +1,9 @@
 # RFC-001 §2.6(2) — supply-chain: dependabot para npm E github-actions
+# ADR-010 D15: a fonte precisa gerar apenas estados peer-válidos — um PR
+# inválido é recusado pelo guard (npm ci ERESOLVE) e vira ruído semanal
+# permanente. Typescript held: @astrojs/check@0.9.11 declara peer
+# typescript ^5.0.0||^6.0.0 (evidência de registro 2026-10-20); TS7 exige
+# ADR próprio antes da bump (analogia §C10).
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -13,7 +18,8 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
     labels: ["dependencies", "npm"]
-    reviewers: ["CHANGE-ME-owner"] # ← substituir pelo handle GitHub (D-01)
+    # D-01: adicionar `reviewers: [handle-real]` quando o handle existir —
+    # placeholder strings tornam a config inválida.
     groups:
       astro:
         patterns: ["astro", "@astrojs/*"]
@@ -22,16 +28,16 @@ updates:
           ["@playwright/*", "playwright", "vitest", "@vitest/*", "@axe-core/*"]
       lint:
         patterns:
-          [
-            "eslint*",
-            "prettier*",
-            "@typescript-eslint/*",
-            "typescript",
-            "markdownlint*",
-          ]
+          ["eslint*", "prettier*", "@typescript-eslint/*", "markdownlint*"]
     ignore:
       # CONSTITUTION §C10: major de Astro pode alterar budgets; exige ADR antes
       - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      # ADR-010 D15 — typescript held: peer ^5||^6 do @astrojs/check (0.9.11
+      # é o latest) exclui 7.x; minor/patch dentro de ^5.7.0 continuam voando.
+      # Reverter ambos os pontos (group pattern + ignore) após @astrojs/check
+      # ratificar peer TS7 — ADR + bateria completa antes.
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
