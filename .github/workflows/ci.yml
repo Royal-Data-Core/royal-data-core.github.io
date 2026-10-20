@@ -1,7 +1,13 @@
-# RFC-001 §2.2 — Pipeline de validação (PR e develop)
-# BYPASS-001/INFRA-001: fechado neste ciclo — todas as actions pinadas por SHA completo via scripts/pin-actions.sh (npm run pin:actions)
-# ADR-008 D7: SDD corpus (.ai/) é interno e não publicado — §C3 (adr-gate) é
-# obrigação de origem; CI valida gates executáveis, não o corpus.
+# RFC-001 §2.2 — Canonical validation battery (PR, develop, deploy-caller)
+# BYPASS-001/INFRA-001: all Actions pinned by full SHA (scripts/pin-actions.sh --check
+# is a blocking guard gate). Local `./.github/workflows` reuse carries no @ref by
+# design: the called workflow is same-commit as the caller (GitHub native pin).
+# ADR-008 D7: SDD corpus (.ai/) is internal/local-only — §C3 (adr-gate) is an
+# upstream authoring duty; CI validates executable gates, not the corpus.
+# ADR-010: this file is the SINGLE topology definition. ci.yml runs it directly
+# on PR/develop and deploy.yml re-runs it on main via workflow_call (RFC-001
+# §2.2 "revalidate everything on main" kept: the caller spends one extra artifact
+# transfer, not one duplicated pipeline).
 name: CI
 
 on:
@@ -10,8 +16,9 @@ on:
   push:
     branches: [develop]
   workflow_dispatch:
+  workflow_call: {}
 
-# RFC-001 §2.6(5): pull_request_target BANIDO. Nenhum secret é exposto a PR.
+# RFC-001 §2.6(5): pull_request_target BANNED. No secret reaches PRs.
 permissions:
   contents: read
 
@@ -24,17 +31,17 @@ env:
 
 jobs:
   # ────────────────────────────────────────────────────────────────
-  # GATE 1 — Sem navegador. Rápido (~90s). Falha antes de gastar build.
+  # GATE 1 — No browser. Fast. Fails before any build spend.
   # ────────────────────────────────────────────────────────────────
   guard:
-    name: guard · lint + static analysis + adr + secrets
+    name: guard · lint + static analysis + secrets
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
         with:
-          fetch-depth: 0 # necessário para gitleaks (histórico completo)
+          fetch-depth: 0 # required by gitleaks (full history)
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
@@ -43,13 +50,13 @@ jobs:
           cache: "npm"
 
       - name: Install (frozen, no lifecycle scripts)
-        run: npm ci --ignore-scripts # ADR-001 D3/D4 — NUNCA `npm install`
+        run: npm ci --ignore-scripts # ADR-001 D3/D4 — NEVER `npm install`
 
-      # ADR-001 D4: invariante que torna --ignore-scripts seguro
+      # ADR-001 D4: invariant that makes --ignore-scripts safe
       - name: ADR-001/D4 · verify no dependency declares lifecycle scripts
         run: node scripts/verify-no-postinstall.mjs
 
-      - name: Astro sync (gera tipos para `astro check`)
+      - name: Astro sync (generates types for `astro check`)
         run: npx astro sync
 
       - name: Typecheck (astro check + tsc)
@@ -64,20 +71,25 @@ jobs:
       - name: Markdown lint (content)
         run: npm run lint:md
 
-      # CONSTITUTION §C1 — output mode estático
+      # CONSTITUTION §C9 — marketing-vocabulary gate (wired as blocking gate;
+      # ADR-010: previously shipped as script-only with zero CI consumers)
+      - name: C9 · lint copy (verifiable-claims vocabulary gate)
+        run: npm run lint:copy
+
+      # CONSTITUTION §C1 — static output mode
       - name: C1 · assert output mode is static
         run: |
           if grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs; then
-            echo "::error file=astro.config.mjs::CONSTITUTION §C1 — apenas output: 'static' é permitido"
+            echo "::error file=astro.config.mjs::CONSTITUTION §C1 — only output: 'static' is allowed"
             exit 1
           fi
           echo "output mode: static ✓"
 
-      # ADR-000 — identificadores em EN
+      # ADR-000 — identifiers in EN
       - name: ADR-000 · no accented identifiers
         run: |
           if grep -REn '\b(function|const|let|var|class|interface|type)\s+[A-Za-z_$]*[àáâãéêíóôõúüçÀÁÂÃÉÊÍÓÔÕÚÜÇ]' src/ scripts/ 2>/dev/null; then
-            echo "::error::ADR-000 — identificadores devem estar em EN, sem acentos"
+            echo "::error::ADR-000 — identifiers must be EN, no accents"
             exit 1
           fi
 
@@ -85,7 +97,7 @@ jobs:
       - name: ADR-004 · lint topology (withBase enforcement)
         run: npm run lint:topology
 
-      - name: gitleaks (histórico completo)
+      - name: gitleaks (full history)
         run: |
           curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" \
             -o /tmp/gitleaks.tar.gz
@@ -97,7 +109,7 @@ jobs:
         run: npm run pin:actions:check
 
   # ────────────────────────────────────────────────────────────────
-  # GATE 2 — Build + auditoria de bundle
+  # GATE 2 — Build + artifact audits (Node LTS range)
   # ────────────────────────────────────────────────────────────────
   build:
     name: build · astro + pagefind + bundle audit (node ${{ matrix.node }})
@@ -125,9 +137,9 @@ jobs:
           key: astro-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
           restore-keys: astro-${{ runner.os }}-node${{ matrix.node }}-
 
-      # RFC-001 §2.6(4): variáveis de evento SEMPRE via env, nunca interpoladas em run:
-      # ADR-008 D7: configure-pages@v5/v6 crasham determinístico (non-Error throw,
-      # pré-API) no runner 2.337.0 — origin/base resolvidos shell-side, zero rede.
+      # RFC-001 §2.6(4): event variables ALWAYS via env, never interpolated into run:
+      # ADR-008 D7: configure-pages@v5/v6 crash deterministically (non-Error throw,
+      # pre-API) on runner 2.337.0 — origin/base resolved shell-side, zero network.
       - name: Resolve site + base (no-action, deterministic)
         id: pages
         run: |
@@ -144,10 +156,10 @@ jobs:
 
       - name: SPEC-007/AC-007.N3 · verify Pagefind index exists
         run: |
-          test -f dist/_pagefind/pagefind.js   || { echo "::error::SPEC-007: pagefind.js ausente"; exit 1; }
-          ls dist/_pagefind/wasm.*.pagefind >/dev/null 2>&1 || test -f dist/_pagefind/pagefind.wasm || { echo "::error::SPEC-007: wasm do Pagefind ausente (wasm.*.pagefind)"; exit 1; }
+          test -f dist/_pagefind/pagefind.js   || { echo "::error::SPEC-007: pagefind.js missing"; exit 1; }
+          ls dist/_pagefind/wasm.*.pagefind >/dev/null 2>&1 || test -f dist/_pagefind/pagefind.wasm || { echo "::error::SPEC-007: Pagefind wasm missing (wasm.*.pagefind)"; exit 1; }
           du -sh dist/_pagefind
-          [ "$(du -sm dist/_pagefind | cut -f1)" -le 5 ] || { echo "::error::SPEC-007: índice > 5 MB"; exit 1; }
+          [ "$(du -sm dist/_pagefind | cut -f1)" -le 5 ] || { echo "::error::SPEC-007: index > 5 MB"; exit 1; }
 
       - name: SPEC-008 · bundle + external-resource audit
         run: node scripts/audit-bundle.mjs --dist dist
@@ -159,13 +171,13 @@ jobs:
           [ "$SIZE_MB" -le 500 ] || { echo "::error::§C5 — repo ${SIZE_MB} MB > 500 MB"; exit 1; }
           DIST_MB=$(du -sm dist | cut -f1)
           echo "dist size: ${DIST_MB} MB"
-          [ "$DIST_MB" -le 100 ] || { echo "::error::§C5 — site publicado ${DIST_MB} MB > 100 MB"; exit 1; }
+          [ "$DIST_MB" -le 100 ] || { echo "::error::§C5 — published site ${DIST_MB} MB > 100 MB"; exit 1; }
 
-      - name: ADR-004 · .nojekyll presente no artefato
+      - name: ADR-004 · .nojekyll present in artifact
         run: |
-          test -f dist/.nojekyll || { echo "::error::dist/.nojekyll ausente (copie para public/)"; exit 1; }
-          test -f dist/404.html  || { echo "::error::SPEC-006: dist/404.html ausente"; exit 1; }
-          test -f dist/index.html || { echo "::error::dist/index.html ausente (RFC-001 FM-04)"; exit 1; }
+          test -f dist/.nojekyll || { echo "::error::dist/.nojekyll missing (copy into public/)"; exit 1; }
+          test -f dist/404.html  || { echo "::error::SPEC-006: dist/404.html missing"; exit 1; }
+          test -f dist/index.html || { echo "::error::dist/index.html missing (RFC-001 FM-04)"; exit 1; }
 
       - name: SEC · assert no .ai/ or debris enters dist
         run: |
@@ -183,13 +195,19 @@ jobs:
           if-no-files-found: error
 
   # ────────────────────────────────────────────────────────────────
-  # GATE 3 — Testes (e2e, a11y, links, unit)
+  # GATE 3 — Runtime suites in PARALLEL (ADR-010): unit / e2e / a11y / links.
+  # Wall-clock drops from sequential serial to slowest-suite; runner minutes
+  # are free on public repos (SDD-CONTEXT §5), so this is a pure latency win.
   # ────────────────────────────────────────────────────────────────
   verify:
-    name: verify · e2e + a11y + links + unit
+    name: verify · ${{ matrix.suite }}
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, e2e, a11y, links]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
 
@@ -202,49 +220,58 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Cache Playwright browsers
+        if: matrix.suite == 'e2e' || matrix.suite == 'a11y'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
         id: pw-cache
         with:
           path: ~/.cache/ms-playwright
           key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright browsers
-        if: steps.pw-cache.outputs.cache-hit != 'true'
+      - name: Install Playwright browsers (cold cache)
+        if: (matrix.suite == 'e2e' || matrix.suite == 'a11y') && steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Install Playwright OS deps (cache hit)
-        if: steps.pw-cache.outputs.cache-hit == 'true'
+      - name: Install Playwright OS deps (warm cache)
+        if: (matrix.suite == 'e2e' || matrix.suite == 'a11y') && steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: Deployment context (SITE_URL + SITE_BASE — matches build ctx)
-        run: |
-          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
-          echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
-          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
-
-      - name: Download dist
+      - name: Download dist (artifact under test)
+        if: matrix.suite != 'unit'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
         with:
           name: dist
           path: dist/
 
+      # RFC-001 §2.6(4) / ADR-008 D7 — deployment context via GITHUB_ENV
+      # (shell-side resolution, zero event interpolation in run:).
+      - name: Deployment context (SITE_URL + SITE_BASE — matches build ctx)
+        if: matrix.suite != 'unit'
+        run: |
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
+          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
+
       - name: Unit tests + coverage (§C12.3, ≥80% critical path)
+        if: matrix.suite == 'unit'
         run: npm run test:unit -- --coverage
 
-      - name: E2E (Playwright, cenários Gherkin das SPECs)
+      - name: E2E (Playwright, Gherkin scenarios from SPECs)
+        if: matrix.suite == 'e2e'
         run: npm run test:e2e
 
       - name: Accessibility (axe-core, WCAG 2.1 AA, 2 viewports)
+        if: matrix.suite == 'a11y'
         run: npm run test:a11y
 
-      - name: Link integrity (linkinator)
+      - name: Link integrity (linkinator, hermetic)
+        if: matrix.suite == 'links'
         run: npm run test:links
 
-      - name: Upload test reports
+      - name: Upload suite reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
         with:
-          name: test-reports
+          name: test-reports-${{ matrix.suite }}
           path: |
             playwright-report/
             test-results/
@@ -285,8 +312,8 @@ jobs:
           key: lhci-${{ github.ref_name }}
           restore-keys: lhci-
 
-      # RFC-001 FM-08: retry 1 tolerante a flakiness de throttling em runner compartilhado
-      - name: Lighthouse CI (mobile, budgets rígidos)
+      # RFC-001 FM-08: retry 1 tolerates throttling flakiness on shared runners
+      - name: Lighthouse CI (mobile, hard budgets)
         run: |
           npx @lhci/cli@0.15.x autorun --config=lighthouserc.json \
             || npx @lhci/cli@0.15.x autorun --config=lighthouserc.json

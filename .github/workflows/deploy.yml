@@ -1,5 +1,9 @@
-# RFC-001 §2.2 — Revalida TUDO sobre main (não confia no verde de develop) e deploya.
-# BYPASS-001/INFRA-001: fechado neste ciclo — todas as actions pinadas por SHA completo via scripts/pin-actions.sh (npm run pin:actions)
+# RFC-001 §2.2 (as amended by ADR-010) — Revalidates EVERYTHING on main (does
+# not trust develop green) by calling the canonical battery in ci.yml
+# (workflow_call — same commit, no cross-run trust), then packs the validated
+# artifact for GitHub Pages (OIDC), deploys and smoke-tests the live origin.
+# BYPASS-001/INFRA-001: all Actions SHA-pinned; the local `./.github/workflows`
+# reuse is same-commit by definition (no @ref is allowed on that syntax).
 name: Deploy
 
 on:
@@ -12,212 +16,69 @@ permissions:
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: false # NUNCA cancelar deploy em andamento
+  cancel-in-progress: false # NEVER cancel an in-flight deploy
 
 env:
   NODE_VERSION: "24"
 
 jobs:
-  guard:
-    name: guard · pre-deploy revalidation
-    runs-on: ubuntu-latest
-    timeout-minutes: 9
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
-        with: { node-version: "24", cache: "npm" }
-      - name: C1 · assert static output
-        run: |
-          grep -Eq "output:\s*['\"]?(server|hybrid)" astro.config.mjs && \
-            { echo "::error::CONSTITUTION §C1 violado"; exit 1; } || echo "static ✓"
-      - name: Install (frozen, no lifecycle scripts)
-        run: npm ci --ignore-scripts # ADR-001 D3/D4 — NUNCA `npm install`
-
-      - name: Static battery (RFC-001 §2.2 — revalida TUDO sobre main)
-        run: |
-          npx astro sync
-          npm run check
-          npm run lint
-          npm run format:check
-          npm run lint:md
-          npm run lint:topology
-      - name: gitleaks
-        run: |
-          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" -o /tmp/g.tar.gz
-          tar -xzf /tmp/g.tar.gz -C /tmp gitleaks
-          /tmp/gitleaks detect --source . --no-banner --redact --exit-code 1
-
-  build:
-    name: build · production artifact
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    needs: guard
+  battery:
+    name: battery · full revalidation on main (guard→build→verify∥lighthouse)
+    # Canonical battery: guard (static+secrets+pin) → build (node 22/24/26,
+    # pagefind+bundle audit) → verify (unit|e2e|a11y|links) ∥ lighthouse.
+    # Artifact `dist` is uploaded INSIDE this run by the build job, so the
+    # deploy job below deploys EXACTLY the validated artifact (no rebuild).
+    uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
+
+  deploy:
+    name: deploy · GitHub Pages (OIDC) + post-publish smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 6 # §C5: platform hard limit is 10 min
+    needs: [battery]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write # OIDC — RFC-001 §2.3
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
-        with: { node-version: "24", cache: "npm" }
-      - run: npm ci --ignore-scripts
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
+      - name: Checkout (artifact audits run against released sources)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
         with:
-          path: .astro/
-          key: astro-prod-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
-          restore-keys: astro-prod-
+          fetch-depth: 1
 
-      # RFC-001 §2.2 — mesma resolução determinística do ci.yml (ADR-008 D7:
-      # configure-pages@v5/v6 crasham no runner 2.337.0; zero rede, zero token).
-      - name: Resolve site + base (no-action, deterministic)
-        id: pages
+      # Deploy the ARTIFACT validated by this same run's battery — not a
+      # rebuild — so the byte content matches the audited SHA 1:1 (ADR-010).
+      - name: Download validated artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
+        with:
+          name: dist
+          path: dist/
+
+      - name: Final artifact sanity (RFC-001 FM-04/FM-06)
         run: |
-          set -euo pipefail
-          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
-          echo "origin=https://${OWNER_NORM}.github.io" >> "$GITHUB_OUTPUT"
-          echo "base_path=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
-
-      - name: Build
-        env:
-          SITE: ${{ steps.pages.outputs.origin }}
-          SITE_BASE: ${{ steps.pages.outputs.base_path }}
-          NODE_ENV: production
-        run: npm run build
-
-      - name: Bundle + external audit (SPEC-008)
-        run: node scripts/audit-bundle.mjs --dist dist
-
-      - name: Artifact sanity (RFC-001 FM-04/FM-06)
-        run: |
-          for f in dist/index.html dist/404.html dist/.nojekyll dist/robots.txt dist/rss.xml; do
-            test -f "$f" || { echo "::error::artefato ausente: $f"; exit 1; }
+          for f in dist/index.html dist/404.html dist/.nojekyll dist/robots.txt dist/rss.xml dist/_pagefind/pagefind.js; do
+            test -f "$f" || { echo "::error::artifact missing: $f"; exit 1; }
           done
           SIZE_MB=$(du -sm dist | cut -f1)
           [ "$SIZE_MB" -le 100 ] || { echo "::error::§C5 dist ${SIZE_MB}MB > 100MB"; exit 1; }
           echo "dist: ${SIZE_MB} MB ✓"
 
-      - name: Upload GitHub Pages artifact
+      - name: Pack + upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5 # BYPASS-001
         with:
           path: dist/
-          retention-days: 7
 
-      # Cópia adicional para os gates de teste (deploy-pages consome o tar; tests precisam do dir)
-      - name: Upload dist for test jobs
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
-        with:
-          {
-            name: dist,
-            path: dist/,
-            retention-days: 2,
-            if-no-files-found: error,
-          }
-
-  verify:
-    name: verify · production gates
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    needs: build
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
-        with: { node-version: "24", cache: "npm" }
-      # RFC-001 §2.6(4) / ADR-008 D7 — deployment context via GITHUB_ENV
-      # (shell-side resolution, zero event interpolation in run:).
-      - name: Deployment context (SITE_URL + SITE_BASE)
-        run: |
-          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
-          echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
-          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
-      - run: npm ci --ignore-scripts
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
-        id: pw-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-      - if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
-        with: { name: dist, path: dist/ }
-      - run: npm run test:unit -- --coverage
-      - run: npm run test:e2e
-      - run: npm run test:a11y
-      - run: npm run test:links
-      - if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
-        with:
-          name: prod-test-reports
-          path: |
-            playwright-report/
-            test-results/
-            coverage/
-          retention-days: 30
-          if-no-files-found: ignore
-
-  lighthouse:
-    name: lighthouse · production budgets
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    needs: build
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7 # BYPASS-001
-        with: { node-version: "24", cache: "npm" }
-      - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8 # BYPASS-001
-        with: { name: dist, path: dist/ }
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6 # BYPASS-001
-        with:
-          path: .lighthouseci/
-          key: lhci-main
-          restore-keys: lhci-
-      # ADR-008 D7 — base-mounted views: production artifact is root-layout with
-      # base-prefixed routes; LHCI's built-in file server maps URL=path, so we
-      # audit a MIRRORED view (dist/* under site-io/) that matches the real
-      # Pages layout. 404 page is excluded from budgets (intentionally
-      # non-indexable, no canonical — SPEC-006 AC-006.3).
-      - name: Mirror artifact under site-io/ (base-mounted LHCI view)
-        run: |
-          mkdir -p .lhciview/site-io
-          cp -r dist/* .lhciview/site-io/
-          rm -f .lhciview/404.html .lhciview/site-io/404.html
-      - name: LHCI (retry 1 — RFC-001 FM-08)
-        run: |
-          npx @lhci/cli@0.15.x autorun --config=lighthouserc.prod.json \
-            || npx @lhci/cli@0.14.x autorun --config=lighthouserc.prod.json
-      - if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 # BYPASS-001
-        with:
-          {
-            name: prod-lighthouse,
-            path: .lighthouseci/,
-            retention-days: 90,
-            if-no-files-found: ignore,
-          }
-
-  deploy:
-    name: deploy · GitHub Pages (OIDC)
-    runs-on: ubuntu-latest
-    timeout-minutes: 6 # §C5: hard limit plataforma é 10 min
-    needs: [build, verify, lighthouse]
-    permissions:
-      contents: read
-      pages: write
-      id-token: write # OIDC — RFC-001 §2.3
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5 # BYPASS-001
 
-      # RFC-001 FM-15: smoke test pós-deploy (retry/backoff para HTTP 429 — FM-10)
-      # CDN-staleness: Pages cache (max-age=600) pode servir o objeto ANTIGO nos
-      # primeiros segundos pós-troca — smoke consulta com buster `?v=<sha>`
-      # (static server ignora query; Fastly usa chave distinta → origin fresh).
+      # RFC-001 FM-15: post-deploy smoke test (retry/backoff for HTTP 429 — FM-10).
+      # CDN-staleness: Pages cache (max-age=600) may serve the OLD object in the
+      # first seconds after swap — smoke queries with buster `?v=<sha>` (static
+      # server ignores query; Fastly uses a distinct key → origin fresh).
+      # Backoff is BOUNDED (ADR-010): sleeps 10/20/30/40 s worst-case ≈ 100 s so
+      # the whole deploy job stays inside its §C5 6-minute ceiling.
       - name: Smoke test published site
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
@@ -228,32 +89,32 @@ jobs:
           echo "smoke testing: $URL ($BUSTER)"
           for attempt in 1 2 3 4 5; do
             CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$URL?$BUSTER" || echo "000")
-            if [ "$CODE" = "200" ]; then echo "✓ HTTP 200 no attempt $attempt"; break; fi
-            if [ "$CODE" = "429" ]; then echo "::warning::HTTP 429 (rate limit) — aguardando"; fi
-            [ "$attempt" = "5" ] && { echo "::error::site não respondeu 200 após 5 tentativas (último: $CODE)"; exit 1; }
-            sleep $((attempt * 30))
+            if [ "$CODE" = "200" ]; then echo "✓ HTTP 200 on attempt $attempt"; break; fi
+            if [ "$CODE" = "429" ]; then echo "::warning::HTTP 429 (rate limit) — backing off"; fi
+            [ "$attempt" = "5" ] && { echo "::error::site did not answer 200 after 5 attempts (last: $CODE)"; exit 1; }
+            sleep $((attempt * 10))
           done
-          # SPEC-006: 404 custom servida
+          # SPEC-006: custom 404 served
           CODE404=$(curl -s -o /dev/null -w '%{http_code}' -L "${URL}rota-inexistente-xyz?$BUSTER" || echo "000")
           echo "404 route status: $CODE404"
-          # SPEC-008 AC-008.10: HSTS fornecido pela edge do GitHub
+          # SPEC-008 AC-008.10: HSTS provided by the GitHub edge
           curl -sI -L "$URL?$BUSTER" | grep -i 'strict-transport-security' \
-            && echo "✓ HSTS presente" \
-            || echo "::warning::HSTS ausente — verifique Settings → Pages → Enforce HTTPS"
-          # ADR-002: confirmar que NÃO há header CSP (esperado) e que há no HTML.
-          # Race pós-swap: Pages origin propaga o artefato novo de forma
-          # assíncrona — retry com backoff evita flaky determinístico.
+            && echo "✓ HSTS present" \
+            || echo "::warning::HSTS missing — check Settings → Pages → Enforce HTTPS"
+          # ADR-002: confirm there is NO header CSP (expected) and that the HTML has it.
+          # Post-swap race: Pages origin propagates the new artifact asynchronously —
+          # retry with BOUNDED backoff avoids deterministic flakiness (8/16/24/32 s).
           for attempt in 1 2 3 4 5; do
             if curl -s -L "$URL?$BUSTER" | grep -q 'http-equiv="Content-Security-Policy"'; then
-              echo "✓ CSP via meta presente (ADR-002 D1) — attempt $attempt"; break
+              echo "✓ CSP via meta present (ADR-002 D1) — attempt $attempt"; break
             fi
-            [ "$attempt" = "5" ] && { echo "::error::CSP-meta ausente no HTML publicado"; exit 1; }
-            echo "::warning::CSP ainda ausente (attempt $attempt) — propagação pós-deploy"
-            sleep $((attempt * 15))
+            [ "$attempt" = "5" ] && { echo "::error::CSP-meta missing from published HTML"; exit 1; }
+            echo "::warning::CSP still absent (attempt $attempt) — post-deploy propagation"
+            sleep $((attempt * 8))
           done
 
-      # §C6 — Journal: lembra o humano de registrar a entrada (não commita automaticamente,
-      # pois commits via GITHUB_TOKEN não disparam rebuild do Pages)
+      # §C6 — Journal: reminds the human to register the entry (does not commit
+      # automatically: GITHUB_TOKEN commits do not trigger Pages rebuilds)
       - name: Journal reminder (§C6)
         run: |
-          echo "::notice title=JOURNAL OBRIGATÓRIO::Registre em README.md: [$(date -u +%F)] · ${GITHUB_SHA::7} · $(git log -1 --pretty=%s) · PR #${{ github.run_number }}"
+          echo "::notice title=REQUIRED JOURNAL::Record in README.md: [$(date -u +%F)] · ${GITHUB_SHA::7} · $(git log -1 --pretty=%s) · PR #${{ github.run_number }}"
