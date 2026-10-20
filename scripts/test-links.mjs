@@ -57,6 +57,7 @@ const SKIPS = [
   "https://royal-data-core\\.github\\.io(/.*)?", // legacy hyphenful origin (pre-rename)
   "https?://[^/]*linkedin\\.com(/.*)?",
   "https?://wa\\.me(/.*)?",
+  "https?://([a-zA-Z0-9.-]*\\.)?instagram\\.com(/.*)?", // social anchors are hermetic by design
   "https?://([a-zA-Z0-9.-]*\\.)?github\\.com(/.*)?",
   "^(mailto|tel):",
 ];
