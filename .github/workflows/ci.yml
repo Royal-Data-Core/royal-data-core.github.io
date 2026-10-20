@@ -145,8 +145,16 @@ jobs:
         run: |
           set -euo pipefail
           OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          # Org/user site (repo == <owner>.github.io) is served at the apex;
+          # project sites are served under /<repo>/ (ADR-008 D7).
+          if [ "$REPO_NAME" = "${OWNER_NORM}.github.io" ]; then
+            BASE_PATH="/"
+          else
+            BASE_PATH="/${REPO_NAME}"
+          fi
           echo "origin=https://${OWNER_NORM}.github.io" >> "$GITHUB_OUTPUT"
-          echo "base_path=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
+          echo "base_path=${BASE_PATH}" >> "$GITHUB_OUTPUT"
 
       - name: Build (Astro)
         env:
@@ -255,8 +263,15 @@ jobs:
         if: matrix.suite != 'unit'
         run: |
           OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          # Same org-site/project-site rule as the build resolve step.
+          if [ "$REPO_NAME" = "${OWNER_NORM}.github.io" ]; then
+            SITE_BASE="/"
+          else
+            SITE_BASE="/${REPO_NAME}"
+          fi
           echo "SITE_URL=https://${OWNER_NORM}.github.io" >> "$GITHUB_ENV"
-          echo "SITE_BASE=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
+          echo "SITE_BASE=${SITE_BASE}" >> "$GITHUB_ENV"
 
       - name: Unit tests + coverage (§C12.3, ≥80% critical path)
         if: matrix.suite == 'unit'
@@ -320,19 +335,29 @@ jobs:
           restore-keys: lhci-
 
       # RFC-001 FM-08: retry 1 tolerates throttling flakiness on shared runners.
-      # ADR-008 D7 — base-mounted views: production artifact is root-layout with
+      # ADR-008 D7 — base-aware views: production artifact is root-layout with
       # base-prefixed routes; LHCI's built-in file server maps URL=path, so we
-      # audit a MIRRORED view (dist/* under site-io/) that matches the real
-      # Pages layout. 404 page is excluded from budgets (intentionally
-      # non-indexable, no canonical — SPEC-006 AC-006.3). This recipe is the
-      # only one with a green remote execution (2026-10-19, 5m38) — the
-      # direct-dist view never ran remotely (ADR-010 D12: zero-output hang);
-      # stdbuf -oL keeps progress visible even when the job is killed late.
-      - name: Mirror artifact under site-io/ (base-mounted LHCI view)
+      # audit a MIRRORED view (dist/* under the deployment path — apex "/" or
+      # /site-io/ for project sites) that matches the real Pages layout.
+      # 404 page is excluded from budgets (intentionally non-indexable, no
+      # canonical — SPEC-006 AC-006.3). This recipe is the only one with a
+      # green remote execution (2026-10-19, 5m38) — the direct-dist view never
+      # ran remotely (ADR-010 D12: zero-output hang); stdbuf -oL keeps
+      # progress visible even when the job is killed late.
+      - name: Mirror artifact at deployment path (LHCI URL=path view)
         run: |
-          mkdir -p .lhciview/site-io
-          cp -r dist/* .lhciview/site-io/
-          rm -f .lhciview/404.html .lhciview/site-io/404.html
+          set -euo pipefail
+          OWNER_NORM=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [ "$REPO_NAME" = "${OWNER_NORM}.github.io" ]; then
+            SITE_BASE="/"
+          else
+            SITE_BASE="/${REPO_NAME}"
+          fi
+          MIRROR_DIR=".lhciview${SITE_BASE%/}"
+          mkdir -p "$MIRROR_DIR"
+          cp -r dist/* "$MIRROR_DIR/"
+          rm -f .lhciview/404.html "$MIRROR_DIR/404.html"
 
       - name: LHCI (retry 1 — RFC-001 FM-08)
         run: |

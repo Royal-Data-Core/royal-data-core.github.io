@@ -21,7 +21,12 @@ export default defineConfig({
   // Platform prep — serve the built artifact; astro preview is the mandated
   // server for static output (no server-side runtime, CONSTITUTION §C1).
   webServer: {
-    command: "npx astro preview --port 4321",
+    // --ignore-lock: astro v7 preview keeps a lock file; a server killed
+    // externally leaves a stale lock and every subsequent invocation exits
+    // non-zero BEFORE binding (localOS failure mode observed 2026-10-20;
+    // CI runners are always fresh — no-op there). Readiness is still
+    // enforced by webServer.url, so this cannot mask a broken artifact.
+    command: "npx astro preview --port 4321 --ignore-lock",
     url: `${PREVIEW_URL}/`,
     env: { SITE_BASE },
     reuseExistingServer: true,

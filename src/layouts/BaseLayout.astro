@@ -93,6 +93,12 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
       content="default-src 'none'; base-uri 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- GSC verification (URL-prefix property) — token público por design
+         (prova de posse, não segredo — SEC-1 intacto). Proprietário: operador. -->
+    <meta
+      name="google-site-verification"
+      content="czHutUqNynxq2znDCR3n18jDk5OpM8hUXQ5CFjCvAow"
+    />
     <title>{displayTitle}</title>
     <meta name="description" content={description} />
     {noIndex ? <meta name="robots" content="noindex, follow" /> : null}
