@@ -173,6 +173,7 @@ Métricas DORA (atualização mensal): Deploys — · Lead Time — · CFR — �
 
 Mais recente no topo. Uma entrada por mudança relevante merged em `main`.
 
+- [2026-10-20] · [ADR-010 D15] · ci(deps): typescript held (^5, peer bloqueia TS7 — evidência de registro) fora do lint group; reviewers placeholder removido (D-01); PR #15 fechado com evidência · [d8137ed](https://github.com/Royal-Data-Core/site-io/commit/d8137ed)
 - [2026-10-20] · [ADR-010 D13/D14] · fix: `.nojekyll` no artefato (`include-hidden-files`) + smoke distinguindo instância do CDN de regressão real · [1a592f4](https://github.com/Royal-Data-Core/site-io/commit/1a592f4)
 - [2026-10-20] · [ADR-010 D12] · fix: LHCI na receita comprovada (mirror base-mounted + fallback 0.14.x, 5m31) — vista dist-direta nunca rodou no remoto · [68dda1f](https://github.com/Royal-Data-Core/site-io/commit/68dda1f)
 - [2026-10-20] · [ADR-010 D11] · fix: lock alinhado cross-npm 10/11/12 (proxy-agent@8.0.2 satisfaz peer opcional de @puppeteer/browsers) + gate §C5 mede o repo (exclui node_modules/.git) · [5f2f98d](https://github.com/Royal-Data-Core/site-io/commit/5f2f98d)
