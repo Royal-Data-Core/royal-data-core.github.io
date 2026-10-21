@@ -99,6 +99,20 @@ npm run qa:docker    # bateria canônica completa dentro do container QA
 - Docker é **instrumental** (§C11): nunca integra o artefato publicado (§C1).
   Caminho nativo (`npm run …`) segue primário — sem Docker, nada quebra.
 
+### Pre-flight de deploy local (RUNBOOK-001)
+
+```bash
+npm run test:guard                       # 1 · shift-left — 6 gates, sem build
+npm run build && npm run lint:security   # 2 · artefato + auditoria (0 violações)
+npm run preflight                        # 3 · sanity Pages-parity do dist/ (offline)
+npm run qa:docker                        # 4 · bateria completa no container homologado
+```
+
+Tudo verde ⇒ autorize GIT-SIDE: PR `develop` → merge → PR `main` →
+`deploy.yml` revalida tudo e publica (§C2: o único canal de deploy é
+GitHub Actions; `preflight` NÃO é canal — é a evidência da autorização).
+Fase 5 / limites / troubleshooting: runbook operacional local (`RUNBOOK-001`).
+
 ### 🌍 Operação bilíngue (checklist do operador)
 
 | #   | Ação                                                                                                                          | Onde                            | Quando            |
@@ -127,6 +141,7 @@ npm run qa:docker    # bateria canônica completa dentro do container QA
 | `notify-indexnow.mjs`       | IndexNow — notifica Bing/Yandex/Seznam/Naver a cada publish (key file + `keyLocation`, non-blocking) |
 | `commit-msg-check.mjs`      | Hook `commit-msg` — Conventional Commits (EN) sem dependências externas                              |
 | `pin-actions.sh`            | RFC-001 §2.7 — pin de Actions por SHA-40 via API oficial; `--check` = gate                           |
+| `preflight-local.mjs`       | RUNBOOK-001 — sanity do artefato local para autorização de deploy (files/wasm/sizes/CSP, offline)    |
 
 ### Bateria de testes
 

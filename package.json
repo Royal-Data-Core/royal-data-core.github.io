@@ -42,6 +42,7 @@
     "test:guard": "npm run check && npm run lint && npm run format:check && npm run lint:md && npm run lint:copy && npm run lint:topology",
     "dev:docker": "docker compose up --build dev",
     "qa:docker": "docker compose --profile qa build qa && docker compose --profile qa run --rm qa",
+    "preflight": "node scripts/preflight-local.mjs",
     "new:post": "node scripts/new-post.mjs",
     "prepare": "husky || true"
   },
