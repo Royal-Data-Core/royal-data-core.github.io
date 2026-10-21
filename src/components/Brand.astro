@@ -4,14 +4,23 @@
  * SPEC-012 AC-012.1 — locale-aware accessible name (the link points at the
  * home of the CURRENT locale).
  *
- * Asset policy (SPEC-010 §8, PERF-3):
- * - `public/brand/isotyper-color-alpha.webp` — 512x465, ~18 KB (derivativo WebP do
- *   isotyper vetorial-color original; o SVG de 272 KB que embrulhou um JPEG
- *   foi descartado).
+ * Asset policy (SPEC-010 §8, PERF-3, SPEC-013 — AC-013.2):
+ * - SOURCE: `src/assets/brand/isotyper-color-alpha.webp` — 512x465 original
+ *   (derivativo WebP do isotyper vetorial-color original; o SVG de 272 KB
+ *   que embrulhou um JPEG foi descartado).
+ * - RENDERED MARKS: `astro:assets` derivatives (`<Image>`), not the raw
+ *   source: header/footer 72x65 (2x do h-9 = 36px), hero 256x233. Sem
+ *   downscaled-oversize — o browser recebe só os bytes do derivativo.
+ * - `public/brand/isotyper-color-alpha.webp` permanece no histórico como
+ *   INPUT de `scripts/generate-og.mjs` (og images são arquivos separados).
  * - The wordmark is TEXT (system stack), not an image: crisp at any density,
  *   zero bytes, translatable, and immune to raster blur.
- * - Explicit `width`/`height` on the `<img>` (intrinsic ratio) ⇒ CLS = 0.
+ * - `width`/`height` emitidos pelo `<Image>` (intrinsic ratio) ⇒ CLS = 0.
+ *   `loading`: header `eager` (+ `fetchpriority="high"`, above-the-fold —
+ *   nunca `lazy`), footer `lazy`.
  */
+import { Image } from "astro:assets";
+import brandMark from "../assets/brand/isotyper-color-alpha.webp";
 import { withBase } from "../lib/withBase";
 import { DEFAULT_LOCALE, ROUTES, UI_STRINGS, type Locale } from "../lib/i18n";
 
@@ -38,12 +47,17 @@ const markClass = variant === "footer" ? "h-9 w-auto opacity-90" : "h-9 w-auto";
   aria-label={label}
   class="inline-flex min-h-[44px] items-center gap-2 rounded-md"
 >
-  <img
-    src={withBase("/brand/isotyper-color-alpha.webp")}
-    width="512"
-    height="465"
+  {
+    /* SPEC-013 AC-013.2 — derivativo astro:assets 72x65 (2x de h-9): o elemento emitido continua sendo <img>; header eager + fetchpriority=high (above-the-fold), footer lazy. */
+  }
+  <Image
+    src={brandMark}
+    width={72}
+    height={65}
     alt=""
     aria-hidden="true"
+    loading={variant === "footer" ? "lazy" : "eager"}
+    fetchpriority={variant === "footer" ? undefined : "high"}
     decoding="async"
     class={markClass}
   />

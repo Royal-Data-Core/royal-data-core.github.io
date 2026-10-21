@@ -50,7 +50,8 @@ export default defineConfig({
 
   build: {
     format: "directory",
-    inlineStylesheets: "auto",
+    // SPEC-013 AC-013.1 — CSS inline no <head> (≈6KB): elimina CSS render-blocking; orçamento CSS 30KB intacto
+    inlineStylesheets: "always",
   },
 
   markdown: {
