@@ -14,17 +14,26 @@
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { withBase } from "../../lib/withBase";
-import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../../lib/contact";
+import {
+  CONTACT_EMAIL,
+  CONTACT_SUBJECTS_EN,
+  buildMailtoHrefEncoded,
+  defaultMailtoBody,
+} from "../../lib/contact";
 import { ROUTES } from "../../lib/i18n";
 
 const SITE_DESCRIPTION =
   "Privacy statement: this site collects no personal data, sets no cookies and runs no analytics or trackers.";
 
+// Same site-derivation mechanism as the PT privacidade.astro (CR-001 §D6).
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+
 const privacyMailto =
   CONTACT_EMAIL &&
   buildMailtoHrefEncoded(
     CONTACT_EMAIL,
-    "Privacy request — Royal Data Core (EN site)",
+    CONTACT_SUBJECTS_EN.privacyRequest,
+    defaultMailtoBody(`${site}${withBase(ROUTES.privacy.en)}`, "en"),
   );
 ---
 

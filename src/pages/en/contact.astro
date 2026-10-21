@@ -16,21 +16,27 @@ import {
   CONTACT_PHONE,
   CONTACT_PHONE_DISPLAY,
   CONTACT_SOCIALS,
+  CONTACT_SUBJECTS_EN,
   HAS_CONTACT_EMAIL,
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
+  defaultMailtoBody,
 } from "../../lib/contact";
 import { ROUTES } from "../../lib/i18n";
 
 const SITE_DESCRIPTION =
   "Talk to a software testing consultant. Reply within one business day, with a daily overlap with US Eastern business hours. Contracts in English.";
 
+// Same site-derivation mechanism as contato.astro (CR-001 §D6).
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+
 const encodedMailto =
   CONTACT_EMAIL &&
   buildMailtoHrefEncoded(
     CONTACT_EMAIL,
-    "General enquiry — Royal Data Core (EN site)",
+    CONTACT_SUBJECTS_EN.general,
+    defaultMailtoBody(`${site}${withBase(ROUTES.contact.en)}`, "en"),
   );
 const whatsappHref =
   CONTACT_PHONE &&

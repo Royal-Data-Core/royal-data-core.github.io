@@ -8,12 +8,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
+  CONTACT_SUBJECTS,
   buildMailtoHrefEncoded,
   contactFallbackHref,
+  defaultMailtoBody,
 } from "../lib/contact";
 
 const SITE_DESCRIPTION =
   "Endereço não encontrado. Escolha um destino: início, artigos, serviços ou busca.";
+
+// Same site-derivation mechanism as index.astro/servicos.astro (CR-001 §D6);
+// the 404 origin is the site root.
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
 
 /**
  * AC-006.N1 — render as text only (textContent), never via set:html.
@@ -25,7 +31,11 @@ const requestedPathHint =
 
 const brokenLinkMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Link quebrado — reporte");
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    CONTACT_SUBJECTS.linkBroken,
+    defaultMailtoBody(`${site}${withBase("/")}`),
+  );
 ---
 
 <BaseLayout

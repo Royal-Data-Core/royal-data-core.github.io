@@ -97,6 +97,18 @@ describe("defaultMailtoBody (SPEC-005 AC-005.2)", () => {
     expect(body).toContain("Royal Data Core LTDA");
     expect(body).toContain("https://royaldatacore.github.io");
   });
+
+  it("keeps the PT copy byte-identical with the default locale (CR-001 §D5)", () => {
+    expect(defaultMailtoBody("https://royaldatacore.github.io/contato")).toBe(
+      "Enviado a partir do site oficial da Royal Data Core LTDA (https://royaldatacore.github.io/contato).",
+    );
+  });
+
+  it("localizes the copy to EN on demand (CR-001 §D5)", () => {
+    expect(defaultMailtoBody("https://royaldatacore.github.io/en", "en")).toBe(
+      "Sent from the official Royal Data Core LTDA website (https://royaldatacore.github.io/en).",
+    );
+  });
 });
 
 describe("encodeHtmlEntities (ADR-003 D3)", () => {
@@ -146,12 +158,18 @@ describe("CONTACT_SUBJECTS (ADR-003 D4 qualifier table)", () => {
     );
   });
 
-  it("builds post and broken-link diagnostics subjects", () => {
-    expect(CONTACT_SUBJECTS.post("flaky-tests-root-cause")).toBe(
-      "Sobre o artigo: flaky-tests-root-cause",
+  it("builds nothing outside the SSOT — dead post/brokenLink channels deleted (CR-001 §D3)", () => {
+    const serialized = JSON.stringify(CONTACT_SUBJECTS);
+    expect(serialized).not.toContain("Sobre o artigo:");
+    expect(serialized).not.toContain("Link quebrado —");
+  });
+
+  it("keeps the diagnostic-surface constants (CR-001 §D4)", () => {
+    expect(CONTACT_SUBJECTS.privacyRequest).toBe(
+      "[CONTATO PRIVACIDADE] - Royal Data Core",
     );
-    expect(CONTACT_SUBJECTS.brokenLink("/blog/")).toBe(
-      "Link quebrado — /blog/",
+    expect(CONTACT_SUBJECTS.linkBroken).toBe(
+      "[CONTATO LINK QUEBRADO] - Royal Data Core",
     );
   });
 
@@ -228,12 +246,35 @@ describe("buildPhoneDisplay (D-03 display formatting)", () => {
   });
 });
 
-describe("SPEC-012/AC-012.6 — subjects de contato EN", () => {
-  it("a tabela EN não oferece modelos de emprego brasileiros", () => {
-    expect(CONTACT_SUBJECTS_EN.general).toContain("General enquiry");
-    expect(CONTACT_SUBJECTS_EN.servicesB2B("Quality diagnosis")).toContain(
-      "QA consulting enquiry — Quality diagnosis",
+describe("SPEC-012/AC-012.6 + CR-001 §B/D1..D4 — subjects de contato EN", () => {
+  it("adopts the D1 bracket grammar as constants (×5)", () => {
+    expect(CONTACT_SUBJECTS_EN.hero).toBe(
+      "[CONTACT VIA SITE] - Royal Data Core",
     );
+    expect(CONTACT_SUBJECTS_EN.servicesB2B).toBe(
+      "[QA CONSULTING B2B] - Royal Data Core",
+    );
+    expect(CONTACT_SUBJECTS_EN.general).toBe(
+      "[GENERAL CONTACT] - Royal Data Core",
+    );
+    // R-1 (OPEN-1): D1 vocabulary prevails — "CONTACT PRIVACY".
+    expect(CONTACT_SUBJECTS_EN.privacyRequest).toBe(
+      "[CONTACT PRIVACY] - Royal Data Core",
+    );
+    expect(CONTACT_SUBJECTS_EN.linkBroken).toBe(
+      "[CONTACT BROKEN LINK] - Royal Data Core",
+    );
+  });
+
+  it("locks the RFC 6068 %20 serialization of the EN general subject", () => {
+    expect(
+      buildMailtoHref("a@b.com", "[GENERAL CONTACT] - Royal Data Core"),
+    ).toBe(
+      "mailto:a@b.com?subject=%5BGENERAL%20CONTACT%5D%20-%20Royal%20Data%20Core",
+    );
+  });
+
+  it("a tabela EN não oferece modelos de emprego brasileiros", () => {
     const serialized = JSON.stringify(CONTACT_SUBJECTS_EN);
     expect(serialized).not.toContain("CLT");
     expect(serialized).not.toContain("aloca");

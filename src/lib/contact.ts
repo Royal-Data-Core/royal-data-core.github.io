@@ -98,9 +98,18 @@ export function buildMailtoHref(
 /**
  * Default pre-filled body: razão social + origin URL.
  * SPEC-005 AC-005.2 requires the body to contain razão social and the origin URL.
+ *
+ * CR-001 §D5 (2026-10-21): the copy is now locale-aware. The PT copy keeps the
+ * original template verbatim, and `"pt"` remains the default so every existing
+ * PT caller emits byte-identical output. The EN copy mirrors the same grammar.
  */
-export function defaultMailtoBody(originUrl: string): string {
-  return `Enviado a partir do site oficial da Royal Data Core LTDA (${originUrl}).`;
+export function defaultMailtoBody(
+  originUrl: string,
+  locale: "pt" | "en" = "pt",
+): string {
+  return locale === "en"
+    ? `Sent from the official Royal Data Core LTDA website (${originUrl}).`
+    : `Enviado a partir do site oficial da Royal Data Core LTDA (${originUrl}).`;
 }
 
 /**
@@ -161,27 +170,39 @@ export function buildMailtoHrefEncoded(
  * subject is `[{{CTA_CTX}}] - Royal Data Core`, so mail clients folder by CTA
  * origin without analytics. Uniform "Royal Data Core" suffix; service
  * descriptors dropped by operator directive.
+ *
+ * CR-001 §B/D2–D4 (2026-10-21): the table is constant-only — the dead `post`
+ * channel and the unused `brokenLink` builder are deleted (`post` stays
+ * reserved as an alias for SPEC-004, not implemented), `servicesB2B` loses its
+ * unused `${service}` param, and the diagnostic surfaces gain the
+ * `privacyRequest`/`linkBroken` constants (LGPD requests, broken-link reports).
  */
 export const CONTACT_SUBJECTS = {
   hero: "[CONTATO VIA SITE] - Royal Data Core",
   servicesB2B: "[CONSULTORIA QA B2B] - Royal Data Core",
   servicesClt: "[OPORTUNIDADE CLT QA] - Royal Data Core",
   general: "[CONTATO GERAL] - Royal Data Core",
-  post: (slug: string) => `Sobre o artigo: ${slug}`,
-  brokenLink: (path: string) => `Link quebrado — ${path}`,
+  privacyRequest: "[CONTATO PRIVACIDADE] - Royal Data Core",
+  linkBroken: "[CONTATO LINK QUEBRADO] - Royal Data Core",
 } as const;
 
 /**
  * SPEC-012 AC-012.6 — English subjects (EN locale). No CLT/alocação subject
  * exists here on purpose: the EN surface does not offer Brazilian employment
  * models (SPEC-012 §4 — delta matrix).
+ *
+ * CR-001 §B/D1–D4 (2026-10-21): EN adopts the same D1 bracket grammar and
+ * RFC 6068 serialization, constant-only like the PT table (dead `post` deleted,
+ * `servicesB2B` loses its unused `${service}` param) and gains the
+ * `privacyRequest`/`linkBroken` constants. The no-CLT/no-alocação invariant is
+ * byte-preserved and stays under unit + e2e surveillance (SPEC-012 AC-012.7).
  */
 export const CONTACT_SUBJECTS_EN = {
-  hero: "Contact via site — Hero (EN)",
-  servicesB2B: (service: string) => `QA consulting enquiry — ${service}`,
-  general: "General enquiry — Royal Data Core (EN site)",
-  post: (slug: string) => `About the article: ${slug}`,
-  brokenLink: (path: string) => `Broken link — ${path}`,
+  hero: "[CONTACT VIA SITE] - Royal Data Core",
+  servicesB2B: "[QA CONSULTING B2B] - Royal Data Core",
+  general: "[GENERAL CONTACT] - Royal Data Core",
+  privacyRequest: "[CONTACT PRIVACY] - Royal Data Core",
+  linkBroken: "[CONTACT BROKEN LINK] - Royal Data Core",
 } as const;
 
 /**

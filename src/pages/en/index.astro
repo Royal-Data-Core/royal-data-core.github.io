@@ -17,15 +17,28 @@ import CtaSection from "../../components/CtaSection.astro";
 import Icon from "../../components/Icon.astro";
 import { withBase } from "../../lib/withBase";
 import { readingMinutes } from "../../lib/date";
-import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../../lib/contact";
+import {
+  CONTACT_EMAIL,
+  CONTACT_SUBJECTS_EN,
+  buildMailtoHrefEncoded,
+  defaultMailtoBody,
+} from "../../lib/contact";
 import { ROUTES, postSlug } from "../../lib/i18n";
 
 const SITE_DESCRIPTION =
   "Quality engineering for critical software: test strategy, automation and QA pipelines delivered remotely from Brazil to teams worldwide.";
 
+// Same site-derivation mechanism as the PT index/servicos (CR-001 §D6); the
+// EN home origin is the locale root `/en`.
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+const enMailtoBody = defaultMailtoBody(
+  `${site}${withBase(ROUTES.home.en)}`,
+  "en",
+);
+
 const heroMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contact via site — Hero (EN)");
+  buildMailtoHrefEncoded(CONTACT_EMAIL, CONTACT_SUBJECTS_EN.hero, enMailtoBody);
 
 const postEntries = await getCollection("blog");
 const publishedPosts = postEntries
@@ -52,7 +65,7 @@ const services = [
     ],
     cta: {
       label: "Request a diagnosis",
-      subject: "QA consulting enquiry — Quality diagnosis",
+      subject: CONTACT_SUBJECTS_EN.servicesB2B,
     },
   },
   {
@@ -71,7 +84,7 @@ const services = [
     ],
     cta: {
       label: "Discuss automation",
-      subject: "QA consulting enquiry — Test automation",
+      subject: CONTACT_SUBJECTS_EN.servicesB2B,
     },
   },
   {
@@ -90,7 +103,7 @@ const services = [
     ],
     cta: {
       label: "Talk about a dedicated engagement",
-      subject: "QA consulting enquiry — Dedicated QA engineer",
+      subject: CONTACT_SUBJECTS_EN.servicesB2B,
     },
   },
 ] as const;
@@ -226,6 +239,7 @@ const services = [
             eyebrow={service.eyebrow}
             deliverables={service.deliverables}
             ctas={[service.cta]}
+            mailtoBody={enMailtoBody}
           />
         ))
       }

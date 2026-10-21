@@ -15,6 +15,7 @@ import {
   CONTACT_PHONE,
   CONTACT_PHONE_DISPLAY,
   CONTACT_SUBJECTS,
+  CONTACT_SUBJECTS_EN,
   HAS_CONTACT_EMAIL,
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
@@ -47,19 +48,26 @@ const cnpj = "69.527.139/0001-94";
 const locationLine = locale === "en" ? "Matão/SP, Brazil" : "Matão/SP, Brasil";
 
 /**
- * ADR-003 D4 rev. 2026-10-21 — the footer had NO locale-branched subject on
- * HEAD: one literal ("Contato geral — Royal Data Core") served every locale,
- * so the bracket SSOT constant replaces it for all locales and the legacy
- * em-dash form disappears domain-wide. Body origin = site root.
+ * ADR-003 D4 rev. 2026-10-21 + CR-001 §B/D5/D6 (FR-7) — SSG-deterministic
+ * locale-detect: the EN surface lives under `/en/**`, so the footer derives the
+ * branch from the built pathname. Subject comes from the SSOT table of that
+ * locale (PT bracket constant until now; EN bracket constant on EN pages) and
+ * the body template matches it. Body origin = root of the CURRENT locale
+ * (`/en` on EN pages, `/` on PT pages); the D-03 guard stays honest — when
+ * `Astro.site` is undefined the body is omitted, never hardcoded.
  */
 const siteOrigin = Astro.site?.origin ?? null;
+const isEn = Astro.url.pathname.startsWith(withBase("/en"));
 const footerMailtoBody = siteOrigin
-  ? defaultMailtoBody(`${siteOrigin}${withBase("/")}`)
+  ? defaultMailtoBody(
+      `${siteOrigin}${withBase(isEn ? "/en" : "/")}`,
+      isEn ? "en" : "pt",
+    )
   : undefined;
 const encodedMailto = CONTACT_EMAIL
   ? buildMailtoHrefEncoded(
       CONTACT_EMAIL,
-      CONTACT_SUBJECTS.general,
+      isEn ? CONTACT_SUBJECTS_EN.general : CONTACT_SUBJECTS.general,
       footerMailtoBody,
     )
   : null;

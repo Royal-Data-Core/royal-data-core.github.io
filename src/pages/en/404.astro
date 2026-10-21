@@ -7,11 +7,20 @@
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { withBase } from "../../lib/withBase";
-import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../../lib/contact";
+import {
+  CONTACT_EMAIL,
+  CONTACT_SUBJECTS_EN,
+  buildMailtoHrefEncoded,
+  defaultMailtoBody,
+} from "../../lib/contact";
 import { ROUTES } from "../../lib/i18n";
 
 const SITE_DESCRIPTION =
   "Address not found. Choose a destination: home, articles, services or search.";
+
+// Same site-derivation mechanism as the PT 404.astro (CR-001 §D6); the EN 404
+// origin is the locale root `/en`.
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
 
 const requestedPathHint =
   "the address you opened does not exist on this site (it may have been moved, renamed, or never existed).";
@@ -20,7 +29,8 @@ const brokenLinkMailto =
   CONTACT_EMAIL &&
   buildMailtoHrefEncoded(
     CONTACT_EMAIL,
-    "Broken link — Royal Data Core (EN site)",
+    CONTACT_SUBJECTS_EN.linkBroken,
+    defaultMailtoBody(`${site}${withBase(ROUTES.home.en)}`, "en"),
   );
 ---
 

@@ -5,14 +5,27 @@
  * while remaining indexable by search engines (SPEC-009 AC-009.6).
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../lib/contact";
+import { withBase } from "../lib/withBase";
+import {
+  CONTACT_EMAIL,
+  CONTACT_SUBJECTS,
+  buildMailtoHrefEncoded,
+  defaultMailtoBody,
+} from "../lib/contact";
 
 const SITE_DESCRIPTION =
   "Este site não coleta dados pessoais. Sem cookies, sem analytics, sem trackers. O que o GitHub registra e quais são seus direitos.";
 
+// Same site-derivation mechanism as index.astro/servicos.astro (CR-001 §D6).
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+
 const privacyMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "LGPD — solicitação do titular");
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    CONTACT_SUBJECTS.privacyRequest,
+    defaultMailtoBody(`${site}${withBase("/privacidade")}`),
+  );
 
 // AC-009.2 — last-updated date is generated at build time (never runtime JS).
 const lastUpdatedFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -234,8 +247,8 @@ const lastUpdated = lastUpdatedFormatter.format(new Date());
             <p>
               Se você acredita que qualquer dado seu foi tratado por nós — por
               exemplo em uma troca de email iniciada por você — escreva para o
-              canal de email abaixo com o assunto "LGPD — solicitação do
-              titular".
+              canal de email abaixo com o assunto "[CONTATO PRIVACIDADE] - Royal
+              Data Core".
             </p>
             <ul class="list-disc pl-5">
               <li>
