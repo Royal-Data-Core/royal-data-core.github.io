@@ -1,0 +1,194 @@
+---
+/**
+ * SPEC-012 — /en/contact (English contact surface).
+ *
+ * Same channels as the PT page (one SSOT: src/lib/contact.ts), English copy.
+ * SPEC-012 §4: no employment/benefits/visa language — the engagement is a
+ * commercial contract for services. The contracting entity is disclosed
+ * (razão social + CNPJ) — CONSTITUTION §C9 forbids hiding it.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Icon from "../../components/Icon.astro";
+import { withBase } from "../../lib/withBase";
+import {
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_DISPLAY,
+  CONTACT_PHONE,
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_SOCIALS,
+  HAS_CONTACT_EMAIL,
+  HAS_CONTACT_PHONE,
+  buildMailtoHrefEncoded,
+  buildWhatsAppHref,
+} from "../../lib/contact";
+import { ROUTES } from "../../lib/i18n";
+
+const SITE_DESCRIPTION =
+  "Talk to a software testing consultant. Reply within one business day, with a daily overlap with US Eastern business hours. Contracts in English.";
+
+const encodedMailto =
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    "General enquiry — Royal Data Core (EN site)",
+  );
+const whatsappHref =
+  CONTACT_PHONE &&
+  buildWhatsAppHref(
+    CONTACT_PHONE,
+    "Hello! I would like to talk to Royal Data Core (contact sent from the site).",
+  );
+
+const socials = [
+  { label: "GitHub", href: CONTACT_SOCIALS.github },
+  { label: "Instagram", href: CONTACT_SOCIALS.instagram },
+  { label: "LinkedIn", href: CONTACT_SOCIALS.linkedin },
+];
+---
+
+<BaseLayout
+  title="Contact — Royal Data Core"
+  description={SITE_DESCRIPTION}
+  locale="en"
+  alternates={{ "pt-BR": "/contato", en: "/en/contact" }}
+>
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+      Contact
+    </h1>
+    <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
+      One person answers these messages. Reply within one business day, with a
+      daily overlap with US Eastern business hours (roughly 07:00–13:00 ET,
+      shifting with daylight saving). Engagements are contracted in English.
+    </p>
+
+    <section class="mt-8" aria-labelledby="channels-heading">
+      <h2 id="channels-heading" class="text-ink text-xl leading-snug font-bold">
+        Channels
+      </h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <article class="card flex h-full flex-col gap-3">
+          <span
+            class="text-link border-border inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+          >
+            <Icon name="mail" size={20} />
+          </span>
+          <h3 class="text-ink text-lg leading-snug font-bold">Email</h3>
+          {
+            HAS_CONTACT_EMAIL && CONTACT_EMAIL && encodedMailto ? (
+              <a
+                data-testid="contact-email-link"
+                href={encodedMailto.hrefEncoded}
+                aria-label={encodedMailto.addressDecoded}
+                class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+                set:html={encodedMailto.textEncoded}
+              />
+            ) : (
+              <span
+                data-testid="contact-email-link"
+                title="Contact channel pending — decision D-03 (SDD-CONTEXT §9)"
+              >
+                {CONTACT_EMAIL_DISPLAY}
+              </span>
+            )
+          }
+          <p class="text-ink-muted text-sm leading-relaxed">
+            Describe the product, the stack and where quality currently hurts.
+            The more concrete the context, the more concrete the answer.
+          </p>
+        </article>
+
+        <article class="card flex h-full flex-col gap-3">
+          <span
+            class="text-link border-border inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+          >
+            <Icon name="message-circle" size={20} />
+          </span>
+          <h3 class="text-ink text-lg leading-snug font-bold">WhatsApp</h3>
+          {
+            HAS_CONTACT_PHONE && CONTACT_PHONE && whatsappHref ? (
+              <a
+                data-testid="contact-whatsapp-link"
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+              >
+                {CONTACT_PHONE_DISPLAY}
+              </a>
+            ) : (
+              <span
+                data-testid="contact-whatsapp-link"
+                title="Contact channel pending — decision D-03 (SDD-CONTEXT §9)"
+              >
+                {CONTACT_PHONE_DISPLAY}
+              </span>
+            )
+          }
+          <p class="text-ink-muted text-sm leading-relaxed">
+            Best for scheduling a call and for short exchanges about scope.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-10" aria-labelledby="scope-heading">
+      <h2 id="scope-heading" class="text-ink text-xl leading-snug font-bold">
+        What an engagement looks like
+      </h2>
+      <ul
+        class="text-ink-muted mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed"
+      >
+        <li>
+          A short written reply with an honest read on the problem, whether or
+          not it needs me.
+        </li>
+        <li>
+          A call to fix the scope: what is in, what is out, what it costs and
+          how long it takes.
+        </li>
+        <li>
+          A commercial contract for services, in English, with a Brazilian
+          fiscal note.
+        </li>
+        <li>
+          Delivery remote, inside your repositories and your CI — with the
+          pipeline reports public.
+        </li>
+      </ul>
+    </section>
+
+    <section class="mt-10" aria-labelledby="legal-heading">
+      <h2 id="legal-heading" class="text-ink text-xl leading-snug font-bold">
+        Contracting entity
+      </h2>
+      <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+        ROYAL DATA CORE LTDA · CNPJ 69.527.139/0001-94 · Matão/SP, Brazil.
+        Engagements are contracts for services delivered remotely: there is no
+        employment relationship, no benefits package and no visa or relocation
+        sponsorship.
+      </p>
+      <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+        {
+          socials.map((social) => (
+            <a
+              data-testid={`contact-social-${social.label.toLowerCase()}`}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            >
+              {social.label}
+            </a>
+          ))
+        }
+        <a
+          href={withBase(ROUTES.privacy.en)}
+          class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        >
+          Privacy
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

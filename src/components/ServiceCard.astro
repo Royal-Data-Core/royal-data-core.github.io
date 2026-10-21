@@ -7,6 +7,7 @@
  */
 import Icon, { type IconName } from "./Icon.astro";
 import { withBase } from "../lib/withBase";
+import { DEFAULT_LOCALE, ROUTES, type Locale } from "../lib/i18n";
 import {
   CONTACT_EMAIL,
   HAS_CONTACT_EMAIL,
@@ -35,6 +36,8 @@ interface Props {
   audience?: "b2b" | "clt";
   /** Optional pre-filled mailto body (AC-005.2: razão social + origin URL). */
   mailtoBody?: string;
+  /** SPEC-012 — rendered locale (contact fallback route + pending note). */
+  locale?: Locale;
 }
 
 const {
@@ -47,7 +50,9 @@ const {
   ctas,
   audience,
   mailtoBody,
+  locale = DEFAULT_LOCALE,
 } = Astro.props;
+const isEn = locale === "en";
 
 // Fail closed on missing labels (§C9 + SPEC-001): no undefined reaches the template.
 ctas.forEach((cta, index) => {
@@ -130,8 +135,12 @@ const encodedMailto =
         ) : (
           <a
             data-testid={`service-cta-${slug}`}
-            href={withBase("/contato")}
-            title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
+            href={withBase(ROUTES.contact[locale])}
+            title={
+              isEn
+                ? "Contact channel pending — decision D-03 (SDD-CONTEXT §9)"
+                : "Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
+            }
             class="btn btn-secondary"
           >
             {cta.label}

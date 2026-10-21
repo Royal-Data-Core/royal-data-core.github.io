@@ -1,0 +1,228 @@
+---
+/**
+ * SPEC-012 — /en/services (English services catalogue).
+ *
+ * Delta vs the PT-BR page (SPEC-012 §4): the CLT / alocação section does NOT
+ * exist here — Brazilian employment models are out of scope for the English
+ * surface. The engagement models are the same three (project, retainer,
+ * dedicated) and the regional radius question is answered honestly.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import Icon from "../../components/Icon.astro";
+import { withBase } from "../../lib/withBase";
+import { defaultMailtoBody } from "../../lib/contact";
+import { ROUTES } from "../../lib/i18n";
+
+const SITE_DESCRIPTION =
+  "Quality diagnosis, test automation and dedicated QA engineering. Remote delivery in English, engagement models by project, retainer or dedicated work.";
+
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+const mailtoBody = defaultMailtoBody(`${site}${withBase(ROUTES.services.en)}`);
+
+const services = [
+  {
+    slug: "qa-diagnostic",
+    icon: "target",
+    eyebrow: "B2B · per project",
+    title: "Quality diagnosis",
+    description:
+      "A map of how your product is actually tested today: real coverage, risk gaps, QA technical debt, and what to automate first to get payback sooner.",
+    deliverables: [
+      "risk-prioritised gap report",
+      "test coverage matrix",
+      "automation plan in three horizons",
+      "effort estimate per initiative",
+    ],
+    ctaLabel: "Request a diagnosis",
+    ctaSubject: "QA consulting enquiry — Quality diagnosis",
+  },
+  {
+    slug: "test-automation",
+    icon: "workflow",
+    eyebrow: "B2B · project or retainer",
+    title: "Automation that outlives the sprint",
+    description:
+      "Automated test suites that do not turn into a source of flakes. The test pyramid applied for real: fast unit tests, dependable integration, surgical E2E — each layer where it belongs.",
+    deliverables: [
+      "automated suite running in CI",
+      "pipeline configuration with quality gates",
+      "tool selection and instrumentation",
+      "maintenance documentation",
+      "knowledge transfer to your team",
+    ],
+    ctaLabel: "Discuss automation",
+    ctaSubject: "QA consulting enquiry — Test automation",
+  },
+  {
+    slug: "embedded-qa",
+    icon: "users",
+    eyebrow: "Remote · dedicated engagement",
+    title: "QA inside your team",
+    description:
+      "A dedicated test engineer working inside your squad, or mentoring the engineers already on it. Quality culture is not outsourced forever — it is built.",
+    deliverables: [
+      "dedicated QA work inside the squad",
+      "review of your test strategy",
+      "one-to-one and group mentoring",
+      "acceptance criteria and definition of done",
+      "quality metrics tracking",
+    ],
+    ctaLabel: "Talk about a dedicated engagement",
+    ctaSubject: "QA consulting enquiry — Dedicated QA engineer",
+  },
+] as const;
+
+const engagementModels = [
+  {
+    badge: "Per project",
+    meaning: "Fixed scope and deadline, one delivery",
+  },
+  {
+    badge: "Monthly retainer",
+    meaning: "Reserved hours per month, priority in the agenda",
+  },
+  {
+    badge: "Dedicated engineer",
+    meaning: "A QA engineer embedded in your squad for an agreed period",
+  },
+  {
+    badge: "Mentoring",
+    meaning: "Recurring sessions with your own engineers",
+  },
+];
+
+const faq = [
+  {
+    question: "Do you work with clients outside Brazil?",
+    answer:
+      "Yes. The engagement is contracted in English and delivered remotely, with a daily overlap with US Eastern business hours. The contracting entity is a Brazilian company (Royal Data Core LTDA, CNPJ 69.527.139/0001-94), which we disclose upfront.",
+  },
+  {
+    question: "Which stacks do you work with?",
+    answer:
+      "Playwright, Cypress, Selenium, RestAssured, Pact, JUnit, Vitest. In CI: GitHub Actions, GitLab CI, Jenkins, CircleCI. The tooling follows the problem, not the other way around.",
+  },
+  {
+    question: "Do you provide employment, benefits or visa sponsorship?",
+    answer:
+      "No. Engagements are commercial contracts for services delivered remotely. There is no employment relationship, no benefits package and no relocation or visa sponsorship.",
+  },
+  {
+    question: "Is on-site work possible?",
+    answer:
+      "Services are delivered remotely. On-site work is possible only in Brazil, within a 100 km radius of Matão/SP — covering Araraquara, Ribeirão Preto, São Carlos, Jaboticabal and Descalvado.",
+  },
+  {
+    question: "Do you issue invoices or a fiscal note?",
+    answer:
+      "Yes. Royal Data Core LTDA issues a Brazilian fiscal note for the contracted services, and the commercial terms are agreed in English.",
+  },
+];
+---
+
+<BaseLayout
+  title="Services — Royal Data Core"
+  description={SITE_DESCRIPTION}
+  locale="en"
+  alternates={{ "pt-BR": "/servicos", en: "/en/services" }}
+>
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+      Services
+    </h1>
+    <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
+      Three ways to work together, depending on where your team actually is. No
+      long-term contract required to start, and no sales pitch to find out
+      whether the scope is worth it.
+    </p>
+
+    <section class="mt-8" aria-labelledby="b2b-heading">
+      <h2 id="b2b-heading" class="text-ink text-xl leading-snug font-bold">
+        For product teams (B2B)
+      </h2>
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
+        Contracts with a defined scope and deadline, delivered by an experienced
+        engineer. Ideal for teams that need capacity or an independent quality
+        assessment before an investment decision.
+      </p>
+      <div
+        data-testid="services-grid"
+        class="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+      >
+        {
+          services.map((service) => (
+            <ServiceCard
+              slug={service.slug}
+              icon={service.icon}
+              locale="en"
+              audience="b2b"
+              eyebrow={service.eyebrow}
+              title={service.title}
+              description={service.description}
+              deliverables={service.deliverables}
+              ctas={[{ label: service.ctaLabel, subject: service.ctaSubject }]}
+              mailtoBody={mailtoBody}
+            />
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="mt-10" aria-labelledby="engagement-models">
+      <h2
+        id="engagement-models"
+        class="text-ink text-xl leading-snug font-bold"
+      >
+        Engagement models
+      </h2>
+      <div class="mt-3 overflow-x-auto">
+        <table class="w-full border-collapse text-left text-sm">
+          <thead>
+            <tr class="border-border text-ink border-b">
+              <th scope="col" class="py-2 pr-4 font-semibold">Model</th>
+              <th scope="col" class="py-2 font-semibold">What it means</th>
+            </tr>
+          </thead>
+          <tbody class="text-ink-muted">
+            {
+              engagementModels.map((model) => (
+                <tr class="border-border border-b">
+                  <td class="text-ink py-2 pr-4 font-semibold">
+                    {model.badge}
+                  </td>
+                  <td class="py-2">{model.meaning}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-10" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" class="text-ink text-xl leading-snug font-bold">
+        Frequently asked questions
+      </h2>
+      <dl class="mt-3 space-y-5">
+        {
+          faq.map((item) => (
+            <div>
+              <dt class="text-ink text-sm font-semibold">{item.question}</dt>
+              <dd class="text-ink-muted mt-1 max-w-3xl text-sm leading-relaxed">
+                {item.answer}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <p class="mt-8">
+      <a href={withBase(ROUTES.contact.en)} class="btn btn-primary">
+        <Icon name="mail" size={18} />
+        Talk about your context
+      </a>
+    </p>
+  </div>
+</BaseLayout>

@@ -9,16 +9,20 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { withBase } from "../../lib/withBase";
 import { formatPublishDate, toIsoDate } from "../../lib/date";
 import { ORGANIZATION, serializeJsonLd } from "../../lib/jsonld";
+import { postSlug } from "../../lib/i18n";
 import type { JsonLdNode } from "../../lib/jsonld";
 
 import type { CollectionEntry } from "astro:content";
 
 export async function getStaticPaths(): Promise<
-  Array<{ params: { slug: string }; props: { post: CollectionEntry<"blog"> } }>
+  Array<{
+    params: { slug: string };
+    props: { post: CollectionEntry<"blog">; hasEnCounterpart: boolean };
+  }>
 > {
   const postEntries = await getCollection("blog");
   const published = postEntries
-    .filter((post) => !post.data.draft)
+    .filter((post) => !post.data.draft && post.data.lang === "pt-BR")
     .sort(
       (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
     );
@@ -27,13 +31,20 @@ export async function getStaticPaths(): Promise<
       "SPEC-004: nenhum post publicado — o blog não pode gerar rotas",
     );
   }
+  // SPEC-012 — the EN counterpart exists only when the article was actually
+  // translated; the `alternate` link must never point to a 404.
+  const enSlugs = new Set(
+    postEntries
+      .filter((post) => !post.data.draft && post.data.lang === "en")
+      .map((post) => postSlug(post.id, "en")),
+  );
   return published.map((post) => ({
     params: { slug: post.id },
-    props: { post },
+    props: { post, hasEnCounterpart: enSlugs.has(post.id) },
   }));
 }
 
-const { post } = Astro.props;
+const { post, hasEnCounterpart } = Astro.props;
 const { Content, headings } = await render(post);
 
 const toc = headings.filter((heading) => heading.depth === 2);
@@ -67,6 +78,11 @@ const blogPostingJsonLd: JsonLdNode = {
   title={post.data.title}
   description={ogDescription}
   ogType="article"
+  locale="pt-BR"
+  alternates={{
+    "pt-BR": `/blog/${post.id}`,
+    en: hasEnCounterpart ? `/en/blog/${postSlug(post.id, "en")}` : undefined,
+  }}
 >
   <script
     slot="head"

@@ -3,20 +3,54 @@
  * SPEC-001 — site header with the closed navigation set (início / serviços / blog / contato ).
  * Identifiers are EN (ADR-000): testids `nav-link-home` etc. even though routes are PT-BR.
  * SPEC-010 §4 — brand lockup + theme-aware tokens (surface/hairline/ink).
+ * SPEC-012 AC-012.1 — locale-aware navigation + server-rendered language switch.
  */
 import { withBase } from "../lib/withBase";
+import {
+  DEFAULT_LOCALE,
+  ROUTES,
+  UI_STRINGS,
+  counterpartPath,
+  type Locale,
+} from "../lib/i18n";
 import Brand from "./Brand.astro";
+import LangSwitch from "./LangSwitch.astro";
+
+interface Props {
+  /** Rendered locale (SPEC-012). */
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = UI_STRINGS[locale];
+const targetLocale: Locale = locale === "pt-BR" ? "en" : "pt-BR";
 
 const NAV_ITEMS = [
-  { label: "Início", href: withBase("/"), testid: "nav-link-home" },
   {
-    label: "Serviços",
-    href: withBase("/servicos"),
+    label: ui.nav.home,
+    href: withBase(ROUTES.home[locale]),
+    testid: "nav-link-home",
+  },
+  {
+    label: ui.nav.services,
+    href: withBase(ROUTES.services[locale]),
     testid: "nav-link-services",
   },
-  { label: "Blog", href: withBase("/blog"), testid: "nav-link-blog" },
-  { label: "Contato", href: withBase("/contato"), testid: "nav-link-contact" },
+  {
+    label: ui.nav.blog,
+    href: withBase(ROUTES.blog[locale]),
+    testid: "nav-link-blog",
+  },
+  {
+    label: ui.nav.contact,
+    href: withBase(ROUTES.contact[locale]),
+    testid: "nav-link-contact",
+  },
 ] as const;
+
+// The switch points to the SAME surface in the other locale (computed from the
+// current URL — no state, no cookie, no script: CONSTITUTION §C7).
+const switchHref = counterpartPath(Astro.url.pathname, targetLocale);
 ---
 
 <header
@@ -25,10 +59,13 @@ const NAV_ITEMS = [
 >
   <nav
     data-testid="nav-primary"
-    aria-label="Navegação principal"
+    aria-label={locale === "en" ? "Primary navigation" : "Navegação principal"}
     class="container-page flex min-h-[64px] flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
   >
-    <Brand />
+    <div class="flex items-center gap-1">
+      <Brand locale={locale} />
+      <LangSwitch locale={locale} target={targetLocale} href={switchHref} />
+    </div>
     <ul class="flex flex-wrap items-center gap-1">
       {
         NAV_ITEMS.map((item) => (

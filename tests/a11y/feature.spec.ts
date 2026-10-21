@@ -17,7 +17,15 @@ import { expect, test, type Page } from "@playwright/test";
 import { R, SITE_BASE } from "../base";
 
 const CRITICAL_WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-const SKIP_TEXT = "Pular para o conteúdo principal";
+// SPEC-012 — the skip link is localized with the page (same contract: it is
+// the first focusable element and carries a meaningful label in the page's
+// own language — WCAG 3.1.2).
+const SKIP_TEXT: Record<string, string> = {
+  "pt-BR": "Pular para o conteúdo principal",
+  en: "Skip to the main content",
+};
+const skipTextFor = (route: string): string =>
+  route.startsWith("/en") ? SKIP_TEXT.en : SKIP_TEXT["pt-BR"];
 // Rotas de superfície (SDD-CONTEXT §2: S1/S2 + legais + laboratório de busca).
 const STATIC_ROUTES = [
   "/",
@@ -26,6 +34,13 @@ const STATIC_ROUTES = [
   "/blog",
   "/privacidade",
   "/busca",
+  // SPEC-012 — the English surface is audited with the same contract.
+  "/en/",
+  "/en/services",
+  "/en/contact",
+  "/en/privacy",
+  "/en/blog",
+  "/en/search",
 ];
 
 type Violation = Awaited<
@@ -119,7 +134,7 @@ test.describe("A11y — SPEC-001/AC-001.7 skip-link é o primeiro elemento focá
     const routes = [...STATIC_ROUTES, postHref];
     for (const route of routes) {
       await page.goto(R(route));
-      if (route === "/busca") {
+      if (route === "/busca" || route === "/en/search") {
         // SPEC-007/AC-007.5 sobrepõe a premissa de foco inicial nesta rota: o
         // input ganha foco automaticamente (autofocus nativo verificado em
         // runtime). Assertiva mantida: foco inicial na busca + skip-link
@@ -159,7 +174,7 @@ test.describe("A11y — SPEC-001/AC-001.7 skip-link é o primeiro elemento focá
         .toBeFocused();
       await expect
         .soft(skip, `${route}: AC-001.7 — texto visível do skip-link`)
-        .toHaveText(SKIP_TEXT);
+        .toHaveText(skipTextFor(route));
       await expect
         .soft(skip, `${route}: AC-001.7 — href do skip-link`)
         .toHaveAttribute("href", "#conteudo-principal");

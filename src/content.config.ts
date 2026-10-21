@@ -23,7 +23,10 @@ const blogSchema = z
       .max(6),
     coverAlt: z.string().min(10).max(200),
     coverSrc: z.string().optional(),
-    lang: z.enum(["pt-BR", "en"]).default("pt-BR"),
+    // SPEC-012 AC-012.7 — `lang` is REQUIRED: a silent default would let an
+    // article fall into the wrong surface (the PT listing/RSS) without any
+    // signal. Every post declares its own locale.
+    lang: z.enum(["pt-BR", "en"]),
     draft: z.boolean().default(false),
     canonicalUrl: z.string().url().optional(),
     references: z

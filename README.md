@@ -24,17 +24,18 @@ como **case público de engenharia de qualidade**: 100 % estático, custo recorr
 zero, spec antes de código e auditoria em cada commit. O site passa pelos mesmos
 gates que a consultoria propõe aos clientes — e os reports de CI são públicos.
 
-| Dimensão       | Snapshot medido (bateria local completa, 2026-10-20)                                                                                                                                                      |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Artefato       | 18 páginas estáticas (Astro SSG) · zero hydrated JS, exceto busca Pagefind (SPEC-007)                                                                                                                     |
-| Bundle         | JS **2.04 KB** gzip (orçamento 50) · CSS **5.76 KB** gzip (orçamento 30) · audit **0 violações**                                                                                                          |
-| Lighthouse     | 9 URLs: perf **0.99–1.0** · a11y **1.0** · best-practices **1.0** · SEO **1.0** · LCP ≤ 1733 ms                                                                                                           |
-| Testes         | e2e **38/38** (2 viewports) · a11y axe-core **16/16** · unit **68/68** (src/lib crítica)                                                                                                                  |
-| Cobertura real | statements **91.4 %** · branches **82.3 %** · funções **100 %** · linhas **92.3 %** (gate ≥ 80 %)                                                                                                         |
-| Links          | **577 checks / 0 broken** · escaneamento hermético (zero rede)                                                                                                                                            |
-| Identidade     | SPEC-010 + ADR-012: 3 temas (light/mid/dark) por tokens semânticos · contraste AA **auditado em build** (gate unit) · ícones SVG inline · 0 webfont · CTA fixo no mobile                                  |
-| Supply chain   | `npm audit --omit=dev` **0 vulnerabilidades** · 20 Actions SHA-pinadas + 1 reuse local · 0 lifecycle scripts · Dependabot majors npm **held** (ADR-gated), minors/patches validados pela bateria completa |
-| Infra          | GitHub Pages + Actions (OIDC, least-privilege) · custo **R$ 0,00/mês**                                                                                                                                    |
+| Dimensão       | Snapshot medido (bateria local completa, 2026-10-20)                                                                                                                                                                         |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Artefato       | 28 páginas estáticas (Astro SSG) · **2 idiomas** (pt-BR + en) · zero hydrated JS, exceto busca Pagefind (SPEC-007)                                                                                                           |
+| Bundle         | JS **2.00 KB** gzip (orçamento 50) · CSS **5.78 KB** gzip (orçamento 30) · audit **0 violações**                                                                                                                             |
+| Lighthouse     | 13 URLs (perfil prod PT+EN): perf **0.96–1.0** · a11y **1.0** · best-practices **1.0** · SEO **1.0** · LCP ≤ 2199 ms · CLS 0 · TBT 0 ms                                                                                      |
+| Testes         | e2e **52/52** (2 viewports) · a11y axe-core **28/28** (12 rotas, PT+EN) · unit **81/81** (src/lib crítica)                                                                                                                   |
+| Cobertura real | statements **93.2 %** · branches **84.5 %** · funções **95.7 %** · linhas **93.6 %** (gate ≥ 80 %)                                                                                                                           |
+| Links          | **981 checks / 0 broken** · escaneamento hermético (zero rede)                                                                                                                                                               |
+| Identidade     | SPEC-010 + ADR-012: 3 temas (light/mid/dark) por tokens semânticos · contraste AA **auditado em build** (gate unit) · ícones SVG inline · 0 webfont · CTA fixo no mobile                                                     |
+| Idiomas        | SPEC-011 + ADR-013/014: `/en/**` na mesma origem · 1 deploy · hreflang recíproco + x-default · switch por link (0 JS, 0 storage) · 1 índice de busca filtrado por locale · claim regional auditado (raio 100 km de Matão/SP) |
+| Supply chain   | `npm audit --omit=dev` **0 vulnerabilidades** · 20 Actions SHA-pinadas + 1 reuse local · 0 lifecycle scripts · Dependabot majors npm **held** (ADR-gated), minors/patches validados pela bateria completa                    |
+| Infra          | GitHub Pages + Actions (OIDC, least-privilege) · custo **R$ 0,00/mês**                                                                                                                                                       |
 
 ### 🧬 De onde viemos — o desenho
 
@@ -49,16 +50,17 @@ gates que a consultoria propõe aos clientes — e os reports de CI são públic
 
 ## 🧱 Topologia publicada
 
-| Rota                       | Papel                                                                        |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| `/`                        | Vitrine — proposta de valor, prova (case), CTA                               |
-| `/servicos/`               | Catálogo de serviços + pacote de engajamento                                 |
-| `/blog/` + `/blog/<slug>/` | Blog técnico S1 (3 posts, MDX, Shiki, tags)                                  |
-| `/blog/tag/<tag>/`         | 8 páginas de tag                                                             |
-| `/contato/`                | Canal de conversão: mailto/WhatsApp direto — sem formulário/CRM (ADR-003 D1) |
-| `/busca/`                  | Busca client-side Pagefind (zero query a servidores)                         |
-| `/privacidade/`            | LGPD — política de privacidade                                               |
-| `/404/`                    | Página de erro customizada                                                   |
+| Rota                       | Papel                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| `/`                        | Vitrine — proposta de valor, prova (case), CTA                                   |
+| `/servicos/`               | Catálogo de serviços + pacote de engajamento                                     |
+| `/blog/` + `/blog/<slug>/` | Blog técnico S1 (3 posts, MDX, Shiki, tags)                                      |
+| `/blog/tag/<tag>/`         | 8 páginas de tag                                                                 |
+| `/contato/`                | Canal de conversão: mailto/WhatsApp direto — sem formulário/CRM (ADR-003 D1)     |
+| `/busca/`                  | Busca client-side Pagefind (zero query a servidores)                             |
+| `/privacidade/`            | LGPD — política de privacidade                                                   |
+| `/en/**`                   | Superfície EN (Remote · Global) — home, services, contact, privacy, blog, search |
+| `/404/`                    | Página de erro customizada                                                       |
 
 **Stack:** Astro 7 + Content Collections (MDX + Zod) · Tailwind CSS v4 (utility-only) ·
 TypeScript `strictest` · Pagefind · CSP meta · GitHub Pages (org-site —

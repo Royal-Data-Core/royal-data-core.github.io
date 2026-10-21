@@ -1,20 +1,33 @@
 /**
- * Deterministic PT-BR date formatting (BLUEPRINT `src/lib/date.ts`).
+ * Deterministic date formatting (BLUEPRINT `src/lib/date.ts`).
  *
  * All dates come from frontmatter as UTC midnight (`YYYY-MM-DD`), so formatting
  * is pinned to `timeZone: 'UTC'` to avoid host-TZ drift during CI builds.
+ * SPEC-012 AC-012.6 — the locale follows the rendered page ("en" posts are
+ * dated in English, "pt-BR" posts keep the Portuguese format).
  */
 
-const DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
+const DATE_FORMATTERS = {
+  "pt-BR": new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }),
+  en: new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }),
+} as const;
 
-/** "DD de mês de AAAA" — e.g. "13 de outubro de 2026" (SPEC-002 AC-002.4). */
-export function formatPublishDate(date: Date): string {
-  return DATE_FORMATTER.format(date);
+/** "DD de mês de AAAA" (pt-BR) / "Month D, YYYY" (en). */
+export function formatPublishDate(
+  date: Date,
+  locale: "pt-BR" | "en" = "pt-BR",
+): string {
+  return DATE_FORMATTERS[locale].format(date);
 }
 
 /** `YYYY-MM-DD` for `<time datetime>` attributes. */

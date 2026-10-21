@@ -13,7 +13,9 @@ export async function getStaticPaths(): Promise<
   Array<{ params: { tag: string } }>
 > {
   const postEntries = await getCollection("blog");
-  const published = postEntries.filter((post) => !post.data.draft);
+  const published = postEntries.filter(
+    (post) => !post.data.draft && post.data.lang === "pt-BR",
+  );
   const allTags = new Set<string>();
   published.forEach((post) =>
     post.data.tags.forEach((tag) => allTags.add(tag)),
@@ -26,7 +28,12 @@ export async function getStaticPaths(): Promise<
 const { tag } = Astro.params;
 const postEntries = await getCollection("blog");
 const posts = postEntries
-  .filter((post) => !post.data.draft && post.data.tags.includes(tag as string))
+  .filter(
+    (post) =>
+      !post.data.draft &&
+      post.data.lang === "pt-BR" &&
+      post.data.tags.includes(tag as string),
+  )
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 ---
 

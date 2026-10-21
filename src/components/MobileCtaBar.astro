@@ -4,7 +4,7 @@
  *
  * Business intent: on mobile the primary conversion CTA ("Falar com
  * especialista") stays one thumb-tap away on every route — the highest-
- * leverage mobile conversion pattern that costs zero bytes of JavaScript.
+ * impact mobile conversion pattern that costs zero bytes of JavaScript.
  *
  * Constraints:
  * - ZERO JS (SPEC-001 AC-001.8): no scroll listener, no IntersectionObserver.
@@ -16,21 +16,37 @@
  */
 import { withBase } from "../lib/withBase";
 import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../lib/contact";
+import { DEFAULT_LOCALE, ROUTES, UI_STRINGS, type Locale } from "../lib/i18n";
 import Icon from "./Icon.astro";
+
+interface Props {
+  /** Rendered locale (SPEC-012). */
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const ui = UI_STRINGS[locale];
 
 const encodedMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    locale === "en"
+      ? "General enquiry — Royal Data Core (EN site)"
+      : "Contato geral — Royal Data Core",
+  );
 
-const href = encodedMailto ? encodedMailto.hrefEncoded : withBase("/contato");
+const href = encodedMailto
+  ? encodedMailto.hrefEncoded
+  : withBase(ROUTES.contact[locale]);
 const ariaLabel = encodedMailto
-  ? `Falar com especialista — ${encodedMailto.addressDecoded}`
-  : "Falar com especialista";
+  ? `${ui.cta.mobileSpecialist} — ${encodedMailto.addressDecoded}`
+  : ui.cta.mobileSpecialist;
 ---
 
 <nav
   data-testid="mobile-cta-bar"
-  aria-label="Contato rápido"
+  aria-label={locale === "en" ? "Quick contact" : "Contato rápido"}
   class="border-border bg-surface/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:hidden"
 >
   <a
@@ -40,6 +56,6 @@ const ariaLabel = encodedMailto
     class="btn btn-primary w-full"
   >
     <Icon name="message-circle" size={18} />
-    Falar com especialista
+    {ui.cta.mobileSpecialist}
   </a>
 </nav>

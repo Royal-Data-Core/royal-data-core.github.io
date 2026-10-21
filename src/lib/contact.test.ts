@@ -20,6 +20,7 @@ import {
   CONTACT_PLACEHOLDER_PHONE,
   CONTACT_SOCIALS,
   CONTACT_SUBJECTS,
+  CONTACT_SUBJECTS_EN,
   contactFallbackHref,
   defaultMailtoBody,
   encodeHtmlEntities,
@@ -202,5 +203,17 @@ describe("buildPhoneDisplay (D-03 display formatting)", () => {
   it("returns unknown shapes raw — never invents a grouping", () => {
     expect(buildPhoneDisplay("551199999999")).toBe("551199999999");
     expect(buildPhoneDisplay("")).toBe("");
+  });
+});
+
+describe("SPEC-012/AC-012.6 — subjects de contato EN", () => {
+  it("a tabela EN não oferece modelos de emprego brasileiros", () => {
+    expect(CONTACT_SUBJECTS_EN.general).toContain("General enquiry");
+    expect(CONTACT_SUBJECTS_EN.servicesB2B("Quality diagnosis")).toContain(
+      "QA consulting enquiry — Quality diagnosis",
+    );
+    const serialized = JSON.stringify(CONTACT_SUBJECTS_EN);
+    expect(serialized).not.toContain("CLT");
+    expect(serialized).not.toContain("aloca");
   });
 });

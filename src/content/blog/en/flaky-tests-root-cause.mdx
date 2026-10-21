@@ -1,0 +1,134 @@
+---
+title: "Flaky Tests: Root Cause Before Quarantine"
+description: "Retries hide flaky failures instead of removing them. A protocol that classifies the root cause, fixes it at the source, and quarantines the rest with a deadline."
+publishDate: "2026-10-12"
+tags: ["flaky-tests", "ci-cd", "test-strategy"]
+coverAlt: "Article without a cover image; the instrumentation and quarantine examples appear as code blocks in the body."
+lang: "en"
+references:
+  - label: "Martin Fowler — Non-Determinism in Automated Testing"
+    url: "https://martinfowler.com/articles/nonDeterminism.html"
+  - label: "Playwright docs — test retries as instrumentation"
+    url: "https://playwright.dev/docs/test-retries"
+  - label: "Vitest docs — vi.useFakeTimers (clock control)"
+    url: "https://vitest.dev/api/vi.html#vi-usefaketimers"
+---
+
+## Context
+
+A test suite exists to deliver two signals: "verified, proceed" and "stop, there is
+a defect". A flaky test corrupts both. The team learns to read red as noise, and
+once green carries no information, the pipeline stops being a gate and becomes a
+report nobody reads.
+
+This article documents the protocol I apply to flaky tests: root cause first,
+quarantine only for what cannot be fixed now, and never let a quarantine outlive
+its deadline.
+
+## Problem
+
+The shape of a contaminated suite is easy to read:
+
+```text
+commit 1: pipeline green
+commit 2: test X failed, no production code changed
+commit 3: same commit re-run, green again
+```
+
+Most investigations stop there, at the same shortcut: `retries: 2` in the runner
+configuration. A retry hides the symptom. It never answers why the same code
+failed once and passed on the next attempt, and that answer is the difference
+between a team that trusts its own safety net and a team that ignores the CI
+report.
+
+## Analysis
+
+Flaky failures fall into three families almost every time:
+
+1. **Time** — the test waits on a fixed sleep instead of waiting for a real event.
+2. **Shared state** — a database, queue, or singleton reused across tests without
+   deterministic teardown.
+3. **Ordering** — test B depends on a side effect that test A left behind.
+
+A fourth family shows up less often: shared infrastructure, such as a CI runner
+whose available CPU changes between jobs. That one cannot be fixed by the author
+of the test; it requires an environment change.
+
+A quarantine is worth little without an expiry. The test leaves quarantine on a
+fixed date or returns to the pipeline with a fix. Without a deadline, quarantine
+becomes a storage area where tests die quietly.
+
+## Solution
+
+The protocol, in order:
+
+1. **Instrument before deciding.** Run the test in a loop locally (`--repeat-each`)
+   and keep a trace per iteration to see which layer failed.
+2. **Classify the cause** into one of the families above, using the log rather
+   than the symptom.
+3. **Fix at the root**: replace fixed waits with event waits, replace shared
+   fixtures with data created and destroyed per test.
+4. **Quarantine** whatever cannot be fixed now, with the deadline recorded in the
+   ticket and in the test name.
+5. **Re-measure** after the fix: the repeated run is the exit criterion.
+
+Instrumentation comes before any decision:
+
+```bash
+# Repeat the suspect test and keep one trace per iteration.
+npx playwright test checkout.spec.ts --repeat-each=20 --trace on
+npx vitest run --repeat=20 --reporter=verbose
+```
+
+Replacing a fixed wait with an event wait:
+
+```ts
+// Before: the test raced the network on a guessed delay.
+await page.goto("/checkout");
+await page.waitForTimeout(3000);
+await expect(page.getByTestId("order-confirmed")).toBeVisible();
+
+// After: wait for the event that signals the state transition.
+await page.goto("/checkout");
+const confirmation = page.getByTestId("order-confirmed");
+await expect(confirmation).toBeVisible({ timeout: 15_000 });
+```
+
+When the timing problem lives outside the UI, control belongs to the suite
+rather than to the wall clock — Vitest's fake timers (see references) make the
+clock deterministic.
+
+The quarantine, with the deadline announced in CI:
+
+```bash
+npx vitest run
+npx vitest run quarantine || echo "::warning::quarantine expired — ticket FLAKY-001"
+```
+
+## Limits of the approach
+
+Instrumentation does not identify every cause. Some only appear under real
+concurrency and load, and diagnosing those requires a dedicated environment — a
+budgeting decision the protocol cannot make on its own.
+
+The second limit is governance. If the team ignores the deadline warning
+repeatedly, the policy exists on paper and not in practice, and the problem
+moves from engineering to management.
+
+## What to measure
+
+Trustworthiness is not the share of green runs; it is whether a red run can be
+read as a defect. The criteria that can be reproduced on demand are narrow:
+
+- no test re-entering quarantine without a ticket that carries a deadline;
+- no test removed from the suite without a trace in the history;
+- the repeat run of a fixed test passing every iteration, with traces stored as
+  CI artifacts.
+
+Numbers that cannot be reproduced on demand belong in a slide, not in a report.
+
+## References
+
+The frontmatter references point to the documentation of the tools cited above
+(Playwright retries, Vitest fake timers) and to Fowler's essay on
+non-determinism, which formalizes the taxonomy used here.

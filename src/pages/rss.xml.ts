@@ -13,7 +13,7 @@ export async function GET(context: {
 }): Promise<Response> {
   const postEntries = await getCollection("blog");
   const published = postEntries
-    .filter((post) => !post.data.draft)
+    .filter((post) => !post.data.draft && post.data.lang === "pt-BR")
     .sort(
       (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
     );

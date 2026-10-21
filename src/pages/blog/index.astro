@@ -15,7 +15,7 @@ const SITE_DESCRIPTION =
 
 const postEntries = await getCollection("blog");
 const publishedPosts = postEntries
-  .filter((post) => !post.data.draft)
+  .filter((post) => !post.data.draft && post.data.lang === "pt-BR")
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 
 const allTags = new Set<string>();
@@ -27,6 +27,8 @@ publishedPosts.forEach((post) =>
 <BaseLayout
   title="Artigos sobre Testes de Software"
   description={SITE_DESCRIPTION}
+  locale="pt-BR"
+  alternates={{ "pt-BR": "/blog", en: "/en/blog" }}
 >
   <div data-theme="dark" class="bg-bg">
     <div class="container-page py-10">

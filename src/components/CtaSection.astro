@@ -3,9 +3,9 @@
  * SPEC-002 §CTA final + SPEC-005 / ADR-003 — final contact section (homepage).
  * Canals: mailto (entity-encoded) OR /contato fallback when D-03 is pending;
  * WhatsApp deep-link when the phone exists, honest pending note otherwise.
+ * SPEC-012 AC-012.6 — locale-aware copy; the EN surface carries no Brazilian
+ * employment model (no CLT, no alocação) — see SPEC-012 §4.
  */
-import Icon from "./Icon.astro";
-import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
@@ -16,17 +16,47 @@ import {
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
 } from "../lib/contact";
+import { withBase } from "../lib/withBase";
+import { DEFAULT_LOCALE, ROUTES, type Locale } from "../lib/i18n";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** SPEC-012 — rendered locale. */
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const isEn = locale === "en";
 
 const encodedMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    isEn
+      ? "General enquiry — Royal Data Core (EN site)"
+      : "Contato geral — Royal Data Core",
+  );
 const whatsappHref =
   HAS_CONTACT_PHONE && CONTACT_PHONE
     ? buildWhatsAppHref(
         CONTACT_PHONE,
-        "Olá! Gostaria de conversar com a Royal Data Core (contato enviado pelo site).",
+        isEn
+          ? "Hello! I would like to talk to Royal Data Core (contact sent from the site)."
+          : "Olá! Gostaria de conversar com a Royal Data Core (contato enviado pelo site).",
       )
     : null;
+
+const heading = isEn
+  ? 'Your product deserves more than "we tested it and it worked"'
+  : 'Seu produto merece mais que "testamos e funcionou"';
+const body = isEn
+  ? "If a critical release is coming, your test suite is not trusted, or your team has no clear QA strategy — it is worth a conversation."
+  : "Se você tem uma release crítica chegando, uma suíte de testes que ninguém confia, ou um time sem estratégia de QA clara — vale uma conversa.";
+const closing = isEn
+  ? "No forms, no CRM, no automated email sequence. You talk to me."
+  : "Sem formulário, sem CRM, sem sequência de emails automática. Você fala comigo.";
+const emailLabel = isEn ? "Send an email" : "Enviar email";
+const pendingPrefix = isEn ? "Channel pending" : "Canal";
 ---
 
 <section
@@ -35,11 +65,10 @@ const whatsappHref =
   aria-labelledby="final-cta-heading"
 >
   <h2 id="final-cta-heading" class="text-ink text-2xl leading-tight font-bold">
-    Seu produto merece mais que "testamos e funcionou"
+    {heading}
   </h2>
   <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
-    Se você tem uma release crítica chegando, uma suíte de testes que ninguém
-    confia, ou um time sem estratégia de QA clara — vale uma conversa.
+    {body}
   </p>
   <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
     {
@@ -47,21 +76,21 @@ const whatsappHref =
         <a
           data-testid="contact-cta-mail"
           href={encodedMailto.hrefEncoded}
-          aria-label={`Enviar email — ${encodedMailto.addressDecoded}`}
+          aria-label={`${isEn ? "Send an email" : "Enviar email"} — ${encodedMailto.addressDecoded}`}
           class="btn btn-primary"
         >
           <Icon name="mail" size={18} />
-          Enviar email
+          {emailLabel}
         </a>
       ) : (
         <a
           data-testid="contact-cta-mail"
-          href={withBase("/contato")}
+          href={withBase(ROUTES.contact[locale])}
           title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
           class="btn btn-secondary"
         >
           <Icon name="mail" size={18} />
-          Enviar email
+          {emailLabel}
         </a>
       )
     }
@@ -83,8 +112,15 @@ const whatsappHref =
   {
     !HAS_CONTACT_EMAIL || whatsappHref === null ? (
       <p class="text-ink-subtle mt-2 text-xs">
-        Canal {whatsappHref === null ? "de WhatsApp" : "de email"} em definição
-        (
+        {pendingPrefix}{" "}
+        {whatsappHref === null
+          ? isEn
+            ? "for WhatsApp"
+            : "de WhatsApp"
+          : isEn
+            ? "for email"
+            : "de email"}{" "}
+        {isEn ? "in definition" : "em definição"} (
         {whatsappHref === null
           ? CONTACT_PLACEHOLDER_PHONE
           : CONTACT_PLACEHOLDER_EMAIL}
@@ -92,8 +128,5 @@ const whatsappHref =
       </p>
     ) : null
   }
-  <p class="text-ink-muted mt-3 text-sm">
-    Sem formulário, sem CRM, sem sequência de emails automática. Você fala
-    comigo.
-  </p>
+  <p class="text-ink-muted mt-3 text-sm">{closing}</p>
 </section>

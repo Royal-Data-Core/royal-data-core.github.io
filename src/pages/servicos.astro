@@ -112,7 +112,7 @@ const faq = [
   {
     question: "Atende remotamente?",
     answer:
-      "Sim. Base em Matão/SP, atendimento remoto para todo o Brasil. Presencial sob combinação para região de Araraquara/São Carlos/Ribeirão Preto.",
+      "Sim. Base em Matão/SP, atendimento remoto. Presencial sob combinação, dentro de um raio de 100 km de Matão/SP — Araraquara, Ribeirão Preto, São Carlos, Jaboticabal e Descalvado.",
   },
   {
     question: "Emite nota fiscal?",
@@ -135,7 +135,12 @@ const faqJsonLd: JsonLdNode = {
 };
 ---
 
-<BaseLayout title="Serviços" description={SITE_DESCRIPTION}>
+<BaseLayout
+  title="Serviços"
+  description={SITE_DESCRIPTION}
+  locale="pt-BR"
+  alternates={{ "pt-BR": "/servicos", en: "/en/services" }}
+>
   <script
     slot="head"
     type="application/ld+json"

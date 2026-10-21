@@ -1,0 +1,299 @@
+---
+/**
+ * SPEC-012 — /en (English home, "Remote · Global" surface).
+ *
+ * Framing (SPEC-012 §4 delta matrix): the PT-BR home sells the LOCAL market
+ * (Brazil + CLT inside the service radius); the EN home sells REMOTE delivery
+ * worldwide, contracts in English, with a daily overlap with US Eastern
+ * business hours. No employment model is offered here (CONSTITUTION §C9 —
+ * the EN surface must not imply employment, benefits or visa sponsorship).
+ */
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import PostCard from "../../components/PostCard.astro";
+import ProofBadges from "../../components/ProofBadges.astro";
+import CtaSection from "../../components/CtaSection.astro";
+import Icon from "../../components/Icon.astro";
+import { withBase } from "../../lib/withBase";
+import { readingMinutes } from "../../lib/date";
+import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../../lib/contact";
+import { ROUTES, postSlug } from "../../lib/i18n";
+
+const SITE_DESCRIPTION =
+  "Quality engineering for critical software: test strategy, automation and QA pipelines delivered remotely from Brazil to teams worldwide.";
+
+const heroMailto =
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contact via site — Hero (EN)");
+
+const postEntries = await getCollection("blog");
+const publishedPosts = postEntries
+  .filter((post) => !post.data.draft && post.data.lang === "en")
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+if (publishedPosts.length === 0) {
+  throw new Error("SPEC-012: /en requer >= 1 post publicado em inglês");
+}
+const recentPosts = publishedPosts.slice(0, 3);
+
+const services = [
+  {
+    slug: "qa-diagnostic",
+    icon: "target",
+    eyebrow: "B2B · per project",
+    title: "Quality diagnosis",
+    description:
+      "A map of how your product is actually tested today: real coverage, risk gaps, QA technical debt, and what to automate first to get payback sooner.",
+    deliverables: [
+      "risk-prioritised gap report",
+      "test coverage matrix",
+      "automation plan in three horizons",
+      "effort estimate per initiative",
+    ],
+    cta: {
+      label: "Request a diagnosis",
+      subject: "QA consulting enquiry — Quality diagnosis",
+    },
+  },
+  {
+    slug: "test-automation",
+    icon: "workflow",
+    eyebrow: "B2B · project or retainer",
+    title: "Automation that outlives the sprint",
+    description:
+      "Automated test suites that do not turn into a source of flakes. The test pyramid applied for real: fast unit tests, dependable integration, surgical E2E — each layer where it belongs.",
+    deliverables: [
+      "automated suite running in CI",
+      "pipeline configuration with quality gates",
+      "tool selection and instrumentation",
+      "maintenance documentation",
+      "knowledge transfer to your team",
+    ],
+    cta: {
+      label: "Discuss automation",
+      subject: "QA consulting enquiry — Test automation",
+    },
+  },
+  {
+    slug: "embedded-qa",
+    icon: "users",
+    eyebrow: "Remote · dedicated engagement",
+    title: "QA inside your team",
+    description:
+      "A dedicated test engineer working inside your squad, or mentoring the engineers already on it. Quality culture is not outsourced forever — it is built.",
+    deliverables: [
+      "dedicated QA work inside the squad",
+      "review of your test strategy",
+      "one-to-one and group mentoring",
+      "acceptance criteria and definition of done",
+      "quality metrics tracking",
+    ],
+    cta: {
+      label: "Talk about a dedicated engagement",
+      subject: "QA consulting enquiry — Dedicated QA engineer",
+    },
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Royal Data Core — Software Testing Consulting"
+  description={SITE_DESCRIPTION}
+  fullTitle
+  locale="en"
+  alternates={{ "pt-BR": "/", en: "/en/" }}
+>
+  <section class="container-page pt-10 pb-10 sm:pt-14">
+    <div class="grid items-center gap-8 lg:grid-cols-2">
+      <div class="stagger">
+        <h1
+          data-testid="hero-headline"
+          class="text-ink max-w-3xl text-3xl leading-tight font-bold tracking-tight sm:text-4xl"
+        >
+          Quality engineering for critical software
+        </h1>
+        <p
+          data-testid="hero-subheadline"
+          class="text-ink-muted mt-4 max-w-2xl text-base leading-relaxed"
+        >
+          Consulting specialised in software testing for teams that cannot ship
+          defects to production. Test strategy, automation and QA pipelines —
+          from diagnosis to operation, delivered remotely from Brazil to teams
+          anywhere.
+        </p>
+        <div class="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+          <a
+            data-testid="cta-primary-services"
+            href={withBase(ROUTES.services.en)}
+            class="btn btn-primary"
+          >
+            <Icon name="shield-check" size={18} />
+            See services
+          </a>
+          {
+            heroMailto ? (
+              <a
+                data-testid="cta-primary-contact"
+                href={heroMailto.hrefEncoded}
+                aria-label={`Talk to me — ${heroMailto.addressDecoded}`}
+                class="btn btn-secondary"
+              >
+                <Icon name="mail" size={18} />
+                Talk to me
+              </a>
+            ) : (
+              <a
+                data-testid="cta-primary-contact"
+                href={withBase(ROUTES.contact.en)}
+                title="Contact channel pending — decision D-03 (SDD-CONTEXT §9)"
+                class="btn btn-secondary"
+              >
+                <Icon name="mail" size={18} />
+                Talk to me
+              </a>
+            )
+          }
+        </div>
+        <p class="text-ink-subtle mt-3 text-xs">
+          Reply within one business day, with a daily overlap with US Eastern
+          business hours. Contracts in English, delivery remote.
+        </p>
+      </div>
+      <div
+        class="reveal hidden justify-self-center lg:block"
+        aria-hidden="true"
+      >
+        <img
+          src={withBase("/brand/isotyper-color.webp")}
+          width="512"
+          height="465"
+          alt=""
+          decoding="async"
+          class="brand-glow w-64"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section
+    data-theme="mid"
+    class="bg-bg container-page border-border border-t py-10"
+    aria-labelledby="proof-heading"
+  >
+    <h2 id="proof-heading" class="text-ink text-2xl leading-tight font-bold">
+      This site is my own test case
+    </h2>
+    <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
+      Every page you visit here passed the same gates I apply to client
+      projects: Lighthouse ≥ 95 on mobile, WCAG 2.1 AA accessibility at 100,
+      zero unnecessary JavaScript, a strict CSP, and an automated pipeline
+      before every deploy. The reports are public. Audit them.
+    </p>
+    <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <ProofBadges locale="en" />
+      <a
+        href="https://github.com/royaldatacore"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-link hover:text-link-hover inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-3 text-sm font-semibold underline underline-offset-4"
+      >
+        See the pipeline on GitHub
+      </a>
+    </div>
+  </section>
+
+  <section
+    data-theme="dark"
+    class="bg-bg container-page border-border border-t py-10"
+    aria-labelledby="services-heading"
+  >
+    <h2 id="services-heading" class="text-ink text-2xl leading-tight font-bold">
+      How I can help
+    </h2>
+    <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
+      Engagements run remotely, in English, against your stack and your CI — not
+      against a generic playbook.
+    </p>
+    <div data-testid="services-grid" class="mt-5 grid gap-5 md:grid-cols-3">
+      {
+        services.map((service) => (
+          <ServiceCard
+            slug={service.slug}
+            icon={service.icon}
+            locale="en"
+            title={service.title}
+            description={service.description}
+            eyebrow={service.eyebrow}
+            deliverables={service.deliverables}
+            ctas={[service.cta]}
+          />
+        ))
+      }
+    </div>
+    <p class="mt-5">
+      <a
+        href={withBase(ROUTES.services.en)}
+        class="btn btn-ghost group inline-flex min-h-[44px] items-center rounded-md px-1 text-sm font-semibold underline underline-offset-4"
+      >
+        See all services and engagement models
+        <Icon
+          name="arrow-right"
+          size={16}
+          class="transition-transform group-hover:translate-x-1"
+        />
+      </a>
+    </p>
+  </section>
+
+  <section
+    class="container-page border-border border-t py-10"
+    aria-labelledby="blog-heading"
+  >
+    <h2 id="blog-heading" class="text-ink text-2xl leading-tight font-bold">
+      From the engineering notebook
+    </h2>
+    <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
+      What I test, what I break, what I learn. Technical articles, no small
+      talk.
+    </p>
+    {
+      recentPosts.length > 0 ? (
+        <div data-testid="recent-posts" class="mt-5 grid gap-5 md:grid-cols-3">
+          {recentPosts.map((post) => (
+            <PostCard
+              locale="en"
+              title={post.data.title}
+              publishDate={post.data.publishDate}
+              href={`en/blog/${postSlug(post.id, "en")}`}
+              slug={postSlug(post.id, "en")}
+              readingTimeMinutes={readingMinutes(post.body)}
+              description={post.data.description}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="text-ink-muted mt-5 text-sm">
+          The first articles are on their way. Come back soon — or subscribe to
+          the RSS feed.
+        </p>
+      )
+    }
+    <p class="mt-5">
+      <a
+        href={withBase(ROUTES.blog.en)}
+        class="btn btn-ghost group inline-flex min-h-[44px] items-center rounded-md px-1 text-sm font-semibold underline underline-offset-4"
+      >
+        See all articles
+        <Icon
+          name="arrow-right"
+          size={16}
+          class="transition-transform group-hover:translate-x-1"
+        />
+      </a>
+    </p>
+  </section>
+
+  <section class="container-page pt-4 pb-12">
+    <CtaSection locale="en" />
+  </section>
+</BaseLayout>

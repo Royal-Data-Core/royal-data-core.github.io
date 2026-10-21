@@ -1,0 +1,122 @@
+---
+title: "Accessibility as a build-time quality gate"
+description: "Accessibility as a build rule rather than a final checklist: axe-core assertions, Lighthouse budgets, and keyboard checks wired into the CI pipeline."
+publishDate: 2026-10-18
+tags: ["accessibility", "wcag", "automation"]
+coverAlt: "No cover image for this article; the examples appear as pipeline configuration and test code."
+lang: "en"
+references:
+  - label: "WCAG 2.1 — W3C Recommendation"
+    url: "https://www.w3.org/TR/WCAG21/"
+  - label: "axe-core — accessibility rules engine"
+    url: "https://github.com/dequelabs/axe-core"
+  - label: "Lighthouse CI — official overview"
+    url: "https://developer.chrome.com/docs/lighthouse/overview/"
+  - label: "Playwright — test assertions"
+    url: "https://playwright.dev/docs/test-assertions"
+---
+
+## Context
+
+"We will fix accessibility after the launch" is the usual way to postpone a
+problem whose cost grows with the size of the surface. This article documents
+how accessibility is handled in this repository: as an automated acceptance
+criterion inside the pipeline, not as a manual pass after the deployment.
+
+## The problem
+
+Reviewing accessibility at the end has three defects:
+
+1. The remediation backlog starts already accumulated — every new screen enters
+   as debt.
+2. The claim "it is accessible" carries no date: nothing in the routine
+   guarantees the state survived a layout change.
+3. Quiet exceptions become easy to accept — a button here, a label there — and
+   in sum they disqualify the experience of people who read with a screen reader
+   or navigate with the keyboard.
+
+## Analysis
+
+The fact that changes the treatment: a large share of accessibility defects is
+syntactic. A missing attribute, a contrast ratio below the threshold, a focus
+ring that disappeared — these are defects made of strings and numeric values,
+which means a machine can decide them. The remainder (does the alternative text
+still make sense, is the content order right, is the label phrasing natural)
+stays human, and therefore belongs to a manual review plan with a smaller
+scope.
+
+Splitting the two layers is what makes the gate workable: the automated layer
+enters the pipeline as a deterministic failure, the manual layer enters code
+review as a short and specific checklist.
+
+## The gate
+
+Three parts.
+
+First, deterministic rules on every build — axe-core inside the E2E routine,
+blocking on criteria with a binary outcome (label, role, contrast):
+
+```ts
+import { AxeBuilder } from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+
+test("home passes the WCAG 2.1 A/AA axe rules", async ({ page }) => {
+  await page.goto("/");
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+});
+```
+
+Second, interaction budgets asserted by Lighthouse CI, already configured in
+the repository: accessibility score 1.0, contrast, minimum target size.
+
+```bash
+npx playwright test tests/a11y
+npx lhci autorun --config=lighthouserc.json
+```
+
+Third, a short manual checklist in code review, focused on what the automated
+layer cannot see: does the label describe what the field does? does the
+alternative text make sense out of context? does the tab order walk the
+content in the order it was written?
+
+The gate also covers the base of keyboard navigation, because that is the most
+common quiet failure on static pages with little interactivity: a focus style
+that disappears into the gray, or a "Skip to main content" link that goes
+nowhere. The main content anchor exists here as a structural element, with
+`tabindex="-1"`, so that keyboard focus enters the content after the jump.
+Without that pair, keyboard users get a link that promises a shortcut that does
+not work — and the axe gate running under Chromium reports nothing, because the
+markup itself is valid.
+
+## Limits of the gate
+
+axe-core does not read the page the way a person reads it: on its own it covers
+roughly 30 to 50 percent of the WCAG criteria, depending on the content. A
+score of 100 in the automated layer is a reasonable starting point, not a
+guarantee of usability — that is why the third part exists. Another limit: an
+automated gate depends on a correct tool, and keeping the rule set current as
+WCAG evolves is real work; each axe release can evaluate the same markup
+differently.
+
+The last limit is cost, and it is worth writing down: a gate charges
+maintenance time. A new axe rule appears, the build turns red, and someone has
+to investigate before the pipeline proceeds. That cost is the product — it is
+the difference between an accessibility claim and a verifiable acceptance
+criterion. Teams that do not reserve time for that maintenance usually hold
+intent, not evidence.
+
+## What the pipeline records
+
+The budgets declared in this repository (performance ≥ 0.95, accessibility =
+1.0, LCP ≤ 2500 ms) are public in the CI history of every release. Since the
+project is recent, no traffic number and no client result are presented here —
+only what the public pipeline can show when it runs.
+
+## References
+
+The frontmatter references point to the WCAG 2.1 recommendation, the axe-core
+engine, the Lighthouse overview, and the Playwright assertion documentation used
+in the test above.

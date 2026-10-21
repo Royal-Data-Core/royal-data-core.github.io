@@ -16,6 +16,13 @@ import {
   buildWebSiteJsonLd,
   serializeJsonLd,
 } from "../lib/jsonld";
+import {
+  DEFAULT_LOCALE,
+  HREFLANG,
+  LOCALES,
+  UI_STRINGS,
+  type Locale,
+} from "../lib/i18n";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import MobileCtaBar from "../components/MobileCtaBar.astro";
@@ -34,6 +41,14 @@ interface Props {
   ogType?: "website" | "article";
   /** Pagefind exclusion (`data-pagefind-ignore` on <body>, SPEC-007 AC-007.3). */
   excludeFromSearch?: boolean;
+  /** SPEC-012 — rendered locale (drives html lang, hreflang, OG and JSON-LD). */
+  locale?: Locale;
+  /**
+   * SPEC-012 AC-012.2 — counterpart paths per locale (WITHOUT the deployment
+   * base). Only the locales that actually have this surface are listed; a
+   * missing counterpart means NO `alternate` link is emitted (never a lie).
+   */
+  alternates?: Partial<Record<Locale, string | undefined>>;
 }
 
 const {
@@ -44,7 +59,13 @@ const {
   fullTitle = false,
   ogType = "website",
   excludeFromSearch = false,
+  locale = DEFAULT_LOCALE,
+  alternates = {},
 } = Astro.props;
+
+const ui = UI_STRINGS[locale];
+const htmlLang = locale === "en" ? "en" : "pt-BR";
+const ogLocale = locale === "en" ? "en" : "pt_BR";
 
 const site = Astro.site;
 if (!site || site.protocol !== "https:") {
@@ -74,17 +95,36 @@ routePath = routePath.replace(/\/+$/, "") || "/";
 const canonicalPath = withBase(routePath);
 const canonicalUrl = `${site.origin}${canonicalPath === "/" ? "/" : canonicalPath}`;
 const ogImageUrl = new URL(
-  ogImage ? withBase(ogImage) : withBase("/og-default.png"),
+  ogImage
+    ? withBase(ogImage)
+    : withBase(locale === "en" ? "/og-en.png" : "/og-default.png"),
   site,
 ).toString();
 
 // AC-001.5 / AC-001.6 — base JSON-LD blocks (scripts exempt from the no-JS rule as ld+json).
-const jsonLdOrganization = serializeJsonLd(buildOrganizationJsonLd(site));
-const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
+// SPEC-012 AC-012.3 — locale-aware: `inLanguage`/`areaServed` follow the
+// rendered locale; the organization `@id` is IDENTICAL in every locale (one
+// entity for search engines, not two competing ones).
+const jsonLdOrganization = serializeJsonLd(
+  buildOrganizationJsonLd(site, locale),
+);
+const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site, locale));
+
+// SPEC-012 AC-012.2 — hreflang reciprocity. `alternate` links are emitted
+// ONLY for the locales that really have this surface; `x-default` points to
+// the default-locale counterpart when it exists, otherwise to the site home.
+const alternateEntries = LOCALES.map((loc) => ({
+  locale: loc,
+  path: alternates[loc],
+})).filter((entry): entry is { locale: Locale; path: string } =>
+  Boolean(entry.path),
+);
+const xDefaultPath =
+  alternates[DEFAULT_LOCALE] ?? (locale === DEFAULT_LOCALE ? undefined : "/");
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang={htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -118,7 +158,37 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
     <meta property="og:type" content={ogType} />
     {noIndex ? null : <meta property="og:url" content={canonicalUrl} />}
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale" content={ogLocale} />
+    {
+      alternateEntries
+        .filter((entry) => entry.locale !== locale)
+        .map((entry) => (
+          <meta
+            property="og:locale:alternate"
+            content={entry.locale === "en" ? "en" : "pt_BR"}
+          />
+        ))
+    }
+    {
+      alternateEntries.map((entry) => (
+        <link
+          rel="alternate"
+          hreflang={HREFLANG[entry.locale]}
+          href={new URL(withBase(entry.path), site).href}
+        />
+      ))
+    }
+    {
+      xDefaultPath ? (
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={new URL(withBase(xDefaultPath), site).href}
+        />
+      ) : null
+    }
+    <!-- SPEC-012 — Pagefind index filter: each surface indexes its own locale. -->
+    <meta data-pagefind-filter="locale" content={locale} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={displayTitle} />
     <meta name="twitter:description" content={description} />
@@ -146,9 +216,9 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
       href="#conteudo-principal"
       class="focus:bg-accent focus:text-on-accent sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-3 focus:text-base focus:font-semibold"
     >
-      Pular para o conteúdo principal
+      {ui.skipLink}
     </a>
-    <SiteHeader />
+    <SiteHeader locale={locale} />
     <main
       id="conteudo-principal"
       data-testid="main-content"
@@ -157,8 +227,8 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
     >
       <slot />
     </main>
-    <SiteFooter />
-    <MobileCtaBar />
+    <SiteFooter locale={locale} />
+    <MobileCtaBar locale={locale} />
     <!-- Conformance oracle: no script may follow JSON-LD into the artifact (AC-001.8). -->
   </body>
 </html>

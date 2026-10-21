@@ -112,6 +112,99 @@ const TERM_SOURCES = [
     allowance: true,
     source: `${W_START}(?:\\u00e1|a)g(?:il|eis)${W_END}${NO_NUMBER}`,
   },
+  // ── ADR-014 D2 — locale EN: the banned vocabulary is SEMANTIC, not literal.
+  // The PT list above does not translate 1:1 into English, so the English
+  // surface gets its own entries (same intent: no empty marketing claim).
+  {
+    key: "en-industry-leading",
+    allowance: false,
+    source: `${W_START}industry[- ]leading${W_END}`,
+  },
+  {
+    key: "en-world-class",
+    allowance: false,
+    source: `${W_START}world[- ]class${W_END}`,
+  },
+  {
+    key: "en-best-in-class",
+    allowance: false,
+    source: `${W_START}best[- ]in[- ]class${W_END}`,
+  },
+  {
+    key: "en-seamless",
+    allowance: false,
+    source: `${W_START}seamless(?:ly)?${W_END}`,
+  },
+  {
+    key: "en-cutting-edge",
+    allowance: false,
+    source: `${W_START}cutting[- ]edge${W_END}`,
+  },
+  {
+    key: "en-revolutionary",
+    allowance: false,
+    source: `${W_START}revolutionary${W_END}`,
+  },
+  {
+    key: "en-innovative",
+    allowance: false,
+    source: `${W_START}innovative${W_END}`,
+  },
+  {
+    key: "en-disruptive",
+    allowance: false,
+    source: `${W_START}disruptive${W_END}`,
+  },
+  {
+    key: "en-game-changing",
+    allowance: false,
+    source: `${W_START}game[- ]changing${W_END}`,
+  },
+  {
+    key: "en-synergy",
+    allowance: false,
+    source: `${W_START}synerg(?:y|ies|istic)${W_END}`,
+  },
+  {
+    key: "en-paradigm",
+    allowance: false,
+    source: `${W_START}paradigm(?:s)?${W_END}`,
+  },
+  {
+    key: "en-holistic",
+    allowance: false,
+    source: `${W_START}holistic(?:ally)?${W_END}`,
+  },
+  {
+    key: "en-robust-sem-numero",
+    allowance: true,
+    source: `${W_START}robust(?:ness)?${W_END}${NO_NUMBER}`,
+  },
+  {
+    key: "en-scalable-sem-numero",
+    allowance: true,
+    source: `${W_START}scalab(?:le|ility)${W_END}${NO_NUMBER}`,
+  },
+  {
+    key: "en-agile-adjetivo-vazio",
+    allowance: true,
+    source: `${W_START}agil(?:e|ely)?${W_END}${NO_NUMBER}`,
+  },
+  {
+    key: "en-leverage-verbo",
+    allowance: false,
+    source: `${W_START}leverage(?:s|d|ing)?${W_END}`,
+  },
+  {
+    key: "en-empower",
+    allowance: false,
+    source: `${W_START}empower(?:s|ed|ing|ment)?${W_END}`,
+  },
+  {
+    key: "en-unlock",
+    allowance: false,
+    source: `${W_START}unlock(?:s|ed|ing)?${W_END}`,
+  },
 ];
 
 const BRIEF_TERMS = TERM_SOURCES.map((entry) => ({

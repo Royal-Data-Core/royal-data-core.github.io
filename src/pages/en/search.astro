@@ -1,0 +1,26 @@
+---
+/**
+ * SPEC-012 — /en/search (English search landing, SearchAction target of the
+ * English WebSite JSON-LD). Same implementation as /busca (shared component),
+ * filtered to the `en` locale by Pagefind's `data-pagefind-filter` metadata.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SearchApp from "../../components/SearchApp.astro";
+
+const SITE_DESCRIPTION =
+  "Full-text search that runs in your browser. No query is ever sent to a server.";
+---
+
+<BaseLayout
+  title="Search"
+  description={SITE_DESCRIPTION}
+  locale="en"
+  alternates={{ "pt-BR": "/busca", en: "/en/search" }}
+>
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+      Search
+    </h1>
+    <SearchApp locale="en" />
+  </div>
+</BaseLayout>

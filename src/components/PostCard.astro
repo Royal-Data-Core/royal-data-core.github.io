@@ -6,6 +6,7 @@
  */
 import { withBase } from "../lib/withBase";
 import { formatPublishDate, toIsoDate } from "../lib/date";
+import { DEFAULT_LOCALE, type Locale } from "../lib/i18n";
 
 interface Props {
   title: string;
@@ -14,10 +15,19 @@ interface Props {
   slug?: string;
   readingTimeMinutes?: number;
   description?: string;
+  /** SPEC-012 — rendered locale (date format + reading-time label). */
+  locale?: Locale;
 }
 
-const { title, publishDate, href, slug, readingTimeMinutes, description } =
-  Astro.props;
+const {
+  title,
+  publishDate,
+  href,
+  slug,
+  readingTimeMinutes,
+  description,
+  locale = DEFAULT_LOCALE,
+} = Astro.props;
 const headingTestId = slug ? `post-title-${slug}` : undefined;
 const dateTestId = slug ? `post-date-${slug}` : undefined;
 ---
@@ -28,12 +38,12 @@ const dateTestId = slug ? `post-date-${slug}` : undefined;
 >
   <p class="text-ink-subtle flex flex-wrap items-center gap-x-2 text-xs">
     <time datetime={toIsoDate(publishDate)} data-testid={dateTestId}>
-      {formatPublishDate(publishDate)}
+      {formatPublishDate(publishDate, locale)}
     </time>
     {
       typeof readingTimeMinutes === "number" ? (
         <span data-testid="post-reading-time">
-          {readingTimeMinutes} min de leitura
+          {readingTimeMinutes} {locale === "en" ? "min read" : "min de leitura"}
         </span>
       ) : null
     }

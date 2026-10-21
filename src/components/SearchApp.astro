@@ -1,0 +1,399 @@
+---
+/**
+ * SPEC-007 — client-side search UI (shared by /busca and /en/search).
+ *
+ * The ONLY shipped JavaScript in the project (SPEC-001 AC-001.8): Pagefind
+ * index + WASM, loaded from same origin (`/_pagefind/`). One implementation,
+ * two locales — the strings arrive through `data-*` attributes (an inline
+ * `<script>` with literals would violate `script-src 'self'`, SPEC-008
+ * AC-008.5) and the locale filter uses Pagefind's `data-pagefind-filter`
+ * metadata emitted by the layout.
+ */
+import { withBase } from "../lib/withBase";
+import { DEFAULT_LOCALE, ROUTES, type Locale } from "../lib/i18n";
+
+interface Props {
+  /** Rendered locale (SPEC-012). */
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const isEn = locale === "en";
+
+const blogHref = withBase(ROUTES.blog[locale]);
+
+const strings = isEn
+  ? {
+      statusDefault: "Type to search. No term leaves your browser.",
+      statusError:
+        "The search could not load the local index. Reload the page or use the article list.",
+      statusCount: "{n} result(s) for «{term}»",
+      statusEmpty: "0 results for «{term}»",
+      emptyHeading: "No results for «{term}».",
+      placeholder: "Search articles",
+      resultsLabel: "Search results",
+      noscript:
+        "Search needs JavaScript and runs entirely in your browser — no term is sent to a server. If you disable JavaScript, use:",
+      noscriptAll: "all articles",
+      noscriptTags: "tags",
+      noscriptEmail: "send an email (contact page)",
+    }
+  : {
+      statusDefault: "Digite para buscar. Nenhum termo sai do seu navegador.",
+      statusError:
+        "A busca não pôde carregar o índice local. Recarregue a página ou use a lista em /blog.",
+      statusCount: "{n} resultado(s) para «{term}»",
+      statusEmpty: "0 resultado(s) para «{term}»",
+      emptyHeading: "Nenhum resultado para «{term}».",
+      placeholder: "Buscar artigos",
+      resultsLabel: "Resultados da busca",
+      noscript:
+        "A busca precisa de JavaScript e roda inteiramente no seu navegador — nenhum termo é enviado a servidor. Se você desabilitar JS, use:",
+      noscriptAll: "todos os artigos",
+      noscriptTags: "tags",
+      noscriptEmail: "enviar email (página de contato)",
+    };
+
+const emptyOptions = JSON.stringify(
+  isEn
+    ? [
+        ["Check the spelling", null],
+        ["Try a shorter term", blogHref],
+        [`Browse the articles in ${ROUTES.blog[locale]}`, blogHref],
+        ["See all articles", blogHref],
+      ]
+    : [
+        ["Verifique a grafia", null],
+        ["Tente um termo mais curto", blogHref],
+        ["Navegue pelas tags em /blog", blogHref],
+        ["Veja todos os artigos", blogHref],
+      ],
+);
+---
+
+<div
+  data-testid="search-app"
+  data-locale={locale}
+  data-status-default={strings.statusDefault}
+  data-status-error={strings.statusError}
+  data-status-count={strings.statusCount}
+  data-status-empty={strings.statusEmpty}
+  data-empty-heading={strings.emptyHeading}
+  data-empty-options={emptyOptions}
+>
+  <noscript>
+    <p
+      data-testid="search-noscript"
+      class="bg-surface border-border-strong text-ink mt-4 rounded-md border p-4 text-sm"
+    >
+      {strings.noscript}
+    </p>
+    <ul class="text-ink mt-2 list-disc pl-5 text-sm">
+      <li>
+        <a href={blogHref} class="text-link underline underline-offset-4">
+          {strings.noscriptAll}
+        </a>
+      </li>
+      <li>
+        <a href={blogHref} class="text-link underline underline-offset-4">
+          {strings.noscriptTags}
+        </a>
+      </li>
+      <li>
+        <a
+          href={withBase(ROUTES.contact[locale])}
+          class="text-link underline underline-offset-4"
+        >
+          {strings.noscriptEmail}
+        </a>
+      </li>
+    </ul>
+  </noscript>
+
+  <form data-testid="search-form" class="mt-6" novalidate>
+    <label for="search-input" class="text-ink block text-sm font-semibold">
+      {isEn ? "Search term" : "Termo de busca"}
+      <input
+        id="search-input"
+        data-testid="search-input"
+        type="search"
+        name="q"
+        autocomplete="off"
+        spellcheck="false"
+        autofocus
+        placeholder={isEn
+          ? "Search articles, services, topics…"
+          : "Buscar artigos, serviços, tags…"}
+        class="border-border-strong text-ink mt-2 block w-full max-w-xl rounded-md border px-4 py-3 text-base"
+      />
+    </label>
+    <p
+      data-testid="search-status"
+      role="status"
+      aria-live="polite"
+      class="text-ink-muted mt-2 text-sm"
+    >
+      {strings.statusDefault}
+    </p>
+  </form>
+
+  <section
+    data-testid="search-results"
+    class="mt-6"
+    aria-label={strings.resultsLabel}
+  >
+  </section>
+</div>
+
+<script>
+  /**
+   * SPEC-007 — client-side search. Same-origin only: index comes from
+   * /_pagefind/* under this origin, results are built with DOM APIs; no query
+   * leaves this browser (AC-007.4 / CONSTITUTION §C7 / §C8).
+   * SPEC-012 — the locale filter keeps the two surfaces apart.
+   */
+  import { withBase } from "../lib/withBase";
+
+  interface PagefindResultData {
+    url: string;
+    excerpt: string;
+    meta?: Record<string, string>;
+  }
+
+  interface PagefindResultRef {
+    data: () => Promise<PagefindResultData>;
+  }
+
+  interface PagefindSearchShape {
+    search(
+      term: string,
+      options?: { filters?: Record<string, string> },
+    ): Promise<{ results: readonly PagefindResultRef[] }>;
+  }
+
+  const root = document.querySelector<HTMLElement>(
+    '[data-testid="search-app"]',
+  );
+  const read = (key: string, fallback = ""): string =>
+    root?.dataset[key] ?? fallback;
+
+  const LOCALE = read("locale", "pt-BR");
+  const STATUS_DEFAULT = read("statusDefault");
+  const STATUS_ERROR = read("statusError");
+  const STATUS_COUNT = read("statusCount");
+  const STATUS_EMPTY = read("statusEmpty");
+  const EMPTY_HEADING = read("emptyHeading");
+  const EMPTY_OPTIONS = read("emptyOptions", "[]");
+
+  let pagefindModule: PagefindSearchShape | undefined;
+
+  async function loadIndex(): Promise<PagefindSearchShape | null> {
+    const form = document.querySelector<HTMLFormElement>(
+      '[data-testid="search-form"]',
+    );
+    if (!form) {
+      return null;
+    }
+    // Fetch latency: only on a user action. First paint stays script-free (SPEC-007 §CWV).
+    if (!pagefindModule) {
+      const base = import.meta.env.BASE_URL ?? "/";
+      const url = `${base.endsWith("/") ? base : `${base}/`}_pagefind/pagefind.js`;
+      const mod = (await import(/* @vite-ignore */ url)) as PagefindSearchShape;
+      pagefindModule = mod;
+    }
+    return pagefindModule;
+  }
+
+  const statusEl = document.querySelector<HTMLParagraphElement>(
+    '[data-testid="search-status"]',
+  );
+  const resultsEl = document.querySelector<HTMLElement>(
+    '[data-testid="search-results"]',
+  );
+  const input = document.querySelector<HTMLInputElement>(
+    '[data-testid="search-input"]',
+  );
+
+  const DEFAULT_STATUS = STATUS_DEFAULT;
+
+  const fill = (template: string, term: string, count?: number): string =>
+    template.replace("{term}", term).replace("{n}", String(count ?? 0));
+
+  function renderStatus(text: string): void {
+    if (statusEl) {
+      statusEl.textContent = text;
+    }
+  }
+
+  function clearResults(): void {
+    if (!resultsEl) {
+      return;
+    }
+    resultsEl.replaceChildren();
+  }
+
+  let debounceTimer: number | undefined;
+
+  const defaultTitleFor = (url: string): string => {
+    const last = url.split("/").filter(Boolean).pop() ?? url;
+    return last.replaceAll("-", " ");
+  };
+
+  const renderItem = (item: PagefindResultData): HTMLElement => {
+    const link = document.createElement("a");
+    link.href = item.url.startsWith("/") ? item.url : withBase(`/${item.url}`);
+    link.setAttribute("data-testid", "search-result-item");
+    link.className =
+      "mt-3 block rounded-md border border-border p-4 hover:border-accent";
+
+    const heading = document.createElement("h3");
+    heading.setAttribute("data-testid", "search-result-title");
+    heading.className = "text-base font-semibold text-link";
+    heading.textContent = item.meta?.title ?? defaultTitleFor(item.url);
+    link.append(heading);
+
+    const snippet = document.createElement("p");
+    snippet.setAttribute("data-testid", "search-result-snippet");
+    // pagefind-sanitized HTML (own index, <mark> highlights); CSP style-src already handles it.
+    snippet.innerHTML = item.excerpt ?? "";
+    snippet.className = "mt-1 text-sm text-ink-muted";
+    link.append(snippet);
+    return link;
+  };
+
+  const renderEmpty = (term: string): void => {
+    if (!resultsEl) {
+      return;
+    }
+    renderStatus(fill(STATUS_EMPTY, term));
+    const empty = document.createElement("div");
+    empty.setAttribute("data-testid", "search-empty");
+    empty.className = "rounded-md border border-border bg-surface p-4";
+    const heading = document.createElement("p");
+    heading.className = "text-sm font-semibold text-ink";
+    heading.textContent = fill(EMPTY_HEADING, term);
+    empty.append(heading);
+    const suggestions = document.createElement("ul");
+    suggestions.className = "mt-2 list-disc pl-5 text-sm text-ink-muted";
+    let options: ReadonlyArray<readonly [string, string | null]> = [];
+    try {
+      const parsed: unknown = JSON.parse(EMPTY_OPTIONS);
+      if (Array.isArray(parsed)) {
+        options = parsed as ReadonlyArray<readonly [string, string | null]>;
+      }
+    } catch {
+      options = [];
+    }
+    options.forEach(([text, href]) => {
+      const li = document.createElement("li");
+      if (href) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.textContent = text;
+        anchor.className = "text-link underline underline-offset-4";
+        li.append(anchor);
+      } else {
+        li.textContent = text;
+      }
+      suggestions.append(li);
+    });
+    empty.append(suggestions);
+    resultsEl.append(empty);
+  };
+
+  async function runSearch(rawTerm: string): Promise<void> {
+    const term = rawTerm.trim();
+    clearResults();
+    if (term.length === 0) {
+      renderStatus(DEFAULT_STATUS);
+      return;
+    }
+    try {
+      const pagefind = await loadIndex();
+      if (!pagefind) {
+        renderStatus(STATUS_ERROR);
+        return;
+      }
+      const search = await pagefind.search(term, {
+        filters: { locale: LOCALE },
+      });
+      if (search.results.length === 0) {
+        // AC-007.N2: aria-live announcement uses the exact "0 resultados".
+        renderStatus(fill(STATUS_EMPTY, term));
+        renderEmpty(term);
+        return;
+      }
+      renderStatus(fill(STATUS_COUNT, term, search.results.length));
+      clearResults();
+      const max = Math.min(10, search.results.length);
+      for (let index = 0; index < max; index += 1) {
+        const ref = search.results[index];
+        if (!ref) {
+          continue;
+        }
+        const item: PagefindResultData = await ref.data();
+        if (resultsEl) {
+          resultsEl.append(renderItem(item));
+        }
+      }
+    } catch {
+      renderStatus(STATUS_ERROR);
+    }
+  }
+
+  const formEl = document.querySelector<HTMLFormElement>(
+    '[data-testid="search-form"]',
+  );
+
+  formEl?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void runSearch(input?.value ?? "");
+  });
+
+  input?.addEventListener("input", () => {
+    const value = input.value;
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(() => void runSearch(value), 120);
+  });
+
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      input.value = "";
+      clearResults();
+      renderStatus(DEFAULT_STATUS);
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      const first = resultsEl?.querySelector<HTMLElement>(
+        '[data-testid="search-result-item"]',
+      );
+      if (first) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  resultsEl?.addEventListener("keydown", (event) => {
+    const anchors = Array.from(
+      resultsEl.querySelectorAll<HTMLElement>(
+        '[data-testid="search-result-item"]',
+      ),
+    );
+    const index = anchors.indexOf(document.activeElement as HTMLElement);
+    if (event.key === "ArrowDown" && index >= 0 && index < anchors.length - 1) {
+      const nextAnchor = anchors[index + 1];
+      if (nextAnchor) {
+        event.preventDefault();
+        nextAnchor.focus();
+      }
+    }
+    if (event.key === "ArrowUp" && index > 0) {
+      const previousAnchor = anchors[index - 1];
+      if (previousAnchor) {
+        event.preventDefault();
+        previousAnchor.focus();
+      }
+    }
+  });
+</script>

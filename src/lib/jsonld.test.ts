@@ -151,3 +151,24 @@ describe("site URL guard", () => {
     ).toThrow(/obrigatório/);
   });
 });
+
+describe("SPEC-012/AC-012.3 — JSON-LD por locale", () => {
+  it("a versão EN declara o idioma e a área remota, com a MESMA identidade", () => {
+    const en = buildOrganizationJsonLd(SITE, "en");
+    const pt = buildOrganizationJsonLd(SITE, "pt-BR");
+    expect(en["@id"]).toBe(pt["@id"]);
+    expect(JSON.stringify(en.areaServed)).not.toContain("Brasil");
+    expect(String(en.image)).toContain("og-en.png");
+    expect(String(pt.image)).toContain("og-default.png");
+    expect(en.priceRange).toBe("on request");
+    expect(pt.priceRange).toBe("sob consulta");
+    expect(en.availableLanguage).toEqual(["pt-BR", "en"]);
+
+    const enSite = buildWebSiteJsonLd(SITE, "en");
+    const ptSite = buildWebSiteJsonLd(SITE, "pt-BR");
+    expect(enSite.inLanguage).toBe("en");
+    expect(ptSite.inLanguage).toBe("pt-BR");
+    expect(JSON.stringify(enSite.potentialAction)).toContain("/en/search");
+    expect(JSON.stringify(ptSite.potentialAction)).toContain("/busca");
+  });
+});

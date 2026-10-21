@@ -158,6 +158,19 @@ export const CONTACT_SUBJECTS = {
 } as const;
 
 /**
+ * SPEC-012 AC-012.6 — English subjects (EN locale). No CLT/alocação subject
+ * exists here on purpose: the EN surface does not offer Brazilian employment
+ * models (SPEC-012 §4 — delta matrix).
+ */
+export const CONTACT_SUBJECTS_EN = {
+  hero: "Contact via site — Hero (EN)",
+  servicesB2B: (service: string) => `QA consulting enquiry — ${service}`,
+  general: "General enquiry — Royal Data Core (EN site)",
+  post: (slug: string) => `About the article: ${slug}`,
+  brokenLink: (path: string) => `Broken link — ${path}`,
+} as const;
+
+/**
  * SPEC-001/AC-001.8 guard for the pending-contact hint anchor: when contact data
  * is pending we route the CTA to `/contato` where the pending state is shown,
  * instead of emitting a dead `href`.

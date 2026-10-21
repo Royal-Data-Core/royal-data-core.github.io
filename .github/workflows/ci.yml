@@ -370,6 +370,17 @@ jobs:
           # the 17-URL set leaves <1 min of margin in the 12-min job ceiling.
           rm -rf "$MIRROR_DIR/blog/tag"
           rm -f .lhciview/404.html "$MIRROR_DIR/404.html"
+          # SPEC-012 — the EN surface would double the LHCI URL set (9 PT + 9 EN
+          # templates + posts) and blow the 12-min job ceiling (the 17-URL set
+          # already leaves <1 min of margin). The EN templates that carry the
+          # NEW contract are audited; the EN articles repeat the PT template
+          # (same components, same budgets) and stay covered by the e2e/a11y
+          # gates. Tag pages exist only in PT (no /en/blog/tag/* — YAGNI).
+          rm -rf "$MIRROR_DIR/en/blog"
+          rm -f "$MIRROR_DIR/en/search/index.html"
+          # The EN 404 is noindex,follow and has no canonical (SPEC-006
+          # AC-006.3) — same contract as the root 404, same exclusion.
+          rm -f "$MIRROR_DIR/en/404/index.html"
 
       - name: LHCI (retry 1 — RFC-001 FM-08)
         run: |

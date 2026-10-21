@@ -22,6 +22,7 @@ import {
   CONTACT_SOCIALS,
   buildPhoneDisplay,
 } from "./contact";
+import { type Locale } from "./i18n";
 
 /** Verified legal identity (SDD-CONTEXT §1 — factual source of truth). */
 export const ORGANIZATION = {
@@ -44,6 +45,15 @@ export const ORGANIZATION = {
     "Shift-Left Testing",
     "Core Web Vitals",
   ],
+} as const;
+
+/**
+ * SPEC-012 AC-012.3 — locale-specific organization description. The legal
+ * identity (name/legalName/taxID) stays single-sourced; only the prose is
+ * translated.
+ */
+export const ORGANIZATION_DESCRIPTION = {
+  en: "Software testing consultancy: QA strategy, test automation and quality pipelines, delivered remotely from Brazil.",
 } as const;
 
 type JsonLdValue =
@@ -124,10 +134,20 @@ function siteOrigin(siteUrl?: URL): string {
 /**
  * AC-001.5 — Organization/ProfessionalService block. Typed per COPY-BRIEF §12.
  * Inner fields reference the SAME verified identity as the footer (SPEC-009).
+ *
+ * SPEC-012 AC-012.3 — locale-aware, entity-stable: the `@id` is IDENTICAL in
+ * every locale (one organization, one entity for search engines); only the
+ * locale-dependent fields change (`areaServed`, `priceRange`, `paymentAccepted`,
+ * `image`, `description`). `currenciesAccepted` stays "BRL" in every locale —
+ * it is a fact about the contracting entity, not a promise about the quote.
  */
-export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
+export function buildOrganizationJsonLd(
+  siteUrl?: URL,
+  locale: Locale = "pt-BR",
+): JsonLdNode {
   const origin = siteOrigin(siteUrl);
   const home = `${origin}${withBase("/")}`;
+  const isEn = locale === "en";
   return {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
@@ -136,20 +156,24 @@ export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
     legalName: ORGANIZATION.legalName,
     taxID: ORGANIZATION.taxID,
     foundingDate: ORGANIZATION.foundingDate,
-    description: ORGANIZATION.description,
+    description: isEn ? ORGANIZATION_DESCRIPTION.en : ORGANIZATION.description,
     url: home,
-    image: `${origin}${withBase("/og-default.png")}`,
-    priceRange: "sob consulta",
+    image: `${origin}${withBase(isEn ? "/og-en.png" : "/og-default.png")}`,
+    priceRange: isEn ? "on request" : "sob consulta",
     currenciesAccepted: "BRL",
     // COPY-BRIEF §12 canonical values; declared business channels, no numeric price claim.
-    paymentAccepted: "Transferência, Boleto, PIX",
+    paymentAccepted: isEn ? "Bank transfer, PIX" : "Transferência, Boleto, PIX",
     address: {
       "@type": "PostalAddress",
       addressLocality: ORGANIZATION.addressLocality,
       addressRegion: ORGANIZATION.addressRegion,
       addressCountry: ORGANIZATION.addressCountry,
     },
-    areaServed: { "@type": "Country", name: "Brasil" },
+    // PT: the Brazilian market. EN: remote delivery from Brazil (SPEC-011 §3).
+    areaServed: isEn
+      ? { "@type": "Place", name: "Worldwide" }
+      : { "@type": "Country", name: "Brasil" },
+    availableLanguage: ["pt-BR", "en"],
     knowsAbout: [...ORGANIZATION.knowsAbout],
     // SameAs is NOT an unverifiable vanity claim anymore: every URL below is
     // verified and already published on the official /contato page.
@@ -165,18 +189,26 @@ export function buildOrganizationJsonLd(siteUrl?: URL): JsonLdNode {
 /**
  * AC-001.6 — WebSite block; SearchAction target must synthesize with SPEC-007
  * `/busca?q={search_term_string}`. `{search_term_string}` MUST NOT be URL-encoded.
+ *
+ * SPEC-012 AC-012.3 — locale-aware: `inLanguage` follows the rendered locale
+ * and the SearchAction points at THAT locale's search route.
  */
-export function buildWebSiteJsonLd(siteUrl: URL): JsonLdNode {
+export function buildWebSiteJsonLd(
+  siteUrl: URL,
+  locale: Locale = "pt-BR",
+): JsonLdNode {
   const origin = siteOrigin(siteUrl);
+  const isEn = locale === "en";
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: ORGANIZATION.name,
     url: `${origin}${withBase("/")}`,
-    inLanguage: "pt-BR",
+    inLanguage: locale,
+    availableLanguage: ["pt-BR", "en"],
     potentialAction: {
       "@type": "SearchAction",
-      target: `${origin}${withBase("/busca")}?q={search_term_string}`,
+      target: `${origin}${withBase(isEn ? "/en/search" : "/busca")}?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };

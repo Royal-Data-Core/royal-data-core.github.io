@@ -1,5 +1,13 @@
 ---
 import Icon from "./Icon.astro";
+import { DEFAULT_LOCALE, type Locale } from "../lib/i18n";
+
+interface Props {
+  /** SPEC-012 — rendered locale. */
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
 /**
  * SPEC-002 AC-002.3 — proof badges resolved at BUILD time, no external badge
  * hosts (no img.shields.io), no fetch().
@@ -28,6 +36,6 @@ import Icon from "./Icon.astro";
     class="bg-surface border-border-strong text-ink inline-flex min-h-[44px] items-center gap-2 rounded-md border px-3 font-mono text-xs font-semibold"
   >
     <Icon name="coin" size={16} class="text-success-600" />
-    custo mensal: R$ 0,00
+    {locale === "en" ? "site cost: R$ 0,00 / month" : "custo mensal: R$ 0,00"}
   </li>
 </ul>

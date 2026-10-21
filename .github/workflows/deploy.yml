@@ -97,6 +97,14 @@ jobs:
           # SPEC-006: custom 404 served
           CODE404=$(curl -s -o /dev/null -w '%{http_code}' -L "${URL}rota-inexistente-xyz?$BUSTER" || echo "000")
           echo "404 route status: $CODE404"
+          # SPEC-012: the English surface must be live too (one cheap curl —
+          # a broken locale must never ship silently).
+          CODE_EN=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -L "${URL}en/?$BUSTER" || echo "000")
+          echo "EN route status: $CODE_EN"
+          if [ "$CODE_EN" != "200" ]; then
+            echo "::error::SPEC-012: /en/ answered $CODE_EN after publish"
+            exit 1
+          fi
           # SPEC-008 AC-008.10: HSTS provided by the GitHub edge
           curl -sI -L "$URL?$BUSTER" | grep -i 'strict-transport-security' \
             && echo "✓ HSTS present" \

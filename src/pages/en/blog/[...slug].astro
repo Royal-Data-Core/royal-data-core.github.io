@@ -1,0 +1,193 @@
+---
+/**
+ * SPEC-012 — /en/blog/[slug]: English article page.
+ * Mirrors SPEC-004 (h1 = frontmatter title, TOC anchors, BlogPosting JSON-LD,
+ * server-side Shiki) with the EN locale: English dates, English JSON-LD
+ * (`inLanguage: "en"`), tags rendered as plain chips (the EN surface has no
+ * tag pages — SPEC-012 L17/YAGNI).
+ */
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { withBase } from "../../../lib/withBase";
+import { formatPublishDate, toIsoDate } from "../../../lib/date";
+import { ORGANIZATION, serializeJsonLd } from "../../../lib/jsonld";
+import type { JsonLdNode } from "../../../lib/jsonld";
+import { postSlug, ROUTES } from "../../../lib/i18n";
+
+import type { CollectionEntry } from "astro:content";
+
+export async function getStaticPaths(): Promise<
+  Array<{ params: { slug: string }; props: { post: CollectionEntry<"blog"> } }>
+> {
+  const postEntries = await getCollection("blog");
+  const published = postEntries
+    .filter((post) => !post.data.draft && post.data.lang === "en")
+    .sort(
+      (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+    );
+  if (published.length === 0) {
+    throw new Error(
+      "SPEC-012: nenhum post em inglês — /en/blog não pode gerar rotas",
+    );
+  }
+  return published.map((post) => ({
+    params: { slug: postSlug(post.id, "en") },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const toc = headings.filter((heading) => heading.depth === 2);
+const slug = postSlug(post.id, "en");
+const ogDescription = post.data.description;
+
+const siteOrigin: string = import.meta.env.SITE ?? "";
+const mainEntityOfPage = `${siteOrigin}${withBase(`en/blog/${slug}`)}`;
+const blogPostingJsonLd: JsonLdNode = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: toIsoDate(post.data.publishDate),
+  dateModified: toIsoDate(post.data.updatedDate ?? post.data.publishDate),
+  inLanguage: "en",
+  author: {
+    "@type": "Person",
+    name: "QA Consultant — Royal Data Core",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: ORGANIZATION.name,
+  },
+  mainEntityOfPage,
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={ogDescription}
+  ogType="article"
+  locale="en"
+  alternates={{ "pt-BR": `/blog/${slug}`, en: `/en/blog/${slug}` }}
+>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={serializeJsonLd(blogPostingJsonLd)}
+  />
+
+  <div data-theme="mid" class="bg-bg">
+    <article class="mx-auto max-w-3xl px-4 py-10">
+      <header class="space-y-3">
+        <h1
+          data-testid="article-headline"
+          class="text-ink text-3xl leading-tight font-bold tracking-tight"
+        >
+          {post.data.title}
+        </h1>
+        <p class="text-ink-subtle flex flex-wrap items-center gap-x-2 text-sm">
+          <time datetime={toIsoDate(post.data.publishDate)}>
+            {formatPublishDate(post.data.publishDate, "en")}
+          </time>
+          {
+            post.data.updatedDate ? (
+              <span>
+                · updated on{" "}
+                <time datetime={toIsoDate(post.data.updatedDate)}>
+                  {formatPublishDate(post.data.updatedDate, "en")}
+                </time>
+              </span>
+            ) : null
+          }
+        </p>
+        {
+          post.data.tags.length > 0 ? (
+            <ul data-testid="post-tags" class="flex flex-wrap gap-2">
+              {post.data.tags.map((tag) => (
+                <li>
+                  <span class="text-ink-muted border-border-strong inline-flex min-h-[44px] items-center rounded-md border px-3 text-xs font-semibold">
+                    {tag}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null
+        }
+      </header>
+
+      {
+        toc.length > 0 ? (
+          <nav
+            data-testid="post-toc"
+            aria-label="Table of contents"
+            class="bg-surface border-border mt-6 rounded-md border p-4"
+          >
+            <p class="text-ink text-sm font-semibold">In this article</p>
+            <ul class="text-ink-muted mt-2 list-disc space-y-0.5 pl-5 text-sm">
+              {toc.map((heading) => (
+                <li>
+                  <a
+                    href={`#${heading.slug}`}
+                    class="text-link hover:text-link-hover inline-block py-2 align-baseline underline underline-offset-4"
+                  >
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ) : null
+      }
+
+      <div
+        data-testid="post-body"
+        class="text-ink [&_li]:text-ink [&_p]:text-ink mt-8 space-y-4 leading-relaxed [&_h2]:text-xl [&_h2]:leading-snug [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-semibold [&_pre]:overflow-x-auto"
+      >
+        <Content />
+      </div>
+
+      {
+        post.data.references.length > 0 ? (
+          <aside
+            class="bg-surface border-border mt-10 rounded-md border p-4"
+            aria-label="References"
+          >
+            <p class="text-ink text-sm font-semibold">References</p>
+            <ul class="text-ink-muted mt-2 list-disc space-y-0.5 pl-5 text-sm">
+              {post.data.references.map((reference) => (
+                <li>
+                  <a
+                    href={reference.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-link hover:text-link-hover inline-block py-2 align-baseline underline underline-offset-4"
+                  >
+                    {reference.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        ) : null
+      }
+
+      <nav aria-label="Article navigation" class="mt-10 flex flex-wrap gap-4">
+        <a
+          href={withBase(ROUTES.blog.en)}
+          class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
+        >
+          All articles
+        </a>
+        <a
+          href={withBase(ROUTES.contact.en)}
+          class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
+        >
+          Talk about this article
+        </a>
+      </nav>
+    </article>
+  </div>
+</BaseLayout>

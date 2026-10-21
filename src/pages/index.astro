@@ -19,7 +19,7 @@ import {
 } from "../lib/contact";
 
 const SITE_DESCRIPTION =
-  "Estratégia de testes, automação e QA para times que não podem entregar defeito em produção. Matão/SP, atendimento remoto em todo o Brasil.";
+  "Estratégia de testes, automação e QA para times que não podem entregar defeito em produção. Base em Matão/SP, atendimento remoto.";
 
 const heroMailto =
   CONTACT_EMAIL &&
@@ -28,7 +28,7 @@ const heroMailto =
 // SPEC-002 AC-002.N1 — the build fails closed when there is nothing to show.
 const postEntries = await getCollection("blog");
 const publishedPosts = postEntries
-  .filter((post) => !post.data.draft)
+  .filter((post) => !post.data.draft && post.data.lang === "pt-BR")
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 if (publishedPosts.length === 0) {
   throw new Error("SPEC-002: homepage requer >= 1 post publicado; encontrei 0");
@@ -100,6 +100,8 @@ const services = [
   title="Royal Data Core — Consultoria em Testes de Software"
   description={SITE_DESCRIPTION}
   fullTitle
+  locale="pt-BR"
+  alternates={{ "pt-BR": "/", en: "/en/" }}
 >
   <section class="container-page pt-10 pb-10 sm:pt-14">
     <div class="grid items-center gap-8 lg:grid-cols-2">

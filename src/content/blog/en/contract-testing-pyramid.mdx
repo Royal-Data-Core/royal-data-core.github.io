@@ -1,0 +1,110 @@
+---
+title: "Data contracts across the test pyramid"
+description: "Integration tests do not need the whole system running: they need a checkable promise about the payload crossing the boundary. Contracts make that promise verifiable."
+publishDate: "2026-10-15"
+tags: ["contract-testing", "integration", "pact", "test-strategy"]
+coverAlt: "Article with no cover image; consumer and provider contract examples appear as code blocks in the body."
+lang: "en"
+references:
+  - label: "Martin Fowler — Contract Test"
+    url: "https://martinfowler.com/bliki/ContractTest.html"
+  - label: "Pact documentation — consumer-driven contracts"
+    url: "https://docs.pact.io/"
+  - label: "Zod documentation — schemas validated at runtime"
+    url: "https://zod.dev/"
+---
+
+## Context
+
+The test pyramid asks for many unit tests, a few integration tests, and fewer UI
+tests. On paper the integration layer is where modules are checked against each
+other. In practice it often becomes a suite that boots entire systems, runs longer
+than the team tolerates, and fails for reasons unrelated to the integration under
+test.
+
+One resource cuts that cost without giving up verification: contracts — comparable
+promises about the payload that crosses the boundary between producer and consumer.
+
+## Problem
+
+A common case: the orders service consumes the catalog service. At some point the
+two teams read "price" differently — one treats it as an integer count of cents, the
+other as a decimal. A change to that field passes the tests each side wrote, and
+breaks only at runtime, or in production.
+
+The gap is not missing integration coverage. It is the absence of a checkable
+commitment about the shape of the data at the boundary. An end-to-end test does
+catch this class of defect, but it pays for the check in latency and shared
+environment, and it still covers one scenario at a time.
+
+## Analysis
+
+A contract assumed on both sides — once by the producer, once by the consumer —
+verifies the same promise at both ends:
+
+1. **On the consumer side**: the integration client is tested against a recorded
+   contract, a "model" of the producer that answers a request with a frozen payload.
+2. **On the provider side**: the provider's real response is verified against the
+   contract the consumers signed.
+
+The point is comparing the two sides without bringing both services up at the same
+time. That time saving is what makes the suite fit in a normal working routine.
+
+## Solution
+
+With Zod schemas on the consumer side, the contract is literally code:
+
+```ts
+import { z } from "zod";
+
+const catalogItem = z.object({
+  sku: z.string(),
+  priceCents: z.number().int().nonnegative(),
+  currency: z.literal("USD"),
+});
+
+export function parseCatalogItem(raw: string) {
+  const parsed = catalogItem.safeParse(JSON.parse(raw));
+  if (!parsed.success)
+    throw new Error(`contract violated: ${parsed.error.message}`);
+  return parsed.data;
+}
+```
+
+The same schema becomes the provider-side check: the only prose needed is "this
+payload is exactly what the consumer signed". With Pact the same intent is explicit
+between teams, and the provider pipeline asks the broker whether the version in
+hand may reach an environment:
+
+```bash
+# Provider side, in CI: block the deploy unless every signed pact verifies.
+pact-broker can-i-deploy \
+  --pacticipant catalog-service \
+  --version "$GIT_COMMIT" \
+  --to-environment staging
+```
+
+Locally, the integration is a frozen payload validated by the same
+`parseCatalogItem` code. The real integration test is reduced to "transport plus
+payload", and each layer under test stays small and fast.
+
+## Limits of the approach
+
+Contracts check shape, not business semantics: "price in cents" can sit in a
+contract and still be wrong for the discount rule. Contracts also age — when the
+producer changes, someone has to propagate the change to the consumer tooling, or
+two dormant contracts exist and nobody notices. And contracts do not replace a
+minimum end-to-end test: authentication and cross-service latency still need
+coverage in an integrated environment, in much smaller volume.
+
+## Measured result
+
+The claim is deliberately narrow: contracts shrink the suites that boot whole
+systems and trade part of the verification for local comparisons. The usable
+measurement is simple and reproducible — count the end-to-end tests in the suite
+before and after adoption, then record wall-clock runtime in the pipeline.
+
+## References
+
+The frontmatter references point to Fowler's essay on contract testing, the Pact
+documentation, and the Zod page.

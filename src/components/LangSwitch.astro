@@ -1,0 +1,53 @@
+---
+/**
+ * SPEC-012 AC-012.1 — language switcher.
+ *
+ * Server-rendered LINK (no script, no cookie, no localStorage — CONSTITUTION
+ * §C7): the switch is a plain navigation to the same surface in the other
+ * locale. `lang` + `hreflang` on the link satisfy WCAG 2.1 3.1.2 (Language of
+ * Parts); the accessible name is the target language in its own language.
+ */
+import { withBase } from "../lib/withBase";
+import {
+  HREFLANG,
+  LOCALE_LABELS,
+  LOCALE_SHORT,
+  type Locale,
+} from "../lib/i18n";
+
+interface Props {
+  /** Locale currently rendered (kept for the caller's intent; the switch
+   *  always points at the OTHER locale). */
+  locale: Locale;
+  /** Locale the link points to. */
+  target: Locale;
+  /** Path (without the deployment base) of the counterpart page. */
+  href: string;
+  /** `compact` = short label (header); `full` = language name (footer). */
+  variant?: "compact" | "full";
+  /** Extra classes for the host element. */
+  class?: string;
+}
+
+const { target, href, variant = "compact", class: className } = Astro.props;
+
+const label = LOCALE_LABELS[target];
+const text = variant === "compact" ? LOCALE_SHORT[target] : label;
+// WCAG 2.5.3 (Label in Name): the visible text must appear as a standalone
+// word in the accessible name (axe: "label-content-name-mismatch"). The
+// compact switch therefore reads "EN — English", not "English (EN)".
+const accessibleName = variant === "compact" ? `${text} — ${label}` : label;
+---
+
+<a
+  data-testid="lang-switch"
+  data-locale-target={target}
+  href={withBase(href)}
+  hreflang={HREFLANG[target]}
+  lang={HREFLANG[target]}
+  aria-label={accessibleName}
+  class={className ??
+    "text-ink-muted hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md px-2 text-sm font-semibold underline underline-offset-4"}
+>
+  {text}
+</a>

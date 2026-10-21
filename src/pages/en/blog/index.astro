@@ -1,0 +1,93 @@
+---
+/**
+ * SPEC-012 — /en/blog (English article listing).
+ * Only posts with `lang: "en"` are listed (SPEC-012 AC-012.2 — no language
+ * mixing between the two surfaces).
+ */
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PostCard from "../../../components/PostCard.astro";
+import { withBase } from "../../../lib/withBase";
+import { readingMinutes } from "../../../lib/date";
+import { postSlug } from "../../../lib/i18n";
+
+const SITE_DESCRIPTION =
+  "Articles on software testing, test automation and QA pipelines — written for engineers who run tests in production.";
+
+const postEntries = await getCollection("blog");
+const publishedPosts = postEntries
+  .filter((post) => !post.data.draft && post.data.lang === "en")
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+
+const tags = [
+  ...new Set(publishedPosts.flatMap((post) => post.data.tags)),
+].sort();
+---
+
+<BaseLayout
+  title="Articles on Software Testing"
+  description={SITE_DESCRIPTION}
+  locale="en"
+  alternates={{ "pt-BR": "/blog", en: "/en/blog" }}
+>
+  <div data-theme="dark" class="bg-bg">
+    <div class="container-page py-10">
+      <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+        Articles on software testing
+      </h1>
+      <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
+        What I test, what I break, what I learn. No small talk.
+      </p>
+
+      {
+        tags.length > 0 ? (
+          <p class="mt-4">
+            <span class="text-ink text-sm font-semibold">Tags: </span>
+            {tags.map((tag) => (
+              <span class="text-ink-subtle mr-2 inline-flex min-h-[44px] items-center text-sm">
+                {tag}
+              </span>
+            ))}
+          </p>
+        ) : null
+      }
+
+      {
+        publishedPosts.length > 0 ? (
+          <div
+            data-testid="post-list"
+            class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {publishedPosts.map((post) => (
+              <PostCard
+                locale="en"
+                title={post.data.title}
+                publishDate={post.data.publishDate}
+                href={`en/blog/${postSlug(post.id, "en")}`}
+                slug={postSlug(post.id, "en")}
+                readingTimeMinutes={readingMinutes(post.body)}
+                description={post.data.description}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="text-ink-muted mt-6 text-sm">
+            The first articles are on their way. Come back soon — or subscribe
+            to the RSS feed.
+          </p>
+        )
+      }
+
+      <p class="text-ink-muted mt-8 text-sm">
+        RSS:{" "}
+        <a
+          data-testid="rss-link"
+          href={withBase("/en/rss.xml")}
+          class="text-link hover:text-link-hover underline underline-offset-4"
+        >
+          subscribe via /en/rss.xml
+        </a>
+      </p>
+    </div>
+  </div>
+</BaseLayout>

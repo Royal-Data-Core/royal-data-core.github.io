@@ -1,0 +1,158 @@
+---
+/**
+ * SPEC-012 — /en/privacy (English privacy statement).
+ *
+ * Facts are the SAME as the PT-BR page (SPEC-009): the site collects no
+ * personal data, sets no cookies and runs no analytics or trackers. What
+ * changes in English: the international-transfer disclosure (a message sent by
+ * email reaches a mailbox operated by the company in Brazil) and the framing
+ * of the rights.
+ *
+ * CONSTITUTION §C9: this page states facts only. It does NOT claim GDPR
+ * certification, EU data residency or a DPO — there is no personal data to
+ * process, so there is no record to keep and no officer to appoint.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { withBase } from "../../lib/withBase";
+import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../../lib/contact";
+import { ROUTES } from "../../lib/i18n";
+
+const SITE_DESCRIPTION =
+  "Privacy statement: this site collects no personal data, sets no cookies and runs no analytics or trackers.";
+
+const privacyMailto =
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    "Privacy request — Royal Data Core (EN site)",
+  );
+---
+
+<BaseLayout
+  title="Privacy — Royal Data Core"
+  description={SITE_DESCRIPTION}
+  locale="en"
+  alternates={{ "pt-BR": "/privacidade", en: "/en/privacy" }}
+>
+  <div data-theme="mid" class="bg-bg">
+    <div class="container-page py-10">
+      <div class="max-w-3xl">
+        <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+          Privacy
+        </h1>
+        <p class="text-ink-muted mt-3 text-sm leading-relaxed">
+          Short version: this site does not collect, process or store personal
+          data. No cookies, no analytics, no trackers, no fingerprinting, no
+          advertising pixels. There is no data to breach and nothing to opt out
+          of.
+        </p>
+
+        <section class="mt-8" aria-labelledby="no-collection-heading">
+          <h2
+            id="no-collection-heading"
+            class="text-ink text-xl leading-snug font-bold"
+          >
+            No collection on this site
+          </h2>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            Every page is a static HTML file served from GitHub Pages. There is
+            no form, no account, no session, no identifier and no storage of any
+            kind — neither in cookies nor in local storage. Reading a page does
+            not create a profile of you.
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="infrastructure-heading">
+          <h2
+            id="infrastructure-heading"
+            class="text-ink text-xl leading-snug font-bold"
+          >
+            What the infrastructure records
+          </h2>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            GitHub Pages logs the IP address of visitors as part of serving the
+            site. That log is operated by the hosting provider, disclosed here
+            under the GitHub Privacy Statement, and is not accessible to Royal
+            Data Core. The company neither receives nor processes it.
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="email-heading">
+          <h2
+            id="email-heading"
+            class="text-ink text-xl leading-snug font-bold"
+          >
+            When you write to us
+          </h2>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            If you send an email or a WhatsApp message, that message is
+            delivered to a mailbox operated by Royal Data Core in Brazil and
+            kept as a business record for as long as the commercial relationship
+            requires it. This is a transfer of the data you chose to send to a
+            Brazilian mailbox — the reason we state it plainly.
+          </p>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            You can ask at any time for access to, correction of or deletion of
+            the information held about you, and we answer within one business
+            day. The Brazilian General Data Protection Law (LGPD, Article 18)
+            grants those rights; we apply the same handling to requests that
+            arrive from outside Brazil.
+          </p>
+          {
+            privacyMailto ? (
+              <p class="text-ink-muted mt-3 text-sm leading-relaxed">
+                <a
+                  data-testid="privacy-request-link"
+                  href={privacyMailto.hrefEncoded}
+                  aria-label={privacyMailto.addressDecoded}
+                  class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+                  set:html={privacyMailto.textEncoded}
+                />
+              </p>
+            ) : null
+          }
+        </section>
+
+        <section class="mt-8" aria-labelledby="open-heading">
+          <h2 id="open-heading" class="text-ink text-xl leading-snug font-bold">
+            Open by default
+          </h2>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            The content of this site is versioned in Git, and the complete
+            history of changes is public and auditable:
+            <a
+              href="https://github.com/royaldatacore/royaldatacore.github.io/tree/main/.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            >
+              <code>.ai/</code>
+            </a>
+            . The Portuguese version of this page carries the same facts in more legal
+            detail:
+            <a
+              href={withBase(ROUTES.privacy["pt-BR"])}
+              class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            >
+              Privacidade
+            </a>
+            .
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="changes-heading">
+          <h2
+            id="changes-heading"
+            class="text-ink text-xl leading-snug font-bold"
+          >
+            Changes
+          </h2>
+          <p class="text-ink-muted mt-2 text-sm leading-relaxed">
+            This page is versioned in Git. The full history of changes is public
+            and auditable, and every deploy is recorded in the public pipeline.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

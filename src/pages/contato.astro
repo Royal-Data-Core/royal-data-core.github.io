@@ -35,7 +35,12 @@ const waHref =
 const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
 ---
 
-<BaseLayout title="Contato" description={SITE_DESCRIPTION}>
+<BaseLayout
+  title="Contato"
+  description={SITE_DESCRIPTION}
+  locale="pt-BR"
+  alternates={{ "pt-BR": "/contato", en: "/en/contact" }}
+>
   <div class="container-page py-10">
     <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
       Contato
