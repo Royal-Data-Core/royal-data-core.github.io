@@ -36,11 +36,11 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
 ---
 
 <BaseLayout title="Contato" description={SITE_DESCRIPTION}>
-  <div class="mx-auto max-w-5xl px-4 py-10">
-    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
       Contato
     </h1>
-    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700">
+    <p class="text-ink-muted mt-4 max-w-2xl text-sm leading-relaxed">
       Sem formulário. Sem CRM. Sem sequência automática de emails. Você escolhe
       o canal e fala direto comigo.
     </p>
@@ -48,41 +48,43 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
     <section class="mt-8" aria-labelledby="channels-heading">
       <h2
         id="channels-heading"
-        class="text-2xl leading-tight font-bold text-slate-900"
+        class="text-ink text-2xl leading-tight font-bold"
       >
         Canais
       </h2>
       <ul class="mt-3 grid gap-3 sm:grid-cols-2">
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">Email</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">Email</p>
           {
             HAS_CONTACT_EMAIL && CONTACT_EMAIL && generalMailto ? (
               <a
                 data-testid="contact-email-link"
                 href={generalMailto.hrefEncoded}
                 aria-label={generalMailto.addressDecoded}
-                class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md font-mono text-sm break-all underline underline-offset-4"
+                class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md font-mono text-sm break-all underline underline-offset-4"
                 set:html={generalMailto.textEncoded}
               />
             ) : (
               <p class="mt-2">
                 <span
                   data-testid="contact-email-link"
-                  class="font-mono text-sm text-slate-700"
+                  class="text-ink-muted font-mono text-sm"
                 >
                   {CONTACT_EMAIL_DISPLAY}
                 </span>
-                <span class="mt-1 block text-xs text-slate-600">
+                <span class="text-ink-subtle mt-1 block text-xs">
                   Endereço em definição — decisão D-03 pendente (SDD-CONTEXT
                   §9).
                 </span>
               </p>
             )
           }
-          <p class="mt-2 text-xs text-slate-600">Resposta em até 1 dia útil.</p>
+          <p class="text-ink-subtle mt-2 text-xs">
+            Resposta em até 1 dia útil.
+          </p>
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">WhatsApp</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">WhatsApp</p>
           {
             HAS_CONTACT_PHONE && CONTACT_PHONE && waHref ? (
               <a
@@ -90,7 +92,7 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+                class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
               >
                 Abrir conversa no WhatsApp
               </a>
@@ -98,29 +100,29 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
               <p class="mt-2">
                 <span
                   data-testid="contact-whatsapp-link"
-                  class="font-mono text-sm text-slate-700"
+                  class="text-ink-muted font-mono text-sm"
                 >
                   {CONTACT_PHONE_DISPLAY}
                 </span>
-                <span class="mt-1 block text-xs text-slate-600">
+                <span class="text-ink-subtle mt-1 block text-xs">
                   Número em definição — decisão D-03 pendente (SDD-CONTEXT §9).
                 </span>
               </p>
             )
           }
-          <p class="mt-2 text-xs text-slate-600">
+          <p class="text-ink-subtle mt-2 text-xs">
             Melhor canal para primeira conversa. Seg–sex, 9h–18h (BRT).
           </p>
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">Telefone</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">Telefone</p>
           {
             HAS_CONTACT_PHONE && CONTACT_PHONE && telHref ? (
               <a
                 data-testid="contact-phone-link"
                 href={telHref}
                 aria-label={`Ligar para ${CONTACT_PHONE_DISPLAY}`}
-                class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+                class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
               >
                 {CONTACT_PHONE_DISPLAY}
               </a>
@@ -128,71 +130,71 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
               <p class="mt-2">
                 <span
                   data-testid="contact-phone-link"
-                  class="font-mono text-sm text-slate-700"
+                  class="text-ink-muted font-mono text-sm"
                 >
                   {CONTACT_PHONE_DISPLAY}
                 </span>
-                <span class="mt-1 block text-xs text-slate-600">
+                <span class="text-ink-subtle mt-1 block text-xs">
                   Número em definição — decisão D-03 pendente (SDD-CONTEXT §9).
                 </span>
               </p>
             )
           }
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">GitHub</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">GitHub</p>
           <a
             data-testid="contact-github-link"
             href="https://github.com/royaldatacore"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+            class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
           >
             github.com/royaldatacore
           </a>
-          <p class="mt-2 text-xs text-slate-600">
+          <p class="text-ink-subtle mt-2 text-xs">
             Código, issues e o pipeline deste site.
           </p>
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">LinkedIn</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">LinkedIn</p>
           <a
             data-testid="contact-linkedin-link"
             href="https://www.linkedin.com/in/leonardo-setti"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+            class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
           >
             linkedin.com/in/leonardo-setti
           </a>
-          <p class="mt-2 text-xs text-slate-600">
+          <p class="text-ink-subtle mt-2 text-xs">
             Perfil profissional do fundador.
           </p>
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">Instagram</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">Instagram</p>
           <a
             data-testid="contact-instagram-link"
             href="https://www.instagram.com/royaldatacore"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+            class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
           >
             @royaldatacore
           </a>
-          <p class="mt-2 text-xs text-slate-600">Perfil oficial da marca.</p>
+          <p class="text-ink-subtle mt-2 text-xs">Perfil oficial da marca.</p>
         </li>
-        <li class="bg-surface rounded-lg border border-slate-200 p-4">
-          <p class="text-sm font-semibold text-slate-900">vCard</p>
+        <li class="bg-surface border-border rounded-lg border p-4">
+          <p class="text-ink text-sm font-semibold">vCard</p>
           <a
             data-testid="contact-vcard-link"
             href={withBase("/contato.vcf")}
             download="contato.vcf"
-            class="text-brand-700 hover:text-brand-900 mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
+            class="text-link hover:text-link-hover mt-2 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md text-sm underline underline-offset-4"
           >
             Baixar contato.vcf
           </a>
-          <p class="mt-2 text-xs text-slate-600">
+          <p class="text-ink-subtle mt-2 text-xs">
             Cartão profissional com os dados oficiais — clique e salve o contato
             completo.
           </p>
@@ -201,16 +203,13 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
     </section>
 
     <section
-      class="mt-8 rounded-lg border border-slate-200 p-4"
+      class="border-border mt-8 rounded-lg border p-4"
       aria-labelledby="subject-heading"
     >
-      <h2
-        id="subject-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="subject-heading" class="text-ink text-xl leading-tight font-bold">
         Assunto preenchido automaticamente
       </h2>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
         Ao clicar em um botão de contato deste site, o assunto do email já vem
         preenchido com a origem da sua navegação. Isso ajuda a responder mais
         rápido — e não coleta nenhum dado seu.
@@ -218,13 +217,10 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
     </section>
 
     <section class="mt-8" aria-labelledby="b2b-heading">
-      <h2
-        id="b2b-heading"
-        class="text-2xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="b2b-heading" class="text-ink text-2xl leading-tight font-bold">
         Para empresas
       </h2>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
         Precisa de diagnóstico, automação ou QA embarcado? Envie contexto:
         stack, tamanho do time, o que está doendo. Respondo com uma leitura
         inicial honesta — mesmo que a recomendação seja não me contratar agora.
@@ -232,20 +228,17 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
     </section>
 
     <section class="mt-8" aria-labelledby="clt-heading">
-      <h2
-        id="clt-heading"
-        class="text-2xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="clt-heading" class="text-ink text-2xl leading-tight font-bold">
         Oportunidades CLT
       </h2>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
         Se você recruta para posição de QA/QE, inclua: modelo de trabalho, faixa
         salarial, stack de testes e se a vaga é para construir ou manter. Isso
         evita ida e volta desnecessária para os dois lados.
       </p>
     </section>
 
-    <p class="mt-8 text-sm text-slate-700">
+    <p class="text-ink-muted mt-8 text-sm">
       Royal Data Core LTDA · CNPJ 69.527.139/0001-94 · Matão/SP, Brasil
     </p>
   </div>

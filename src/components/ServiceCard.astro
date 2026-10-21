@@ -5,6 +5,7 @@
  * CTA: entity-encoded mailto (SPEC-005 AC-005.3) when the email channel exists;
  * otherwise routes to /contato, where the pending state (D-03) is explained.
  */
+import Icon, { type IconName } from "./Icon.astro";
 import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
@@ -23,6 +24,8 @@ interface ServiceCta {
 
 interface Props {
   slug: string;
+  /** SPEC-010 §7 — ícone do serviço (outline 1.5px, round caps). */
+  icon?: IconName;
   title: string;
   description: string;
   eyebrow?: string;
@@ -36,6 +39,7 @@ interface Props {
 
 const {
   slug,
+  icon = "layers",
   title,
   description,
   eyebrow,
@@ -70,23 +74,29 @@ const encodedMailto =
 
 <article
   data-testid={`service-card-${slug}`}
-  class="bg-surface flex h-full flex-col gap-3 rounded-lg border border-slate-200 p-5"
+  class="card hover:shadow-card flex h-full flex-col gap-3 transition-shadow duration-200"
   {...audience ? { "data-audience": audience } : {}}
 >
+  <span
+    data-testid={`service-icon-${slug}`}
+    class="border-border text-link inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+  >
+    <Icon name={icon} size={22} />
+  </span>
   {
     eyebrow ? (
-      <p class="text-xs font-semibold tracking-wide text-slate-600 uppercase">
+      <p class="text-ink-subtle text-xs font-semibold tracking-wide uppercase">
         {eyebrow}
       </p>
     ) : null
   }
-  <h3 class="text-lg leading-snug font-bold text-slate-900">{title}</h3>
-  <p class="text-sm leading-relaxed text-slate-700">{description}</p>
+  <h3 class="text-ink text-lg leading-snug font-bold">{title}</h3>
+  <p class="text-ink-muted text-sm leading-relaxed">{description}</p>
   {
     deliverables && deliverables.length > 0 ? (
       <ul
         data-testid={`service-deliverables-${slug}`}
-        class="list-disc space-y-1 pl-5 text-sm text-slate-700"
+        class="text-ink-muted list-disc space-y-1 pl-5 text-sm"
       >
         {deliverables.map((item) => (
           <li>{item}</li>
@@ -101,7 +111,7 @@ const encodedMailto =
           <a
             data-testid={`service-cta-${slug}`}
             href={withBase(cta.href)}
-            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-4 text-sm font-semibold underline-offset-4 hover:text-white"
+            class="btn btn-secondary"
           >
             {cta.label}
           </a>
@@ -113,7 +123,7 @@ const encodedMailto =
             data-testid={`service-cta-${slug}`}
             href={encodedMailto.hrefEncoded}
             aria-label={`${cta.label} — ${encodedMailto.addressDecoded}`}
-            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-4 text-sm font-semibold underline-offset-4 hover:text-white"
+            class="btn btn-secondary"
           >
             {cta.label}
           </a>
@@ -122,7 +132,7 @@ const encodedMailto =
             data-testid={`service-cta-${slug}`}
             href={withBase("/contato")}
             title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-            class="hover:border-brand-700 hover:text-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 underline-offset-4"
+            class="btn btn-secondary"
           >
             {cta.label}
           </a>

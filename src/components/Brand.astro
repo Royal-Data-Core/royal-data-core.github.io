@@ -1,0 +1,44 @@
+---
+/**
+ * SPEC-010 §4 — brand lockup (isotyper + wordmark).
+ *
+ * Asset policy (SPEC-010 §8, PERF-3):
+ * - `public/brand/isotyper-color.webp` — 160x145, ~3.9 KB (derivativo WebP do
+ *   isotyper vetorial-color original; o SVG de 272 KB que embrulava um JPEG
+ *   foi descartado).
+ * - The wordmark is TEXT (system stack), not an image: crisp at any density,
+ *   zero bytes, translatable, and immune to raster blur.
+ * - Explicit `width`/`height` on the `<img>` (intrinsic ratio) ⇒ CLS = 0.
+ */
+import { withBase } from "../lib/withBase";
+
+interface Props {
+  /** `header` = mark + name; `footer` = mark + name, muted. */
+  variant?: "header" | "footer";
+  /** Accessible name of the link (defaults to the brand name). */
+  label?: string;
+}
+
+const { variant = "header", label = "Royal Data Core — início" } = Astro.props;
+const markClass = variant === "footer" ? "h-9 w-auto opacity-90" : "h-9 w-auto";
+---
+
+<a
+  href={withBase("/")}
+  data-testid="brand-lockup"
+  aria-label={label}
+  class="inline-flex min-h-[44px] items-center gap-2 rounded-md"
+>
+  <img
+    src={withBase("/brand/isotyper-color.webp")}
+    width="160"
+    height="145"
+    alt=""
+    aria-hidden="true"
+    decoding="async"
+    class={markClass}
+  />
+  <span class="font-display text-ink text-base font-bold tracking-tight">
+    Royal Data Core
+  </span>
+</a>

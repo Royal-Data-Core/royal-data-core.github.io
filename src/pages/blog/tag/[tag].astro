@@ -34,21 +34,19 @@ const posts = postEntries
   title={`Artigos com a tag ${tag}`}
   description={`Artigos técnicos de QA e engenharia de testes com a tag "${tag}". Sem rodeio.`}
 >
-  <div class="mx-auto max-w-5xl px-4 py-10">
+  <div class="container-page py-10">
     <nav aria-label="Trilha de navegação" class="text-sm">
       <a
         href={withBase("/blog")}
-        class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
+        class="text-link hover:text-link-hover underline underline-offset-4"
       >
         Todos os artigos
       </a>
       <span aria-hidden="true"> → </span>
-      <span class="text-slate-700">tag: {tag}</span>
+      <span class="text-ink-muted">tag: {tag}</span>
     </nav>
 
-    <h1
-      class="mt-4 text-3xl leading-tight font-bold tracking-tight text-slate-900"
-    >
+    <h1 class="text-ink mt-4 text-3xl leading-tight font-bold tracking-tight">
       Artigos com a tag "{tag}"
     </h1>
 
@@ -70,7 +68,7 @@ const posts = postEntries
           ))}
         </div>
       ) : (
-        <p class="mt-6 text-sm text-slate-700">
+        <p class="text-ink-muted mt-6 text-sm">
           Nenhum artigo publicado com esta tag ainda.
         </p>
       )

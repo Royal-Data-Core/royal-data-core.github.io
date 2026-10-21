@@ -143,24 +143,21 @@ const faqJsonLd: JsonLdNode = {
     set:html={serializeJsonLd(faqJsonLd)}
   />
 
-  <div class="mx-auto max-w-5xl px-4 py-10">
-    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
       Serviços
     </h1>
-    <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700">
+    <p class="text-ink-muted mt-4 max-w-2xl text-sm leading-relaxed">
       Três formas de trabalhar juntos, conforme o momento do seu produto.
       Nenhuma exige contrato de longo prazo para começar. Preço sob consulta —
       cada escopo é diferente e não faz sentido publicar tabela.
     </p>
 
     <section class="mt-8" aria-labelledby="audience-b2b">
-      <h2
-        id="audience-b2b"
-        class="text-2xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="audience-b2b" class="text-ink text-2xl leading-tight font-bold">
         Para empresas (B2B)
       </h2>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
         Contratos PJ, escopo definido, entregáveis mensuráveis. Ideal para times
         que precisam de capacidade de QA pontual ou de um diagnóstico externo
         independente antes de uma decisão de investimento em qualidade.
@@ -168,6 +165,7 @@ const faqJsonLd: JsonLdNode = {
       <div class="mt-4 grid gap-5 md:grid-cols-2">
         <ServiceCard
           slug={qaDiagnostic.slug}
+          icon="target"
           audience="b2b"
           eyebrow={qaDiagnostic.eyebrow}
           title={qaDiagnostic.title}
@@ -180,6 +178,7 @@ const faqJsonLd: JsonLdNode = {
         />
         <ServiceCard
           slug={testAutomation.slug}
+          icon="workflow"
           audience="b2b"
           eyebrow={testAutomation.eyebrow}
           title={testAutomation.title}
@@ -197,13 +196,10 @@ const faqJsonLd: JsonLdNode = {
     </section>
 
     <section class="mt-8" aria-labelledby="audience-clt">
-      <h2
-        id="audience-clt"
-        class="text-2xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="audience-clt" class="text-ink text-2xl leading-tight font-bold">
         Para times (CLT / alocação)
       </h2>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
         Contratação CLT, alocação dedicada ou mentoria recorrente. Ideal para
         empresas construindo a primeira função de QA ou fortalecendo um time de
         testes já existente.
@@ -211,6 +207,7 @@ const faqJsonLd: JsonLdNode = {
       <div class="mt-4 grid gap-5 md:grid-cols-2">
         <ServiceCard
           slug={embeddedQa.slug}
+          icon="users"
           audience="clt"
           eyebrow={embeddedQa.eyebrow}
           title={embeddedQa.title}
@@ -227,7 +224,7 @@ const faqJsonLd: JsonLdNode = {
     <section class="mt-8" aria-labelledby="engagement-models">
       <h2
         id="engagement-models"
-        class="text-2xl leading-tight font-bold text-slate-900"
+        class="text-ink text-2xl leading-tight font-bold"
       >
         Modelos de contratação
       </h2>
@@ -237,7 +234,7 @@ const faqJsonLd: JsonLdNode = {
             Modelos de contratação disponíveis e o significado de cada um
           </caption>
           <thead>
-            <tr class="border-b border-slate-300 text-slate-900">
+            <tr class="border-border-strong text-ink border-b">
               <th scope="col" class="py-2 pr-4 font-semibold">Badge</th>
               <th scope="col" class="py-2 font-semibold">Significado</th>
             </tr>
@@ -245,11 +242,11 @@ const faqJsonLd: JsonLdNode = {
           <tbody>
             {
               engagementModels.map((model) => (
-                <tr class="border-b border-slate-200 align-top">
-                  <th scope="row" class="py-2 pr-4 font-medium text-slate-900">
+                <tr class="border-border border-b align-top">
+                  <th scope="row" class="text-ink py-2 pr-4 font-medium">
                     {model.badge}
                   </th>
-                  <td class="py-2 text-slate-700">{model.meaning}</td>
+                  <td class="text-ink-muted py-2">{model.meaning}</td>
                 </tr>
               ))
             }
@@ -259,18 +256,15 @@ const faqJsonLd: JsonLdNode = {
     </section>
 
     <section class="mt-8" aria-labelledby="faq-heading">
-      <h2
-        id="faq-heading"
-        class="text-2xl leading-tight font-bold text-slate-900"
-      >
+      <h2 id="faq-heading" class="text-ink text-2xl leading-tight font-bold">
         Perguntas frequentes
       </h2>
       <dl class="mt-3 space-y-4">
         {
           faq.map((item) => (
             <div>
-              <dt class="font-semibold text-slate-900">{item.question}</dt>
-              <dd class="mt-1 text-sm leading-relaxed text-slate-700">
+              <dt class="text-ink font-semibold">{item.question}</dt>
+              <dd class="text-ink-muted mt-1 text-sm leading-relaxed">
                 {item.answer}
               </dd>
             </div>

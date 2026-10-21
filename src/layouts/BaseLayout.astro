@@ -18,6 +18,7 @@ import {
 } from "../lib/jsonld";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import MobileCtaBar from "../components/MobileCtaBar.astro";
 
 interface Props {
   /** Page title (PT-BR). Applied to template `${title} · Royal Data Core` unless `fullTitle`. */
@@ -104,6 +105,7 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
     {noIndex ? <meta name="robots" content="noindex, follow" /> : null}
     {noIndex ? null : <link rel="canonical" href={canonicalUrl} />}
     <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
+    <meta name="theme-color" content="#1d4ed8" />
     <link
       rel="alternate"
       type="application/rss+xml"
@@ -136,13 +138,13 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
     <slot name="head" />
   </head>
   <body
-    class="flex min-h-screen flex-col bg-white font-sans text-slate-900 antialiased"
+    class="flex min-h-screen flex-col pb-24 sm:pb-0"
     data-pagefind-ignore={excludeFromSearch ? "" : undefined}
   >
     <a
       data-testid="skip-link"
       href="#conteudo-principal"
-      class="focus:bg-brand-700 sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
+      class="focus:bg-accent focus:text-on-accent sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-3 focus:text-base focus:font-semibold"
     >
       Pular para o conteúdo principal
     </a>
@@ -156,6 +158,7 @@ const jsonLdWebSite = serializeJsonLd(buildWebSiteJsonLd(site));
       <slot />
     </main>
     <SiteFooter />
+    <MobileCtaBar />
     <!-- Conformance oracle: no script may follow JSON-LD into the artifact (AC-001.8). -->
   </body>
 </html>

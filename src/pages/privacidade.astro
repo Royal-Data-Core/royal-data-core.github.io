@@ -29,288 +29,299 @@ const lastUpdated = lastUpdatedFormatter.format(new Date());
   description={SITE_DESCRIPTION}
   excludeFromSearch
 >
-  <div class="mx-auto max-w-3xl px-4 py-10">
-    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
-      Privacidade
-    </h1>
-    <p data-testid="privacy-last-updated" class="mt-2 text-sm text-slate-600">
-      Última atualização: {lastUpdated} (gerada no momento do build).
-    </p>
+  <div data-theme="mid" class="bg-bg">
+    <div class="container-page py-10">
+      <div class="max-w-3xl">
+        <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
+          Privacidade
+        </h1>
+        <p
+          data-testid="privacy-last-updated"
+          class="text-ink-subtle mt-2 text-sm"
+        >
+          Última atualização: {lastUpdated} (gerada no momento do build).
+        </p>
 
-    <p class="mt-4 text-sm leading-relaxed text-slate-800">
-      Em resumo: este site não coleta, não processa, não armazena e não
-      compartilha nenhum dado pessoal seu. Não há cookies, não há analytics, não
-      há pixel de rastreamento, não há formulário.
-    </p>
+        <p class="text-ink mt-4 text-sm leading-relaxed">
+          Em resumo: este site não coleta, não processa, não armazena e não
+          compartilha nenhum dado pessoal seu. Não há cookies, não há analytics,
+          não há pixel de rastreamento, não há formulário.
+        </p>
 
-    <section class="mt-8" aria-labelledby="privacy-no-collection-heading">
-      <h2
-        id="privacy-no-collection-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Dados que este site coleta
-      </h2>
-      <div
-        data-testid="privacy-no-collection"
-        class="mt-2 space-y-2 text-sm leading-relaxed text-slate-800"
-      >
-        <p>Nenhum.</p>
-        <p>
-          O site é composto exclusivamente de arquivos estáticos (HTML, CSS,
-          JavaScript, imagens). Não existe servidor de aplicação, não existe
-          banco de dados, não existe formulário de contato e não existe endpoint
-          que receba informação sua.
-        </p>
-        <p>
-          Não definimos cookies. Não escrevemos em <code>localStorage</code> nem em
-          <code>sessionStorage</code>. Não executamos fingerprinting. Não usamos
-          <code>navigator.sendBeacon</code>.
-        </p>
-      </div>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-github-heading">
-      <h2
-        id="privacy-github-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        O que o GitHub registra
-      </h2>
-      <div
-        data-testid="privacy-github-logging"
-        class="mt-2 space-y-2 text-sm leading-relaxed text-slate-800"
-      >
-        <p>
-          Este site é hospedado no <strong>GitHub Pages</strong>, serviço
-          operado por GitHub, Inc. Conforme a documentação oficial do serviço:
-        </p>
-        <blockquote class="border-l-4 border-slate-300 pl-4 italic">
-          "When a GitHub Pages site is visited, the visitor's IP address is
-          logged and stored for security purposes, regardless of whether the
-          visitor has signed into GitHub or not."
-        </blockquote>
-        <p>
-          Ou seja: seu endereço IP é registrado pelo GitHub no momento da
-          visita, por razão de segurança da infraestrutura deles. <strong
-            >A Royal Data Core não tem acesso a esses logs, não os processa e
-            não pode exportá-los.</strong
-          > Nessa operação, a Royal Data Core não atua como controladora desses dados;
-          o registro é efetuado pelo operador da infraestrutura.
-        </p>
-        <p>
-          <a
-            href="https://docs.github.com/pt/site-policy/privacy-policies/github-general-privacy-statement"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
+        <section class="mt-8" aria-labelledby="privacy-no-collection-heading">
+          <h2
+            id="privacy-no-collection-heading"
+            class="text-ink text-xl leading-tight font-bold"
           >
-            GitHub General Privacy Statement
-          </a>
-        </p>
+            Dados que este site coleta
+          </h2>
+          <div
+            data-testid="privacy-no-collection"
+            class="text-ink mt-2 space-y-2 text-sm leading-relaxed"
+          >
+            <p>Nenhum.</p>
+            <p>
+              O site é composto exclusivamente de arquivos estáticos (HTML, CSS,
+              JavaScript, imagens). Não existe servidor de aplicação, não existe
+              banco de dados, não existe formulário de contato e não existe
+              endpoint que receba informação sua.
+            </p>
+            <p>
+              Não definimos cookies. Não escrevemos em <code>localStorage</code> nem
+              em
+              <code>sessionStorage</code>. Não executamos fingerprinting. Não
+              usamos
+              <code>navigator.sendBeacon</code>.
+            </p>
+          </div>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-github-heading">
+          <h2
+            id="privacy-github-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            O que o GitHub registra
+          </h2>
+          <div
+            data-testid="privacy-github-logging"
+            class="text-ink mt-2 space-y-2 text-sm leading-relaxed"
+          >
+            <p>
+              Este site é hospedado no <strong>GitHub Pages</strong>, serviço
+              operado por GitHub, Inc. Conforme a documentação oficial do
+              serviço:
+            </p>
+            <blockquote class="border-border-strong border-l-4 pl-4 italic">
+              "When a GitHub Pages site is visited, the visitor's IP address is
+              logged and stored for security purposes, regardless of whether the
+              visitor has signed into GitHub or not."
+            </blockquote>
+            <p>
+              Ou seja: seu endereço IP é registrado pelo GitHub no momento da
+              visita, por razão de segurança da infraestrutura deles. <strong
+                >A Royal Data Core não tem acesso a esses logs, não os processa
+                e não pode exportá-los.</strong
+              > Nessa operação, a Royal Data Core não atua como controladora desses
+              dados; o registro é efetuado pelo operador da infraestrutura.
+            </p>
+            <p>
+              <a
+                href="https://docs.github.com/pt/site-policy/privacy-policies/github-general-privacy-statement"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-link hover:text-link-hover underline underline-offset-4"
+              >
+                GitHub General Privacy Statement
+              </a>
+            </p>
+          </div>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-cookies-heading">
+          <h2
+            id="privacy-cookies-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Cookies
+          </h2>
+          <p
+            data-testid="privacy-cookies"
+            class="text-ink mt-2 space-y-2 text-sm leading-relaxed"
+          >
+            Nenhum cookie é definido por este site. Por isso <strong
+              >não exibimos banner de consentimento</strong
+            >: não há o que consentir. A ausência do banner é consequência
+            direta da arquitetura, não uma omissão.
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-tracking-heading">
+          <h2
+            id="privacy-tracking-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Rastreamento
+          </h2>
+          <div
+            data-testid="privacy-tracking"
+            class="text-ink mt-2 space-y-2 text-sm leading-relaxed"
+          >
+            <p>
+              Não utilizamos Google Analytics, Meta Pixel, LinkedIn Insight Tag,
+              Hotjar, Microsoft Clarity, Mixpanel, Segment ou qualquer outra
+              ferramenta de analytics, heatmap ou session replay — nem em versão
+              self-hosted. Esta é uma regra imutável do projeto (<code
+                >CONSTITUTION §C7</code
+              >, sujeita a Kill Switch sem possibilidade de exceção).
+            </p>
+            <p>
+              A única exceção técnica é a busca do site (Pagefind), que roda
+              <strong>inteiramente no seu navegador</strong>: os termos que você
+              digita nunca são enviados a nenhum servidor, nem ao nosso, nem a
+              terceiros.
+            </p>
+          </div>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-third-party-heading">
+          <h2
+            id="privacy-third-party-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Links para sites de terceiros
+          </h2>
+          <p class="text-ink mt-2 text-sm leading-relaxed">
+            Os links de contato (WhatsApp, LinkedIn, GitHub) levam a serviços de
+            terceiros com políticas de privacidade próprias. Ao clicar, você sai
+            deste site e passa a interagir com a política do destino. Não
+            recebemos nenhuma informação dessa interação.
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-rights-heading">
+          <h2
+            id="privacy-rights-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Seus direitos (LGPD, Art. 18)
+          </h2>
+          <div
+            data-testid="privacy-rights"
+            class="text-ink mt-2 text-sm leading-relaxed"
+          >
+            <p>
+              Como este site não realiza tratamento de dados pessoais, não há
+              dados nossos sobre você a serem exercidos. Ainda assim, a LGPD
+              garante a todo titular:
+            </p>
+            <ol class="mt-2 list-decimal space-y-1 pl-5">
+              <li>Confirmação da existência de tratamento</li>
+              <li>Acesso aos dados</li>
+              <li>Correção de dados incompletos, inexatos ou desatualizados</li>
+              <li>
+                Anonimização, bloqueio ou eliminação de dados desnecessários ou
+                excessivos
+              </li>
+              <li>Portabilidade dos dados a outro fornecedor</li>
+              <li>Eliminação dos dados tratados com consentimento</li>
+              <li>
+                Informação sobre as entidades com as quais os dados foram
+                compartilhados
+              </li>
+              <li>
+                Informação sobre a possibilidade de não fornecer consentimento e
+                suas consequências
+              </li>
+              <li>Revogação do consentimento a qualquer momento</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-how-to-exercise-heading">
+          <h2
+            id="privacy-how-to-exercise-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Como exercer
+          </h2>
+          <div
+            data-testid="privacy-contact"
+            class="text-ink mt-2 space-y-2 text-sm leading-relaxed"
+          >
+            <p>
+              Se você acredita que qualquer dado seu foi tratado por nós — por
+              exemplo em uma troca de email iniciada por você — escreva para o
+              canal de email abaixo com o assunto "LGPD — solicitação do
+              titular".
+            </p>
+            <ul class="list-disc pl-5">
+              <li>
+                {
+                  CONTACT_EMAIL && privacyMailto ? (
+                    <a
+                      href={privacyMailto.hrefEncoded}
+                      aria-label={privacyMailto.addressDecoded}
+                      class="text-link underline underline-offset-4"
+                      set:html={privacyMailto.textEncoded}
+                    />
+                  ) : (
+                    <span data-testid="privacy-contact-pending">
+                      canal de email em definição — decisão D-03 pendente
+                    </span>
+                  )
+                }
+              </li>
+            </ul>
+            <p>Resposta em até 15 dias, conforme Art. 18, §4º.</p>
+            <p>
+              <strong>Sobre o log de IP do GitHub:</strong> como não temos acesso
+              a esses registros, solicitações relativas a eles devem ser dirigidas
+              diretamente ao GitHub, Inc.
+            </p>
+          </div>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-anpd-heading">
+          <h2
+            id="privacy-anpd-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Autoridade nacional
+          </h2>
+          <p
+            data-testid="privacy-anpd"
+            class="text-ink mt-2 text-sm leading-relaxed"
+          >
+            Você pode apresentar reclamação à
+            <strong>Autoridade Nacional de Proteção de Dados (ANPD)</strong>:
+            <a
+              href="https://www.gov.br/anpd"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link hover:text-link-hover underline underline-offset-4"
+            >
+              gov.br/anpd
+            </a>
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-dpo-heading">
+          <h2
+            id="privacy-dpo-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Encarregado (DPO)
+          </h2>
+          <p class="text-ink mt-2 text-sm leading-relaxed">
+            Não há encarregado nomeado porque <strong
+              >não há tratamento de dados pessoais</strong
+            > nesta operação. O canal de contato acima cumpre essa função para qualquer
+            dúvida.
+          </p>
+        </section>
+
+        <section class="mt-8" aria-labelledby="privacy-changes-heading">
+          <h2
+            id="privacy-changes-heading"
+            class="text-ink text-xl leading-tight font-bold"
+          >
+            Alterações
+          </h2>
+          <p class="text-ink mt-2 text-sm leading-relaxed">
+            Esta página é versionada em Git. O histórico completo de alterações
+            é público e auditável em
+            <a
+              href="https://github.com/royaldatacore/royaldatacore.github.io/tree/main/.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link hover:text-link-hover underline underline-offset-4"
+            >
+              <code>.ai/</code>
+            </a>
+          </p>
+        </section>
       </div>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-cookies-heading">
-      <h2
-        id="privacy-cookies-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Cookies
-      </h2>
-      <p
-        data-testid="privacy-cookies"
-        class="mt-2 space-y-2 text-sm leading-relaxed text-slate-800"
-      >
-        Nenhum cookie é definido por este site. Por isso <strong
-          >não exibimos banner de consentimento</strong
-        >: não há o que consentir. A ausência do banner é consequência direta da
-        arquitetura, não uma omissão.
-      </p>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-tracking-heading">
-      <h2
-        id="privacy-tracking-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Rastreamento
-      </h2>
-      <div
-        data-testid="privacy-tracking"
-        class="mt-2 space-y-2 text-sm leading-relaxed text-slate-800"
-      >
-        <p>
-          Não utilizamos Google Analytics, Meta Pixel, LinkedIn Insight Tag,
-          Hotjar, Microsoft Clarity, Mixpanel, Segment ou qualquer outra
-          ferramenta de analytics, heatmap ou session replay — nem em versão
-          self-hosted. Esta é uma regra imutável do projeto (<code
-            >CONSTITUTION §C7</code
-          >, sujeita a Kill Switch sem possibilidade de exceção).
-        </p>
-        <p>
-          A única exceção técnica é a busca do site (Pagefind), que roda
-          <strong>inteiramente no seu navegador</strong>: os termos que você
-          digita nunca são enviados a nenhum servidor, nem ao nosso, nem a
-          terceiros.
-        </p>
-      </div>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-third-party-heading">
-      <h2
-        id="privacy-third-party-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Links para sites de terceiros
-      </h2>
-      <p class="mt-2 text-sm leading-relaxed text-slate-800">
-        Os links de contato (WhatsApp, LinkedIn, GitHub) levam a serviços de
-        terceiros com políticas de privacidade próprias. Ao clicar, você sai
-        deste site e passa a interagir com a política do destino. Não recebemos
-        nenhuma informação dessa interação.
-      </p>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-rights-heading">
-      <h2
-        id="privacy-rights-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Seus direitos (LGPD, Art. 18)
-      </h2>
-      <div
-        data-testid="privacy-rights"
-        class="mt-2 text-sm leading-relaxed text-slate-800"
-      >
-        <p>
-          Como este site não realiza tratamento de dados pessoais, não há dados
-          nossos sobre você a serem exercidos. Ainda assim, a LGPD garante a
-          todo titular:
-        </p>
-        <ol class="mt-2 list-decimal space-y-1 pl-5">
-          <li>Confirmação da existência de tratamento</li>
-          <li>Acesso aos dados</li>
-          <li>Correção de dados incompletos, inexatos ou desatualizados</li>
-          <li>
-            Anonimização, bloqueio ou eliminação de dados desnecessários ou
-            excessivos
-          </li>
-          <li>Portabilidade dos dados a outro fornecedor</li>
-          <li>Eliminação dos dados tratados com consentimento</li>
-          <li>
-            Informação sobre as entidades com as quais os dados foram
-            compartilhados
-          </li>
-          <li>
-            Informação sobre a possibilidade de não fornecer consentimento e
-            suas consequências
-          </li>
-          <li>Revogação do consentimento a qualquer momento</li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-how-to-exercise-heading">
-      <h2
-        id="privacy-how-to-exercise-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Como exercer
-      </h2>
-      <div
-        data-testid="privacy-contact"
-        class="mt-2 space-y-2 text-sm leading-relaxed text-slate-800"
-      >
-        <p>
-          Se você acredita que qualquer dado seu foi tratado por nós — por
-          exemplo em uma troca de email iniciada por você — escreva para o canal
-          de email abaixo com o assunto "LGPD — solicitação do titular".
-        </p>
-        <ul class="list-disc pl-5">
-          <li>
-            {
-              CONTACT_EMAIL && privacyMailto ? (
-                <a
-                  href={privacyMailto.hrefEncoded}
-                  aria-label={privacyMailto.addressDecoded}
-                  class="text-brand-700 underline underline-offset-4"
-                  set:html={privacyMailto.textEncoded}
-                />
-              ) : (
-                <span data-testid="privacy-contact-pending">
-                  canal de email em definição — decisão D-03 pendente
-                </span>
-              )
-            }
-          </li>
-        </ul>
-        <p>Resposta em até 15 dias, conforme Art. 18, §4º.</p>
-        <p>
-          <strong>Sobre o log de IP do GitHub:</strong> como não temos acesso a esses
-          registros, solicitações relativas a eles devem ser dirigidas diretamente
-          ao GitHub, Inc.
-        </p>
-      </div>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-anpd-heading">
-      <h2
-        id="privacy-anpd-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Autoridade nacional
-      </h2>
-      <p
-        data-testid="privacy-anpd"
-        class="mt-2 text-sm leading-relaxed text-slate-800"
-      >
-        Você pode apresentar reclamação à
-        <strong>Autoridade Nacional de Proteção de Dados (ANPD)</strong>:
-        <a
-          href="https://www.gov.br/anpd"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
-        >
-          gov.br/anpd
-        </a>
-      </p>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-dpo-heading">
-      <h2
-        id="privacy-dpo-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Encarregado (DPO)
-      </h2>
-      <p class="mt-2 text-sm leading-relaxed text-slate-800">
-        Não há encarregado nomeado porque <strong
-          >não há tratamento de dados pessoais</strong
-        > nesta operação. O canal de contato acima cumpre essa função para qualquer
-        dúvida.
-      </p>
-    </section>
-
-    <section class="mt-8" aria-labelledby="privacy-changes-heading">
-      <h2
-        id="privacy-changes-heading"
-        class="text-xl leading-tight font-bold text-slate-900"
-      >
-        Alterações
-      </h2>
-      <p class="mt-2 text-sm leading-relaxed text-slate-800">
-        Esta página é versionada em Git. O histórico completo de alterações é
-        público e auditável em
-        <a
-          href="https://github.com/royaldatacore/royaldatacore.github.io/tree/main/.ai"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-brand-700 hover:text-brand-900 underline underline-offset-4"
-        >
-          <code>.ai/</code>
-        </a>
-      </p>
-    </section>
+    </div>
   </div>
 </BaseLayout>

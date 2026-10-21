@@ -1,4 +1,5 @@
 ---
+import Icon from "./Icon.astro";
 /**
  * SPEC-002 AC-002.3 — proof badges resolved at BUILD time, no external badge
  * hosts (no img.shields.io), no fetch().
@@ -17,14 +18,16 @@
 <ul class="flex flex-col gap-2 text-sm">
   <li
     data-testid="proof-build-status"
-    class="bg-surface inline-flex min-h-[44px] items-center rounded-md border border-slate-300 px-3 font-mono text-xs font-semibold text-slate-800"
+    class="bg-surface border-border-strong text-ink inline-flex min-h-[44px] items-center gap-2 rounded-md border px-3 font-mono text-xs font-semibold"
   >
+    <Icon name="check-circle" size={16} class="text-success-600" />
     build: passing
   </li>
   <!-- Non-verifiable badges (light score, test count) omitted per SPEC-002 AC-002.5 + §C9. -->
   <li
-    class="bg-surface inline-flex min-h-[44px] items-center rounded-md border border-slate-300 px-3 font-mono text-xs font-semibold text-slate-800"
+    class="bg-surface border-border-strong text-ink inline-flex min-h-[44px] items-center gap-2 rounded-md border px-3 font-mono text-xs font-semibold"
   >
+    <Icon name="coin" size={16} class="text-success-600" />
     custo mensal: R$ 0,00
   </li>
 </ul>

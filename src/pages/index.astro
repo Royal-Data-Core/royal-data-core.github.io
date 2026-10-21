@@ -9,6 +9,7 @@ import ServiceCard from "../components/ServiceCard.astro";
 import PostCard from "../components/PostCard.astro";
 import ProofBadges from "../components/ProofBadges.astro";
 import CtaSection from "../components/CtaSection.astro";
+import Icon from "../components/Icon.astro";
 import { withBase } from "../lib/withBase";
 import { readingMinutes } from "../lib/date";
 import {
@@ -38,6 +39,7 @@ const recentPosts = publishedPosts.slice(0, 3);
 const services = [
   {
     slug: "qa-diagnostic",
+    icon: "target",
     eyebrow: "B2B · por projeto",
     title: "Diagnóstico de qualidade",
     description:
@@ -55,6 +57,7 @@ const services = [
   },
   {
     slug: "test-automation",
+    icon: "workflow",
     eyebrow: "B2B · projeto ou retainer",
     title: "Automação que sobrevive ao tempo",
     description:
@@ -73,6 +76,7 @@ const services = [
   },
   {
     slug: "embedded-qa",
+    icon: "users",
     eyebrow: "CLT / alocação · mentoria",
     title: "QA dentro do seu time",
     description:
@@ -97,68 +101,86 @@ const services = [
   description={SITE_DESCRIPTION}
   fullTitle
 >
-  <section class="mx-auto max-w-5xl px-4 pt-10 pb-10 sm:pt-14">
-    <h1
-      data-testid="hero-headline"
-      class="max-w-3xl text-3xl leading-tight font-bold tracking-tight text-slate-900 sm:text-4xl"
-    >
-      Engenharia de qualidade para software crítico
-    </h1>
-    <p
-      data-testid="hero-subheadline"
-      class="mt-4 max-w-2xl text-base leading-relaxed text-slate-700"
-    >
-      Consultoria especializada em testes de software para times que não podem
-      entregar defeito em produção. Estratégia de testes, automação e pipelines
-      de QA — do diagnóstico à operação.
-    </p>
-    <div class="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
-      <a
-        data-testid="cta-primary-services"
-        href={withBase("/servicos")}
-        class="bg-brand-700 hover:bg-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md px-5 py-3 text-sm font-semibold text-white underline-offset-4"
+  <section class="container-page pt-10 pb-10 sm:pt-14">
+    <div class="grid items-center gap-8 lg:grid-cols-2">
+      <div class="stagger">
+        <h1
+          data-testid="hero-headline"
+          class="text-ink max-w-3xl text-3xl leading-tight font-bold tracking-tight sm:text-4xl"
+        >
+          Engenharia de qualidade para software crítico
+        </h1>
+        <p
+          data-testid="hero-subheadline"
+          class="text-ink-muted mt-4 max-w-2xl text-base leading-relaxed"
+        >
+          Consultoria especializada em testes de software para times que não
+          podem entregar defeito em produção. Estratégia de testes, automação e
+          pipelines de QA — do diagnóstico à operação.
+        </p>
+        <div class="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+          <a
+            data-testid="cta-primary-services"
+            href={withBase("/servicos")}
+            class="btn btn-primary"
+          >
+            <Icon name="shield-check" size={18} />
+            Ver serviços
+          </a>
+          {
+            heroMailto ? (
+              <a
+                data-testid="cta-primary-contact"
+                href={heroMailto.hrefEncoded}
+                aria-label={`Falar comigo — ${heroMailto.addressDecoded}`}
+                class="btn btn-secondary"
+              >
+                <Icon name="mail" size={18} />
+                Falar comigo
+              </a>
+            ) : (
+              <a
+                data-testid="cta-primary-contact"
+                href={contactFallbackHref()}
+                title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
+                class="btn btn-secondary"
+              >
+                <Icon name="mail" size={18} />
+                Falar comigo
+              </a>
+            )
+          }
+        </div>
+        <p class="text-ink-subtle mt-3 text-xs">
+          Resposta em até 1 dia útil. Sem formulário, sem cadastro, sem
+          rastreamento.
+        </p>
+      </div>
+      <div
+        class="reveal hidden justify-self-center lg:block"
+        aria-hidden="true"
       >
-        Ver serviços
-      </a>
-      {
-        heroMailto ? (
-          <a
-            data-testid="cta-primary-contact"
-            href={heroMailto.hrefEncoded}
-            aria-label={`Falar comigo — ${heroMailto.addressDecoded}`}
-            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border px-5 py-3 text-sm font-semibold underline-offset-4 hover:text-white"
-          >
-            Falar comigo
-          </a>
-        ) : (
-          <a
-            data-testid="cta-primary-contact"
-            href={contactFallbackHref()}
-            title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-            class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md border px-5 py-3 text-sm font-semibold underline-offset-4 hover:text-white"
-          >
-            Falar comigo
-          </a>
-        )
-      }
+        <img
+          src={withBase("/brand/isotyper-color.webp")}
+          width="160"
+          height="145"
+          alt=""
+          decoding="async"
+          class="brand-glow w-64"
+        />
+      </div>
     </div>
-    <p class="mt-3 text-xs text-slate-600">
-      Resposta em até 1 dia útil. Sem formulário, sem cadastro, sem
-      rastreamento.
-    </p>
   </section>
 
   <section
-    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    data-theme="mid"
+    class="bg-bg container-page border-border border-t py-10"
     aria-labelledby="proof-heading"
   >
-    <h2
-      id="proof-heading"
-      class="text-2xl leading-tight font-bold text-slate-900"
-    >
+    <h2 id="proof-heading" class="text-ink text-2xl leading-tight font-bold">
       Este site é o meu próprio caso de teste
     </h2>
-    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
+    <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
       Toda página que você visita aqui passou pelos mesmos gates que eu aplico
       em projetos de cliente: Lighthouse ≥ 95 em mobile, acessibilidade WCAG 2.1
       AA nota 100, zero JavaScript desnecessário, CSP estrita, pipeline com
@@ -171,7 +193,7 @@ const services = [
         href="https://github.com/royaldatacore"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-3 text-sm font-semibold underline underline-offset-4"
+        class="text-link hover:text-link-hover inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-3 text-sm font-semibold underline underline-offset-4"
       >
         Ver pipeline no GitHub
       </a>
@@ -179,13 +201,11 @@ const services = [
   </section>
 
   <section
-    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    data-theme="dark"
+    class="bg-bg container-page border-border border-t py-10"
     aria-labelledby="services-heading"
   >
-    <h2
-      id="services-heading"
-      class="text-2xl leading-tight font-bold text-slate-900"
-    >
+    <h2 id="services-heading" class="text-ink text-2xl leading-tight font-bold">
       Como posso ajudar
     </h2>
     <div data-testid="services-grid" class="mt-5 grid gap-5 md:grid-cols-3">
@@ -193,6 +213,7 @@ const services = [
         services.map((service) => (
           <ServiceCard
             slug={service.slug}
+            icon={service.icon}
             title={service.title}
             description={service.description}
             eyebrow={service.eyebrow}
@@ -205,24 +226,26 @@ const services = [
     <p class="mt-5">
       <a
         href={withBase("/servicos")}
-        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
+        class="btn btn-ghost group inline-flex min-h-[44px] items-center rounded-md px-1 text-sm font-semibold underline underline-offset-4"
       >
         Ver todos os serviços e modelos de contratação
+        <Icon
+          name="arrow-right"
+          size={16}
+          class="transition-transform group-hover:translate-x-1"
+        />
       </a>
     </p>
   </section>
 
   <section
-    class="mx-auto max-w-5xl border-t border-slate-200 px-4 py-10"
+    class="container-page border-border border-t py-10"
     aria-labelledby="blog-heading"
   >
-    <h2
-      id="blog-heading"
-      class="text-2xl leading-tight font-bold text-slate-900"
-    >
+    <h2 id="blog-heading" class="text-ink text-2xl leading-tight font-bold">
       Do caderno de engenharia
     </h2>
-    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
+    <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
       O que eu testo, quebro e aprendo. Artigos técnicos sem rodeio.
     </p>
     {
@@ -240,7 +263,7 @@ const services = [
           ))}
         </div>
       ) : (
-        <p class="mt-5 text-sm text-slate-700">
+        <p class="text-ink-muted mt-5 text-sm">
           Ainda publicando os primeiros artigos. Volte em breve — ou assine o
           RSS.
         </p>
@@ -249,14 +272,19 @@ const services = [
     <p class="mt-5">
       <a
         href={withBase("/blog")}
-        class="text-brand-700 hover:text-brand-900 inline-flex min-h-[44px] items-center rounded-md text-sm font-semibold underline underline-offset-4"
+        class="btn btn-ghost group inline-flex min-h-[44px] items-center rounded-md px-1 text-sm font-semibold underline underline-offset-4"
       >
         Ver todos os artigos
+        <Icon
+          name="arrow-right"
+          size={16}
+          class="transition-transform group-hover:translate-x-1"
+        />
       </a>
     </p>
   </section>
 
-  <section class="mx-auto max-w-5xl px-4 pt-4 pb-12">
+  <section class="container-page pt-4 pb-12">
     <CtaSection />
   </section>
 </BaseLayout>

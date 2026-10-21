@@ -1,0 +1,92 @@
+---
+/**
+ * SPEC-010 §7 — icon set.
+ *
+ * Constraints honoured:
+ * - ZERO JavaScript (inline SVG, no icon-font, no SVG sprite request).
+ * - ZERO third-party dependency (no Lucide/Phosphor package, no React): the
+ *   paths below are hand-authored geometry in the 24x24 grid, `stroke-width`
+ *   1.5 with round caps/joins (mapa §3) — outline only, never mixed with
+ *   filled glyphs.
+ * - `currentColor` + `aria-hidden` by default: an icon never becomes an
+ *   accessible name on its own; the surrounding label carries the meaning
+ *   (WCAG 1.1.1). Pass `title` only for standalone informative icons.
+ */
+export type IconName =
+  | "shield-check"
+  | "target"
+  | "workflow"
+  | "users"
+  | "mail"
+  | "message-circle"
+  | "arrow-right"
+  | "external-link"
+  | "search"
+  | "rss"
+  | "code"
+  | "layers"
+  | "check-circle"
+  | "coin";
+
+/**
+ * Single-path icon geometry (24x24). Each entry may hold several subpaths —
+ * SVG renders them as one stroked path, which keeps the DOM at one node per
+ * icon (HTML weight matters: PERF-1/PERF-2).
+ */
+const ICON_PATHS: Record<IconName, string> = {
+  "shield-check": "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10ZM9 12l2 2 4-4",
+  target:
+    "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12ZM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
+  workflow: "M4 4h6v6H4zM14 14h6v6h-6zM7 10v4a3 3 0 0 0 3 3h4",
+  users:
+    "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+  mail: "M4 4h16v16H4zM4 6l8 6 8-6",
+  "message-circle":
+    "M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.8-.9L3 21l2-5.2A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z",
+  "arrow-right": "M5 12h14M12 5l7 7-7 7",
+  "external-link":
+    "M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6",
+  search: "M21 21l-4.3-4.3M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z",
+  rss: "M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19a1 1 0 0 0 0-2 1 1 0 0 0 0 2Z",
+  code: "m16 18 6-6-6-6M8 6l-6 6 6 6",
+  layers: "M12 2 2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5",
+  "check-circle": "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM8 12l3 3 5-6",
+  coin: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+};
+
+interface Props {
+  /** Icon identity (closed set — no runtime lookup). */
+  name: IconName;
+  /** Rendered size in px (the viewBox is always 24). */
+  size?: number;
+  /** Extra classes on the `<svg>` (colour comes from `currentColor`). */
+  class?: string;
+  /** Accessible name — required only for standalone informative icons. */
+  title?: string;
+}
+
+const { name, size = 20, class: className, title } = Astro.props;
+const path = ICON_PATHS[name];
+if (!path) {
+  throw new Error(`SPEC-010: Icon desconhecido '${name}'`);
+}
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={size}
+  height={size}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  aria-hidden={title ? undefined : "true"}
+  role={title ? "img" : undefined}
+  focusable="false"
+>
+  {title ? <title>{title}</title> : null}
+  <path d={path}></path>
+</svg>

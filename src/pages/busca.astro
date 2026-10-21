@@ -30,31 +30,30 @@ const noscriptMailto =
 ---
 
 <BaseLayout title="Buscar" description={SITE_DESCRIPTION}>
-  <div class="mx-auto max-w-5xl px-4 py-10">
-    <h1 class="text-3xl leading-tight font-bold tracking-tight text-slate-900">
+  <div class="container-page py-10">
+    <h1 class="text-ink text-3xl leading-tight font-bold tracking-tight">
       Buscar
     </h1>
 
     <noscript>
       <p
         data-testid="search-noscript"
-        class="bg-surface mt-4 rounded-md border border-slate-300 p-4 text-sm text-slate-800"
+        class="bg-surface border-border-strong text-ink mt-4 rounded-md border p-4 text-sm"
       >
         A busca precisa de JavaScript e roda inteiramente no seu navegador —
         nenhum termo é enviado a servidor. Se você desabilitou JS, use:
       </p>
-      <ul class="mt-2 list-disc pl-5 text-sm text-slate-800">
+      <ul class="text-ink mt-2 list-disc pl-5 text-sm">
         <li>
           <a
             href={withBase("/blog")}
-            class="text-brand-700 underline underline-offset-4"
-            >todos os artigos</a
+            class="text-link underline underline-offset-4">todos os artigos</a
           >
         </li>
         <li>
           <a
             href={withBase("/blog")}
-            class="text-brand-700 underline underline-offset-4">tags</a
+            class="text-link underline underline-offset-4">tags</a
           >
         </li>
         <li>
@@ -63,13 +62,13 @@ const noscriptMailto =
               <a
                 href={noscriptMailto.hrefEncoded}
                 aria-label={noscriptMailto.addressDecoded}
-                class="text-brand-700 underline underline-offset-4"
+                class="text-link underline underline-offset-4"
                 set:html={noscriptMailto.textEncoded}
               />
             ) : (
               <a
                 href={contactFallbackHref()}
-                class="text-brand-700 underline underline-offset-4"
+                class="text-link underline underline-offset-4"
               >
                 enviar email (página de contato)
               </a>
@@ -80,10 +79,7 @@ const noscriptMailto =
     </noscript>
 
     <form data-testid="search-form" class="mt-6" novalidate>
-      <label
-        for="search-input"
-        class="block text-sm font-semibold text-slate-900"
-      >
+      <label for="search-input" class="text-ink block text-sm font-semibold">
         Termo de busca
         <input
           id="search-input"
@@ -94,14 +90,14 @@ const noscriptMailto =
           spellcheck="false"
           autofocus
           placeholder="Buscar artigos, serviços, tags…"
-          class="mt-2 block w-full max-w-xl rounded-md border border-slate-300 px-4 py-3 text-base text-slate-900"
+          class="border-border-strong text-ink mt-2 block w-full max-w-xl rounded-md border px-4 py-3 text-base"
         />
       </label>
       <p
         data-testid="search-status"
         role="status"
         aria-live="polite"
-        class="mt-2 text-sm text-slate-700"
+        class="text-ink-muted mt-2 text-sm"
       >
         Digite para buscar. Nenhum termo sai do seu navegador.
       </p>
@@ -198,11 +194,11 @@ const noscriptMailto =
         : withBase(`/${item.url}`);
       link.setAttribute("data-testid", "search-result-item");
       link.className =
-        "mt-3 block rounded-md border border-slate-200 p-4 hover:border-brand-700";
+        "mt-3 block rounded-md border border-border p-4 hover:border-accent";
 
       const heading = document.createElement("h3");
       heading.setAttribute("data-testid", "search-result-title");
-      heading.className = "text-base font-semibold text-brand-700";
+      heading.className = "text-base font-semibold text-link";
       heading.textContent = item.meta?.title ?? defaultTitleFor(item.url);
       link.append(heading);
 
@@ -210,7 +206,7 @@ const noscriptMailto =
       snippet.setAttribute("data-testid", "search-result-snippet");
       // pagefind-sanitized HTML (own index, <mark> highlights); CSP style-src already handles it.
       snippet.innerHTML = item.excerpt ?? "";
-      snippet.className = "mt-1 text-sm text-slate-700";
+      snippet.className = "mt-1 text-sm text-ink-muted";
       link.append(snippet);
       return link;
     };
@@ -222,13 +218,13 @@ const noscriptMailto =
       renderStatus(`0 resultado(s) para «${term}»`);
       const empty = document.createElement("div");
       empty.setAttribute("data-testid", "search-empty");
-      empty.className = "rounded-md border border-slate-200 bg-surface p-4";
+      empty.className = "rounded-md border border-border bg-surface p-4";
       const heading = document.createElement("p");
-      heading.className = "text-sm font-semibold text-slate-900";
+      heading.className = "text-sm font-semibold text-ink";
       heading.textContent = `Nenhum resultado para «${term}».`;
       empty.append(heading);
       const suggestions = document.createElement("ul");
-      suggestions.className = "mt-2 list-disc pl-5 text-sm text-slate-700";
+      suggestions.className = "mt-2 list-disc pl-5 text-sm text-ink-muted";
       const options: ReadonlyArray<[string, string | null]> = [
         ["Verifique a grafia", null],
         ["Tente um termo mais curto", withBase("/blog")],
@@ -241,7 +237,7 @@ const noscriptMailto =
           const anchor = document.createElement("a");
           anchor.href = href;
           anchor.textContent = text;
-          anchor.className = "text-brand-700 underline underline-offset-4";
+          anchor.className = "text-link underline underline-offset-4";
           li.append(anchor);
         } else {
           li.textContent = text;

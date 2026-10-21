@@ -37,26 +37,26 @@ const whatsappHref =
 
 <footer
   data-testid="site-footer"
-  class="bg-surface mt-12 border-t border-slate-200"
+  class="border-border bg-surface mt-12 border-t"
 >
-  <div class="mx-auto max-w-5xl space-y-4 px-4 py-8 text-sm text-slate-700">
-    <p data-testid="footer-legal-name" class="font-semibold text-slate-900">
+  <div class="container-page text-ink-muted space-y-4 py-8 text-sm">
+    <p data-testid="footer-legal-name" class="text-ink font-semibold">
       {legalName}
-      <span data-testid="footer-cnpj" class="font-normal">CNPJ {cnpj}</span>
+      <span data-testid="footer-cnpj" class="font-normal">· CNPJ {cnpj}</span>
       <span>· {locationLine}</span>
     </p>
     <div
       data-testid="footer-contact-block"
       class="flex flex-wrap items-center gap-x-4 gap-y-2"
     >
-      <p class="font-semibold text-slate-900">Contato</p>
+      <p class="text-ink font-semibold">Contato</p>
       {
         HAS_CONTACT_EMAIL && CONTACT_EMAIL && encodedMailto ? (
           <a
             data-testid="footer-contact-email-link"
             href={encodedMailto.hrefEncoded}
             aria-label={encodedMailto.addressDecoded}
-            class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
             set:html={encodedMailto.textEncoded}
           />
         ) : HAS_CONTACT_EMAIL && CONTACT_EMAIL ? (
@@ -79,7 +79,7 @@ const whatsappHref =
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
           >
             WhatsApp
           </a>
@@ -116,7 +116,7 @@ const whatsappHref =
             href={social.href}
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+            class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
           >
             {social.label}
           </a>
@@ -129,32 +129,32 @@ const whatsappHref =
     >
       <a
         href={withBase("/servicos")}
-        class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
       >
         Serviços
       </a>
       <a
         href={withBase("/blog")}
-        class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
       >
         Blog
       </a>
       <a
         href={withBase("/contato")}
-        class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
       >
         Contato
       </a>
       <a
         href={withBase("/busca")}
-        class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
       >
         Buscar
       </a>
       <a
         data-testid="footer-privacy-link"
         href={withBase("/privacidade")}
-        class="hover:text-brand-700 inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+        class="hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
       >
         Privacidade
       </a>

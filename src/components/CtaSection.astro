@@ -4,6 +4,7 @@
  * Canals: mailto (entity-encoded) OR /contato fallback when D-03 is pending;
  * WhatsApp deep-link when the phone exists, honest pending note otherwise.
  */
+import Icon from "./Icon.astro";
 import { withBase } from "../lib/withBase";
 import {
   CONTACT_EMAIL,
@@ -30,16 +31,13 @@ const whatsappHref =
 
 <section
   data-testid="final-cta"
-  class="bg-surface rounded-lg border border-slate-200 p-6"
+  class="card p-6"
   aria-labelledby="final-cta-heading"
 >
-  <h2
-    id="final-cta-heading"
-    class="text-2xl leading-tight font-bold text-slate-900"
-  >
+  <h2 id="final-cta-heading" class="text-ink text-2xl leading-tight font-bold">
     Seu produto merece mais que "testamos e funcionou"
   </h2>
-  <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
+  <p class="text-ink-muted mt-3 max-w-2xl text-sm leading-relaxed">
     Se você tem uma release crítica chegando, uma suíte de testes que ninguém
     confia, ou um time sem estratégia de QA clara — vale uma conversa.
   </p>
@@ -50,8 +48,9 @@ const whatsappHref =
           data-testid="contact-cta-mail"
           href={encodedMailto.hrefEncoded}
           aria-label={`Enviar email — ${encodedMailto.addressDecoded}`}
-          class="bg-brand-700 hover:bg-brand-900 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md px-5 text-sm font-semibold text-white underline-offset-4"
+          class="btn btn-primary"
         >
+          <Icon name="mail" size={18} />
           Enviar email
         </a>
       ) : (
@@ -59,8 +58,9 @@ const whatsappHref =
           data-testid="contact-cta-mail"
           href={withBase("/contato")}
           title="Canal de contato pendente — decisão D-03 (SDD-CONTEXT §9)"
-          class="hover:border-brand-700 hover:text-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 underline-offset-4"
+          class="btn btn-secondary"
         >
+          <Icon name="mail" size={18} />
           Enviar email
         </a>
       )
@@ -72,8 +72,9 @@ const whatsappHref =
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          class="border-brand-700 text-brand-700 hover:bg-brand-700 inline-flex min-h-[44px] min-w-[44px] items-center rounded-md border px-5 text-sm font-semibold underline-offset-4 hover:text-white"
+          class="btn btn-secondary"
         >
+          <Icon name="message-circle" size={18} />
           WhatsApp
         </a>
       ) : null
@@ -81,7 +82,7 @@ const whatsappHref =
   </div>
   {
     !HAS_CONTACT_EMAIL || whatsappHref === null ? (
-      <p class="mt-2 text-xs text-slate-600">
+      <p class="text-ink-subtle mt-2 text-xs">
         Canal {whatsappHref === null ? "de WhatsApp" : "de email"} em definição
         (
         {whatsappHref === null
@@ -91,7 +92,7 @@ const whatsappHref =
       </p>
     ) : null
   }
-  <p class="mt-3 text-sm text-slate-700">
+  <p class="text-ink-muted mt-3 text-sm">
     Sem formulário, sem CRM, sem sequência de emails automática. Você fala
     comigo.
   </p>

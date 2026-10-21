@@ -24,9 +24,9 @@ const dateTestId = slug ? `post-date-${slug}` : undefined;
 
 <article
   data-testid="post-card"
-  class="flex h-full flex-col gap-2 rounded-lg border border-slate-200 p-5"
+  class="card hover:shadow-card flex h-full flex-col gap-2 transition-shadow duration-200"
 >
-  <p class="flex flex-wrap items-center gap-x-2 text-xs text-slate-600">
+  <p class="text-ink-subtle flex flex-wrap items-center gap-x-2 text-xs">
     <time datetime={toIsoDate(publishDate)} data-testid={dateTestId}>
       {formatPublishDate(publishDate)}
     </time>
@@ -38,18 +38,18 @@ const dateTestId = slug ? `post-date-${slug}` : undefined;
       ) : null
     }
   </p>
-  <h2 class="text-lg leading-snug font-bold text-slate-900">
+  <h2 class="text-ink text-lg leading-snug font-bold">
     <a
       href={withBase(href)}
       data-testid={headingTestId}
-      class="hover:text-brand-700 inline-flex rounded-md underline-offset-4 hover:underline"
+      class="hover:text-link-hover inline-flex items-center gap-1 rounded-md underline-offset-4 hover:underline"
     >
       {title}
     </a>
   </h2>
   {
     description ? (
-      <p class="text-sm leading-relaxed text-slate-700">{description}</p>
+      <p class="text-ink-muted text-sm leading-relaxed">{description}</p>
     ) : null
   }
 </article>

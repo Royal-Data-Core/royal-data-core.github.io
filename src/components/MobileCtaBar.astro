@@ -1,0 +1,45 @@
+---
+/**
+ * SPEC-010 §9 — sticky mobile CTA bar (mapa §5 · "Thumb Zone").
+ *
+ * Business intent: on mobile the primary conversion CTA ("Falar com
+ * especialista") stays one thumb-tap away on every route — the highest-
+ * leverage mobile conversion pattern that costs zero bytes of JavaScript.
+ *
+ * Constraints:
+ * - ZERO JS (SPEC-001 AC-001.8): no scroll listener, no IntersectionObserver.
+ * - Zero tracker (CONSTITUTION §C7): no analytics event, no third party.
+ * - The bar is `sm:hidden`; the desktop layout keeps its inline CTAs.
+ * - `<nav aria-label>` landmark + a real link (not a button) — no fake UI.
+ * - The destination is the same direct channel used by the final CTA
+ *   (mailto, entity/percent-encoded per SPEC-005) — never a fake form.
+ */
+import { withBase } from "../lib/withBase";
+import { CONTACT_EMAIL, buildMailtoHrefEncoded } from "../lib/contact";
+import Icon from "./Icon.astro";
+
+const encodedMailto =
+  CONTACT_EMAIL &&
+  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
+
+const href = encodedMailto ? encodedMailto.hrefEncoded : withBase("/contato");
+const ariaLabel = encodedMailto
+  ? `Falar com especialista — ${encodedMailto.addressDecoded}`
+  : "Falar com especialista";
+---
+
+<nav
+  data-testid="mobile-cta-bar"
+  aria-label="Contato rápido"
+  class="border-border bg-surface/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:hidden"
+>
+  <a
+    data-testid="mobile-cta-contact"
+    href={href}
+    aria-label={ariaLabel}
+    class="btn btn-primary w-full"
+  >
+    <Icon name="message-circle" size={18} />
+    Falar com especialista
+  </a>
+</nav>

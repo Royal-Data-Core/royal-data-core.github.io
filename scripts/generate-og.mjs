@@ -5,6 +5,10 @@
  * external font hosts — text is drawn as SVG with a system font stack, so the
  * PNG is rendered server-side deterministically). Run once; commit the PNG.
  *
+ * SPEC-010 §8 — brand lockup: the isotyper (public/brand/isotyper-color.webp,
+ * 3.9 KB) is composited on a white plate in the top-right corner, so social
+ * shares carry the mark instead of a flat colour rectangle.
+ *
  * Usage: node scripts/generate-og.mjs
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -30,7 +34,7 @@ function buildSvg(rasterizeTitle = true) {
   const titleSpans = titleLines
     .map(
       (line, index) =>
-        `    <text x="80" y="${300 + index * 88}" font-family="system-ui, sans-serif" font-size="76" font-weight="800" fill="${white}">${line}</text>`,
+        `    <text x="80" y="${300 + index * 88}" font-family="system-ui, sans-serif" font-size="70" font-weight="800" fill="${white}">${line}</text>`,
     )
     .join("\n");
 
@@ -49,8 +53,28 @@ const outDir = path.resolve("public");
 await mkdir(outDir, { recursive: true });
 
 const svg = Buffer.from(buildSvg());
-const png = await sharp(svg, { density: 96 })
+const basePng = await sharp(svg, { density: 96 })
   .resize(W, H, { fit: "cover" })
+  .png({ compressionLevel: 9, adaptiveFiltering: true })
+  .toBuffer();
+
+/* Brand plate — white rounded square + isotyper (SPEC-010 §8). */
+const PLATE = 180;
+const logoBuffer = await sharp("public/brand/isotyper-color.webp")
+  .resize({ width: 138, withoutEnlargement: true })
+  .png()
+  .toBuffer();
+const plateSvg = Buffer.from(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${PLATE}" height="${PLATE}">` +
+    `<rect width="${PLATE}" height="${PLATE}" rx="32" fill="#ffffff"/></svg>`,
+);
+const plateWithLogo = await sharp(plateSvg)
+  .composite([{ input: logoBuffer, top: 21, left: 21 }])
+  .png()
+  .toBuffer();
+
+const png = await sharp(basePng)
+  .composite([{ input: plateWithLogo, top: 56, left: W - PLATE - 56 }])
   .png({
     compressionLevel: 9,
     adaptiveFiltering: true,

@@ -27,25 +27,25 @@ gates que a consultoria propõe aos clientes — e os reports de CI são públic
 | Dimensão       | Snapshot medido (bateria local completa, 2026-10-20)                                                                                                                                                      |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Artefato       | 18 páginas estáticas (Astro SSG) · zero hydrated JS, exceto busca Pagefind (SPEC-007)                                                                                                                     |
-| Bundle         | JS **2.09 KB** gzip (orçamento 50) · CSS **4.03 KB** gzip (orçamento 30) · audit **0 violações**                                                                                                          |
+| Bundle         | JS **2.04 KB** gzip (orçamento 50) · CSS **5.76 KB** gzip (orçamento 30) · audit **0 violações**                                                                                                          |
 | Lighthouse     | 9 URLs: perf **0.99–1.0** · a11y **1.0** · best-practices **1.0** · SEO **1.0** · LCP ≤ 1733 ms                                                                                                           |
-| Testes         | e2e **28/28** (2 viewports) · a11y axe-core **16/16** · unit **56/56** (src/lib crítica)                                                                                                                  |
-| Cobertura real | statements **95 %** · branches **85.5 %** · funções **100 %** · linhas **94.9 %** (gate ≥ 80 %)                                                                                                           |
-| Links          | **336 checks / 0 broken** · escaneamento hermético (zero rede)                                                                                                                                            |
-| Code health    | 69 arquivos rastreados · **bloat zero**: sem handlers mortos, sem deps fantasmas, sem stubs                                                                                                               |
+| Testes         | e2e **38/38** (2 viewports) · a11y axe-core **16/16** · unit **68/68** (src/lib crítica)                                                                                                                  |
+| Cobertura real | statements **91.4 %** · branches **82.3 %** · funções **100 %** · linhas **92.3 %** (gate ≥ 80 %)                                                                                                         |
+| Links          | **577 checks / 0 broken** · escaneamento hermético (zero rede)                                                                                                                                            |
+| Identidade     | SPEC-010 + ADR-012: 3 temas (light/mid/dark) por tokens semânticos · contraste AA **auditado em build** (gate unit) · ícones SVG inline · 0 webfont · CTA fixo no mobile                                  |
 | Supply chain   | `npm audit --omit=dev` **0 vulnerabilidades** · 20 Actions SHA-pinadas + 1 reuse local · 0 lifecycle scripts · Dependabot majors npm **held** (ADR-gated), minors/patches validados pela bateria completa |
 | Infra          | GitHub Pages + Actions (OIDC, least-privilege) · custo **R$ 0,00/mês**                                                                                                                                    |
 
 ### 🧬 De onde viemos — o desenho
 
-| Decisão                                 | Efeito medido                                                                            |
-| --------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Astro SSG `output: static` (ADR-001)    | Zero runtime server; LCP ≤ 1.7 s; um único script autorizado (busca, SPEC-007)           |
-| Tailwind v4 CSS-first (`@theme`)        | CSS 4 KB gzip; config JS morta eliminada (v4 lê styles/global.css — sem tailwind.config) |
-| TypeScript `strictest` + Zod            | Contratos de conteúdo e build falham antes do deploy (§C12)                              |
-| CSP por meta tag (ADR-002/SPEC-008)     | Console limpo: 0 violações em runtime nos e2e                                            |
-| Cobertura em src/lib                    | Unit specs 11→**56**; cobertura deixou de ser "falsa" (antes media módulo morto)         |
-| Bateria CI em matriz paralela (ADR-010) | Wall-clock do gate 3 = suite mais lenta (≈2 min) em vez de unit→e2e→a11y→links em série  |
+| Decisão                                 | Efeito medido                                                                              |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Astro SSG `output: static` (ADR-001)    | Zero runtime server; LCP ≤ 1.7 s; um único script autorizado (busca, SPEC-007)             |
+| Tailwind v4 CSS-first (`@theme`)        | CSS 5,8 KB gzip; config JS morta eliminada (v4 lê styles/global.css — sem tailwind.config) |
+| TypeScript `strictest` + Zod            | Contratos de conteúdo e build falham antes do deploy (§C12)                                |
+| CSP por meta tag (ADR-002/SPEC-008)     | Console limpo: 0 violações em runtime nos e2e                                              |
+| Cobertura em src/lib                    | Unit specs 11→**56**; cobertura deixou de ser "falsa" (antes media módulo morto)           |
+| Bateria CI em matriz paralela (ADR-010) | Wall-clock do gate 3 = suite mais lenta (≈2 min) em vez de unit→e2e→a11y→links em série    |
 
 ## 🧱 Topologia publicada
 
