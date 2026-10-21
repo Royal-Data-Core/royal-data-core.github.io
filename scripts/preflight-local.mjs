@@ -15,7 +15,13 @@
  *   [R4] CSP meta present in index.html (ADR-002 D1 — Pages-served parity)
  *   [R5] (advisory) git working tree clean — stale-artifact risk signal
  */
-import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 
@@ -134,17 +140,27 @@ if (indexHtml.includes('http-equiv="Content-Security-Policy"')) {
 
 // [R5] — advisory only: dirty tree ⇒ artifact may not match HEAD
 try {
-  const dirty = execSync("git status --porcelain", {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-  }).trim();
+  const dirOpts = { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] };
+  const dirty = execSync("git status --porcelain", dirOpts).trim();
   if (dirty.length > 0) {
     advisory.push(
       "git working tree is dirty — pre-flight validates YOUR workspace, not HEAD",
     );
   }
+  // Artifact freshness vs HEAD: dist/ built BEFORE the newest commit means the
+  // authorization evidence predates the intended payload. Caught live during
+  // the RUNBOOK-001 rollout (2026-10-21): CR-001 landed after the build and the
+  // board was green against a stale artifact. The runbook's build-before-check
+  // phase is the control; this advisory makes the control self-documenting.
+  const headEpoch = Number(execSync("git log -1 --format=%ct", dirOpts).trim());
+  const indexStat = statSync(path.join(DIST, "index.html"));
+  if (headEpoch * 1000 > indexStat.mtimeMs) {
+    advisory.push(
+      `dist/index.html predates HEAD (${new Date(headEpoch * 1000).toISOString()}) — rebuild before authorizing deploy`,
+    );
+  }
 } catch {
-  advisory.push("git unavailable — staleness check skipped");
+  advisory.push("git unavailable — staleness checks skipped");
 }
 
 if (advisory.length > 0) {
