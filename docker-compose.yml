@@ -1,0 +1,35 @@
+# ADR-015 — ambientes locais homologados (Dev/QA).
+# §C1: `astro preview` é o servidor mandatório do artefato estático (nenhum
+# nginx/produção-shadow — zero entropy). §C11: instrumental, nunca publicado.
+#
+# Uso:
+#   npm run dev:docker   # dev server com hot reload  → http://localhost:4321
+#   npm run qa:docker    # bateria canônica completa dentro do ambiente QA
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    ports:
+      # Colisão com servidor NATIVO (astro dev/preview) na 4321? Rode:
+      #   DEV_PORT=4322 npm run dev:docker
+      - "${DEV_PORT:-4321}:4321"
+    user: "1000:1000" # host uid validado; divergindo, sobrescreva com `--user`
+    volumes:
+      - .:/app
+      - /app/node_modules # anonymous volume — o npm layer da imagem não é
+      #                       sombreado pelo node_modules do host
+
+  qa:
+    build:
+      context: .
+      target: qa
+    profiles:
+      - "qa"
+    user: "1000:1000" # pwuser na imagem Playwright (uid 1000)
+    environment:
+      CI: "1"
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage

@@ -80,6 +80,23 @@ deploy** — e2e/a11y/links foram projetados para falhar sem o espaço de implan
 O CI injeta os mesmos valores shell-side (origin/base computados do
 `GITHUB_REPOSITORY`, zero rede — ADR-008 D7).
 
+### Ambientes locais homologados (Docker — ADR-015)
+
+```bash
+npm run dev:docker   # dev server com hot reload → http://localhost:4321
+npm run qa:docker    # bateria canônica completa dentro do container QA
+```
+
+- `dev` — `node:24-slim` + bind-mount (hot reload); `qa` — imagem oficial
+  Playwright `v1.64.1-noble` travada ao lockfile, bateria completa:
+  `test:guard` (shift-left) → `build` + `lint:security` → `test:all`
+  (unit/e2e/a11y/links). LHCI e gitleaks permanecem gates nativos de CI
+  (ADR-015 D5). Reports (Playwright/coverage) bind-mounted de volta ao
+  workspace. Containers sobem como `1000:1000`; se o uid do host divergir,
+  sobrescreva com `--user "$(id -u):$(id -g)"`.
+- Docker é **instrumental** (§C11): nunca integra o artefato publicado (§C1).
+  Caminho nativo (`npm run …`) segue primário — sem Docker, nada quebra.
+
 ### 🌍 Operação bilíngue (checklist do operador)
 
 | #   | Ação                                                                                                                          | Onde                            | Quando            |
@@ -111,21 +128,25 @@ O CI injeta os mesmos valores shell-side (origin/base computados do
 
 ### Bateria de testes
 
-| Comando                 | Gate                                                      |
-| ----------------------- | --------------------------------------------------------- |
-| `npm run check`         | `astro check` + `tsc --noEmit` (strictest)                |
-| `npm run lint`          | ESLint `--max-warnings 0`                                 |
-| `npm run format:check`  | Prettier                                                  |
-| `npm run lint:md`       | markdownlint-cli2 — superfície publicada (determinístico) |
-| `npm run lint:copy`     | CONSTITUTION §C9 — vocabulário de marketing proibido      |
-| `npm run lint:topology` | ADR-004 — `withBase()` obrigatório em URL interna         |
-| `npm run lint:security` | `audit-bundle` no artefato dist/                          |
-| `npm run test:unit`     | Vitest + cobertura v8 (≥ 80 % todos os eixos, src/lib)    |
-| `npm run test:e2e`      | Playwright (cenários Gherkin das SPECs, 2 viewports)      |
-| `npm run test:a11y`     | Playwright + axe-core (WCAG 2.1 AA)                       |
-| `npm run test:links`    | linkinator hermético (espelho `/site-io/`, zero rede)     |
-| `npm run test:lh`       | Lighthouse CI (orçamentos abaixo)                         |
-| `npm run test`          | unit + e2e + a11y                                         |
+| Comando                 | Gate                                                            |
+| ----------------------- | --------------------------------------------------------------- |
+| `npm run check`         | `astro check` + `tsc --noEmit` (strictest)                      |
+| `npm run lint`          | ESLint `--max-warnings 0`                                       |
+| `npm run format:check`  | Prettier                                                        |
+| `npm run lint:md`       | markdownlint-cli2 — superfície publicada (determinístico)       |
+| `npm run lint:copy`     | CONSTITUTION §C9 — vocabulário de marketing proibido            |
+| `npm run lint:topology` | ADR-004 — `withBase()` obrigatório em URL interna               |
+| `npm run lint:security` | `audit-bundle` no artefato dist/                                |
+| `npm run test:unit`     | Vitest + cobertura v8 (≥ 80 % todos os eixos, src/lib)          |
+| `npm run test:e2e`      | Playwright (cenários Gherkin das SPECs, 2 viewports)            |
+| `npm run test:a11y`     | Playwright + axe-core (WCAG 2.1 AA)                             |
+| `npm run test:links`    | linkinator hermético (espelho `/site-io/`, zero rede)           |
+| `npm run test:lh`       | Lighthouse CI (orçamentos abaixo)                               |
+| `npm run test:all`      | unit + e2e + a11y + links (bateria verify completa)             |
+| `npm run test:guard`    | suite shift-left: check + lint + format + md + copy + topologia |
+| `npm run dev:docker`    | dev server homologado em container (ADR-015)                    |
+| `npm run qa:docker`     | bateria canônica completa dentro do container QA (ADR-015)      |
+| `npm run test`          | unit + e2e + a11y                                               |
 
 Hooks: `pre-commit` = lint-staged (eslint + prettier + markdownlint); `commit-msg`
 = Conventional Commits (EN). Commits em PT-BR são rejeitados pelo hook.
@@ -136,10 +157,11 @@ Hooks: `pre-commit` = lint-staged (eslint + prettier + markdownlint); `commit-ms
 canonical battery consumido diretamente (PR e push develop) e re-invocado via
 `workflow_call` pelo `deploy.yml` em main — sem duplicação de YAML e sem drift.
 
-| Workflow     | Gatilho                        | Sequência                                                                                                                                                                                                                                                              |
-| ------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml`     | PR main/develop · push develop | `guard` (no-browser ~90 s: deps, ADR-001/D4, check, eslint, prettier, md, **§C9 copy**, C1, ADR-000, topologia, gitleaks, pin-check) → `build` (matriz Node 22/24/26 + pagefind + audits) → `verify` em **matriz paralela `unit │ e2e │ a11y │ links`** ∥ `lighthouse` |
-| `deploy.yml` | push main · manual             | `battery` (revalida TUDO sobre main — RFC-001 §2.2, sem confiar no verde anterior) → `deploy` (baixa o artefato validado do mesmo run, empacota Pages, OIDC, smoke test com backoff limitado + §C6 journal notice)                                                     |
+| Workflow            | Gatilho                          | Sequência                                                                                                                                                                                                                                                              |
+| ------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`            | PR main/develop · push develop   | `guard` (no-browser ~90 s: deps, ADR-001/D4, check, eslint, prettier, md, **§C9 copy**, C1, ADR-000, topologia, gitleaks, pin-check) → `build` (matriz Node 22/24/26 + pagefind + audits) → `verify` em **matriz paralela `unit │ e2e │ a11y │ links`** ∥ `lighthouse` |
+| `deploy.yml`        | push main · manual               | `battery` (revalida TUDO sobre main — RFC-001 §2.2, sem confiar no verde anterior) → `deploy` (baixa o artefato validado do mesmo run, empacota Pages, OIDC, smoke test com backoff limitado + §C6 journal notice)                                                     |
+| `docker-parity.yml` | semanal (seg 08:00 UTC) · manual | build da imagem QA + bateria canônica completa dentro do ambiente Docker homologado (ADR-015 D4) — detector de drift local↔CI; nunca bloqueia PR                                                                                                                       |
 
 **Orçamentos bloqueantes:** Lighthouse perf/bp ≥ 0.95, a11y/SEO = 1.0; LCP ≤ 2500 ms ·
 CLS ≤ 0.1 · TBT ≤ 200 ms; JS ≤ 50 KB / CSS ≤ 30 KB gzip; artifact ≤ 100 MB;

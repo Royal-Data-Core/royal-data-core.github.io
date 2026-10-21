@@ -1,0 +1,38 @@
+# ADR-015 D3 — build context hygiene: only what the dev/qa stages consume.
+# Exclusions are a supply-chain belt: no host env files, git history, SDD
+# corpus (ADR-009) or waste ever enters an image layer. gitleaks remains the
+# repo-level backstop; this file closes the build-context surface.
+.git
+.github
+.ai
+.opencode
+.husky
+brand
+specs/
+specs-*/
+.log-extract
+
+# Host env — parity values are pinned IN the Dockerfile (D-03 public channels);
+# local .env must never leak into the image (SEC-1).
+.env
+.env.*
+*.pem
+*.key
+
+# Host-installed artifacts — image installs its own (npm ci --ignore-scripts).
+node_modules
+dist
+.astro
+coverage
+playwright-report
+test-results
+.lighthouseci
+.lhciview
+.linkinator
+.linkinator-mirror
+.linkinator-cache
+
+# Debris
+npm-debug.log*
+.eslintcache
+*.log

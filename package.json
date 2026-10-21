@@ -38,6 +38,10 @@
     "test:a11y": "playwright test tests/a11y",
     "test:links": "node scripts/test-links.mjs",
     "test:lh": "lhci autorun --config=lighthouserc.json",
+    "test:all": "npm run test:unit && npm run test:e2e && npm run test:a11y && npm run test:links",
+    "test:guard": "npm run check && npm run lint && npm run format:check && npm run lint:md && npm run lint:copy && npm run lint:topology",
+    "dev:docker": "docker compose up --build dev",
+    "qa:docker": "docker compose --profile qa build qa && docker compose --profile qa run --rm qa",
     "new:post": "node scripts/new-post.mjs",
     "prepare": "husky || true"
   },

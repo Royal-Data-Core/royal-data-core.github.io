@@ -1,0 +1,42 @@
+# ADR-015 D4 — Drift detector do ambiente Docker homologado.
+#
+# NÃO faz parte da bateria canônica (ADR-010: ci.yml = single topology de
+# validação de PR/main). Este workflow prova, uma vez por semana, que o
+# ambiente local homologado (Dockerfile + docker-compose.yml) continua em
+# paridade com o toolchain da bateria nativa — o mesmo commit que fica verde
+# no CI nativo deve ficar verde dentro do container. Nunca bloqueia PR.
+#
+# BYPASS-001/INFRA-001: Actions SHA-pinned (scripts/pin-actions.sh --check).
+name: Docker parity
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * 1" # Monday 08:00 UTC — fora da janela Dependabot (06:00 BRT)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-parity
+  cancel-in-progress: false
+
+jobs:
+  docker-qa:
+    name: docker-qa · build + bateria completa no ambiente homologado
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 # BYPASS-001
+
+      - name: Toolchain report
+        run: |
+          docker version --format '{{.Server.Version}}'
+          docker compose version
+
+      - name: Build QA image (multi-stage, target qa)
+        run: docker compose --profile qa build qa
+
+      - name: Full battery inside homologated environment
+        run: docker compose --profile qa run --rm qa
