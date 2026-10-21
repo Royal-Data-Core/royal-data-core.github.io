@@ -177,6 +177,9 @@ jobs:
       - name: SPEC-008 · bundle + external-resource audit
         run: node scripts/audit-bundle.mjs --dist dist
 
+      - name: SPEC-012 · hreflang reciprocity + sitemap alternates
+        run: npm run lint:seo
+
       - name: CONSTITUTION §C5 · repo content gate (500 MB)
         run: |
           # §C5 counts the REPO, not the runner workspace: node_modules and

@@ -80,6 +80,19 @@ deploy** — e2e/a11y/links foram projetados para falhar sem o espaço de implan
 O CI injeta os mesmos valores shell-side (origin/base computados do
 `GITHUB_REPOSITORY`, zero rede — ADR-008 D7).
 
+### 🌍 Operação bilíngue (checklist do operador)
+
+| #   | Ação                                                                                                                          | Onde                            | Quando            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------- |
+| 1   | **Confirmar a janela de sobreposição com horário dos EUA** (~07:00–13:00 ET) e ajustar a copy EN se a operação real for outra | `src/pages/en/contact.astro`    | antes de divulgar |
+| 2   | Acompanhar impressões EN                                                                                                      | GSC → Segmentação internacional | semanal, 90 dias  |
+| 3   | Vigiar canibalização PT×EN (consulta em PT apontando para `/en/`)                                                             | GSC → consultas × URL           | mensal            |
+| 4   | Conferir indexação da superfície EN                                                                                           | GSC → páginas indexadas         | semanal           |
+| 5   | Propriedade GSC separada para `/en/` **só** se o KPI justificar                                                               | GSC → propriedades              | opcional          |
+
+> Sem analytics, sem tracker, sem cookie (CONSTITUTION §C7): a única leitura de demanda é o
+> Search Console — relatório de segmentação internacional, filtro por página `/en/`.
+
 ### §Scripts — automação versionada (CONSTITUTION §C11c)
 
 | Script                      | Função                                                                                               |
@@ -89,6 +102,7 @@ O CI injeta os mesmos valores shell-side (origin/base computados do
 | `test-links.mjs`            | Gate hermético de integridade de links (espelho `/site-io/`, zero rede)                              |
 | `lint-copy.mjs`             | §C9 — vocabulário de marketing não verificável (gate bloqueante no guard CI)                         |
 | `lint-topology.mjs`         | ADR-004 — `withBase()` obrigatório em URL interna                                                    |
+| `verify-hreflang.mjs`       | SPEC-012 — reciprocidade `hreflang`, `x-default` e par do sitemap no artefato (gate no job `build`)  |
 | `generate-og.mjs`           | Regenera `public/og-default.png` (sharp local, sem rede) — run-once                                  |
 | `new-post.mjs`              | Scaffolding de post (frontmatter Zod + slug)                                                         |
 | `notify-indexnow.mjs`       | IndexNow — notifica Bing/Yandex/Seznam/Naver a cada publish (key file + `keyLocation`, non-blocking) |

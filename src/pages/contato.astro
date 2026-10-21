@@ -19,7 +19,7 @@ import {
 } from "../lib/contact";
 
 const SITE_DESCRIPTION =
-  "Email, WhatsApp, telefone e LinkedIn. Sem formulário, sem CRM, sem rastreamento. Resposta em até 1 dia útil.";
+  "Email, WhatsApp, telefone e LinkedIn. Sem formulário, sem CRM, sem rastreamento. Resposta em até 1 dia útil. Clientes no exterior: contratos em inglês.";
 
 const generalMailto =
   CONTACT_EMAIL &&
@@ -229,6 +229,34 @@ const telHref = CONTACT_PHONE && buildTelHref(CONTACT_PHONE);
         Precisa de diagnóstico, automação ou QA embarcado? Envie contexto:
         stack, tamanho do time, o que está doendo. Respondo com uma leitura
         inicial honesta — mesmo que a recomendação seja não me contratar agora.
+      </p>
+    </section>
+
+    <section class="mt-8" aria-labelledby="international-heading">
+      <h2
+        id="international-heading"
+        class="text-ink text-2xl leading-tight font-bold"
+      >
+        Clientes no exterior
+      </h2>
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
+        O serviço é prestado remotamente, a partir do Brasil, para clientes em
+        qualquer país — com contrato em inglês e sem formulário, sem CRM e sem
+        rastreamento. Para o mesmo escopo em inglês, veja a versão
+        <a
+          href={withBase("/en/contact")}
+          class="text-link hover:text-link-hover inline-flex min-h-[44px] items-center rounded-md underline underline-offset-4"
+          hreflang="en"
+          lang="en"
+        >
+          English contact page
+        </a>
+        .
+      </p>
+      <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-relaxed">
+        O engajamento é um contrato de prestação de serviços: não há vínculo de
+        emprego, pacote de benefícios nem patrocínio de visto. Presencial
+        somente no Brasil, dentro de um raio de 100 km de Matão/SP.
       </p>
     </section>
 

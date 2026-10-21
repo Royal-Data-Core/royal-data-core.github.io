@@ -5,7 +5,7 @@
  * home of the CURRENT locale).
  *
  * Asset policy (SPEC-010 §8, PERF-3):
- * - `public/brand/isotyper-color.webp` — 512x465, ~18 KB (derivativo WebP do
+ * - `public/brand/isotyper-color-alpha.webp` — 512x465, ~18 KB (derivativo WebP do
  *   isotyper vetorial-color original; o SVG de 272 KB que embrulhou um JPEG
  *   foi descartado).
  * - The wordmark is TEXT (system stack), not an image: crisp at any density,
@@ -39,7 +39,7 @@ const markClass = variant === "footer" ? "h-9 w-auto opacity-90" : "h-9 w-auto";
   class="inline-flex min-h-[44px] items-center gap-2 rounded-md"
 >
   <img
-    src={withBase("/brand/isotyper-color.webp")}
+    src={withBase("/brand/isotyper-color-alpha.webp")}
     width="512"
     height="465"
     alt=""

@@ -7,7 +7,7 @@
  * external font hosts — text is drawn as SVG with a system font stack, so the
  * PNG is rendered server-side deterministically). Run once; commit the PNGs.
  *
- * SPEC-010 §8 — brand lockup: the isotyper (public/brand/isotyper-color.webp,
+ * SPEC-010 §8 — brand lockup: the isotyper (public/brand/isotyper-color-alpha.webp,
  * 18 KB) is composited on a white plate in the top-right corner, so social
  * shares carry the mark instead of a flat colour rectangle.
  *
@@ -54,7 +54,7 @@ ${titleSpans}
 
 /** Brand plate — white rounded square + isotyper (SPEC-010 §8). */
 const PLATE = 180;
-const logoBuffer = await sharp("public/brand/isotyper-color.webp")
+const logoBuffer = await sharp("public/brand/isotyper-color-alpha.webp")
   .resize({ width: 138, withoutEnlargement: true })
   .png()
   .toBuffer();

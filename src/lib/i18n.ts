@@ -13,6 +13,8 @@
  *   this module only deals with the LOCALE segment.
  */
 
+import ROUTES_JSON from "./routes.json";
+
 export type Locale = "pt-BR" | "en";
 
 export const LOCALES: readonly Locale[] = ["pt-BR", "en"] as const;
@@ -30,16 +32,20 @@ export const LOCALE_SEGMENTS: Record<Locale, string> = {
  * Canonical route keys. Every PT route has exactly one EN counterpart —
  * the EN slug is an English translation of the PT slug (SEO surface for a
  * global audience), never a machine transliteration of the path.
+ *
+ * SSOT: `src/lib/routes.json` — shared with `astro.config.mjs` (the sitemap
+ * needs the same map to emit `alternates.languages`). One file, two consumers,
+ * zero drift; the artifact gate `scripts/verify-hreflang.mjs` proves the pair.
  */
-export const ROUTES = {
-  home: { "pt-BR": "/", en: "/en/" },
-  services: { "pt-BR": "/servicos", en: "/en/services" },
-  blog: { "pt-BR": "/blog", en: "/en/blog" },
-  contact: { "pt-BR": "/contato", en: "/en/contact" },
-  privacy: { "pt-BR": "/privacidade", en: "/en/privacy" },
-  search: { "pt-BR": "/busca", en: "/en/search" },
-  notFound: { "pt-BR": "/404", en: "/en/404" },
-} as const;
+export const ROUTES = ROUTES_JSON as {
+  home: { "pt-BR": string; en: string };
+  services: { "pt-BR": string; en: string };
+  blog: { "pt-BR": string; en: string };
+  contact: { "pt-BR": string; en: string };
+  privacy: { "pt-BR": string; en: string };
+  search: { "pt-BR": string; en: string };
+  notFound: { "pt-BR": string; en: string };
+};
 
 export type RouteKey = keyof typeof ROUTES;
 

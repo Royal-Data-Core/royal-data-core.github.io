@@ -24,6 +24,7 @@
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "lint:copy": "node scripts/lint-copy.mjs",
     "lint:security": "node scripts/audit-bundle.mjs --dist dist",
+    "lint:seo": "node scripts/verify-hreflang.mjs --dist dist",
     "generate:og": "node scripts/generate-og.mjs",
     "lint:topology": "node scripts/lint-topology.mjs",
     "format": "prettier --write .",

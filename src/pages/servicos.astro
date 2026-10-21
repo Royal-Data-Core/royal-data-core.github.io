@@ -14,7 +14,7 @@ import { serializeJsonLd } from "../lib/jsonld";
 import type { JsonLdNode } from "../lib/jsonld";
 
 const SITE_DESCRIPTION =
-  "Diagnóstico de qualidade, automação de testes e QA embarcado. Modelos por projeto, retainer, alocação ou mentoria. B2B e CLT.";
+  "Diagnóstico de qualidade, automação de testes e QA embarcado. Remoto para clientes no Brasil e no exterior. Modelos por projeto, retainer, alocação ou mentoria.";
 
 const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
 const mailtoBody = defaultMailtoBody(`${site}${withBase("/servicos")}`);
@@ -112,7 +112,12 @@ const faq = [
   {
     question: "Atende remotamente?",
     answer:
-      "Sim. Base em Matão/SP, atendimento remoto. Presencial sob combinação, dentro de um raio de 100 km de Matão/SP — Araraquara, Ribeirão Preto, São Carlos, Jaboticabal e Descalvado.",
+      "Sim. Base em Matão/SP, atendimento remoto para clientes no Brasil e no exterior — com contratos em inglês quando o cliente é internacional. Presencial sob combinação, dentro de um raio de 100 km de Matão/SP — Araraquara, Ribeirão Preto, São Carlos, Jaboticabal e Descalvado.",
+  },
+  {
+    question: "Contrata com empresa no exterior?",
+    answer:
+      "Sim. O serviço é contratado como contrato de prestação de serviços, com entrega remota a partir do Brasil. A entidade contratante é a Royal Data Core LTDA (CNPJ 69.527.139/0001-94), informada desde o início — não há vínculo de emprego, pacote de benefícios nem patrocínio de visto.",
   },
   {
     question: "Emite nota fiscal?",

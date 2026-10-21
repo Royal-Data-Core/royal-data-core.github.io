@@ -119,8 +119,13 @@ const alternateEntries = LOCALES.map((loc) => ({
 })).filter((entry): entry is { locale: Locale; path: string } =>
   Boolean(entry.path),
 );
-const xDefaultPath =
-  alternates[DEFAULT_LOCALE] ?? (locale === DEFAULT_LOCALE ? undefined : "/");
+// `x-default` only makes sense on a page that HAS a locale counterpart
+// (a PT-only page — e.g. a tag listing — declares no alternate at all).
+const hasLocaleAlternate = alternateEntries.length > 0;
+const xDefaultPath = hasLocaleAlternate
+  ? (alternates[DEFAULT_LOCALE] ??
+    (locale === DEFAULT_LOCALE ? undefined : "/"))
+  : undefined;
 ---
 
 <!doctype html>

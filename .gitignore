@@ -68,6 +68,12 @@ __pycache__/
 venv/
 *.egg-info/
 
+# ── 5.1 Brand source files (Inkscape originals — local only) ──────────
+# O repo carrega os DERIVADOS otimizados (public/brand/*.webp). O original
+# Inkscape (SVG embrulhando raster, > 30 MB) fica na máquina do operador:
+# versioná-lo no repo público não agrega valor e consome o budget de §C5.
+brand/*.svg
+
 # ── 6. Linters / editors / OS junk ──────────────────────────────────
 .DS_Store
 Thumbs.db

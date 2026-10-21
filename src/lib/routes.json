@@ -1,0 +1,9 @@
+{
+  "home": { "pt-BR": "/", "en": "/en/" },
+  "services": { "pt-BR": "/servicos", "en": "/en/services" },
+  "blog": { "pt-BR": "/blog", "en": "/en/blog" },
+  "contact": { "pt-BR": "/contato", "en": "/en/contact" },
+  "privacy": { "pt-BR": "/privacidade", "en": "/en/privacy" },
+  "search": { "pt-BR": "/busca", "en": "/en/search" },
+  "notFound": { "pt-BR": "/404", "en": "/en/404" }
+}
