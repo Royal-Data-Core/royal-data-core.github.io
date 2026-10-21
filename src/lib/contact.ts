@@ -71,7 +71,13 @@ export function buildTelHref(phone: string): string {
   return `tel:+${phone.replace(/[^0-9]/g, "")}`;
 }
 
-/** RFC 6068 `mailto:` URI with a pre-filled subject (ADR-003 D4 origin qualifier). */
+/**
+ * RFC 6068 `mailto:` URI with a pre-filled subject (ADR-003 D4 origin
+ * qualifier). Serialization is RFC 6068 §5 compliant: spaces are emitted as
+ * `%20`, never the form-urlencoded `+` filler — mail clients are not required
+ * to decode `+` as a space and several render it literally in the compose
+ * window.
+ */
 export function buildMailtoHref(
   email: string,
   subject: string,
@@ -81,7 +87,12 @@ export function buildMailtoHref(
   if (body) {
     params.set("body", body);
   }
-  return `mailto:${email}?${params.toString()}`;
+  // RFC 6068 §5: spaces are %20 in a mailto query. URLSearchParams is
+  // form-urlencoded and emits the space filler `+`, which mail clients are
+  // NOT required to decode as a space (several render it literally). A
+  // literal `+` inside a value is serialized as %2B, so every remaining
+  // `+` in the output is exclusively a space filler — safe to normalize.
+  return `mailto:${email}?${params.toString().replace(/\+/g, "%20")}`;
 }
 
 /**

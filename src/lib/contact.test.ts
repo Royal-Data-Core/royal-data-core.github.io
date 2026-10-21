@@ -58,7 +58,7 @@ describe("buildWhatsAppHref (ADR-003 D1)", () => {
 describe("buildMailtoHref (RFC 6068)", () => {
   it("encodes the subject via URLSearchParams", () => {
     expect(buildMailtoHref("contato@example.com", "Assunto com espaço")).toBe(
-      "mailto:contato@example.com?subject=Assunto+com+espa%C3%A7o",
+      "mailto:contato@example.com?subject=Assunto%20com%20espa%C3%A7o",
     );
   });
 
@@ -73,7 +73,21 @@ describe("buildMailtoHref (RFC 6068)", () => {
   it("keeps the bracket-prefixed constant byte-locked (ADR-003 D4 rev. 2026-10-21)", () => {
     expect(
       buildMailtoHref("a@b.com", "[CONTATO GERAL] - Royal Data Core"),
-    ).toBe("mailto:a@b.com?subject=%5BCONTATO+GERAL%5D+-+Royal+Data+Core");
+    ).toBe(
+      "mailto:a@b.com?subject=%5BCONTATO%20GERAL%5D%20-%20Royal%20Data%20Core",
+    );
+  });
+
+  it("encodes spaces as %20 (RFC 6068 §5) and keeps a literal plus distinct", () => {
+    expect(buildMailtoHref("a@b.com", "A B")).toBe(
+      "mailto:a@b.com?subject=A%20B",
+    );
+    expect(buildMailtoHref("a@b.com", "A+B")).toBe(
+      "mailto:a@b.com?subject=A%2BB",
+    );
+    expect(buildMailtoHref("a@b.com", "S", "Linha 1")).toContain(
+      "body=Linha%201",
+    );
   });
 });
 
@@ -105,7 +119,7 @@ describe("buildMailtoHrefEncoded — harvesting obfuscation", () => {
 
   it("keeps the plain href parseable", () => {
     expect(encoded.href).toBe(
-      `mailto:${email}?subject=Assunto+%26+t%C3%B3pico`,
+      `mailto:${email}?subject=Assunto%20%26%20t%C3%B3pico`,
     );
     expect(encoded.href).toMatch(/[\w.+-]+@[\w-]+\./);
   });
