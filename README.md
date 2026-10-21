@@ -92,8 +92,10 @@ npm run qa:docker    # bateria canônica completa dentro do container QA
   `test:guard` (shift-left) → `build` + `lint:security` → `test:all`
   (unit/e2e/a11y/links). LHCI e gitleaks permanecem gates nativos de CI
   (ADR-015 D5). Reports (Playwright/coverage) bind-mounted de volta ao
-  workspace. Containers sobem como `1000:1000`; se o uid do host divergir,
-  sobrescreva com `--user "$(id -u):$(id -g)"`.
+  workspace. Payload **nunca roda como root**: o entrypoint faz `chown` dos
+  alvos graváveis para `HOST_UID`/`HOST_GID` (default 1000) e executa o CMD
+  via `setpriv` (ADR-015 D7). Host uid divergente?
+  `HOST_UID=$(id -u) HOST_GID=$(id -g) npm run …`.
 - Docker é **instrumental** (§C11): nunca integra o artefato publicado (§C1).
   Caminho nativo (`npm run …`) segue primário — sem Docker, nada quebra.
 

@@ -14,7 +14,11 @@ services:
       # Colisão com servidor NATIVO (astro dev/preview) na 4321? Rode:
       #   DEV_PORT=4322 npm run dev:docker
       - "${DEV_PORT:-4321}:4321"
-    user: "1000:1000" # host uid validado; divergindo, sobrescreva com `--user`
+    environment:
+      # uid/gid do HOST que receberá os arquivos graváveis (entrypoint faz
+      # chown + drop). Divergente do default 1000? HOST_UID=$(id -u) npm run …
+      HOST_UID: "${HOST_UID:-1000}"
+      HOST_GID: "${HOST_GID:-1000}"
     volumes:
       - .:/app
       - /app/node_modules # anonymous volume — o npm layer da imagem não é
@@ -26,9 +30,10 @@ services:
       target: qa
     profiles:
       - "qa"
-    user: "1000:1000" # pwuser na imagem Playwright (uid 1000)
     environment:
       CI: "1"
+      HOST_UID: "${HOST_UID:-1000}"
+      HOST_GID: "${HOST_GID:-1000}"
     volumes:
       - ./playwright-report:/app/playwright-report
       - ./test-results:/app/test-results

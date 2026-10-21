@@ -25,10 +25,10 @@ FROM deps AS dev
 # §C7 — zero telemetry phone-home
 ENV ASTRO_TELEMETRY_DISABLED=1
 COPY . .
-# Container roda como uid 1000 (node): node_modules deve pertencer a ele,
-# senão o cache do vite (node_modules/.vite) falha com EACCES.
-RUN chown -R node:node /app/node_modules
+COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 4321
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npx", "astro", "dev", "--host", "0.0.0.0"]
 
 # ── qa: artefato + bateria completa (docker compose run --rm qa) ────────
@@ -44,12 +44,22 @@ RUN --mount=type=cache,target=/root/.npm \
 COPY . .
 # D-03 — canais de contato PÚBLICOS por design (mesmos valores de ci.yml;
 # SEC-1 intacto — nenhum secret em imagem/repo).
-ENV PUBLIC_CONTACT_EMAIL=royaldatacore@gmail.com \
-    PUBLIC_CONTACT_PHONE=5516997148778
-# Container roda como uid 1000 (pwuser): /app inteiro precisa ser gravável
-# (vite cache em node_modules/.vite, .astro/, dist/, espelho .linkinator/).
-RUN chown -R pwuser:pwuser /app
+# ARG (não ENV): o valor alcança o `npm run build` abaixo — paridade 1:1 com
+# o job build do CI — e NÃO persiste no runtime da imagem. Vitest valida o
+# contrato §C9 "pending mode — never invents data", que exige ausência de env
+# em runtime; `ENV` vazaria e quebraria a pré-condição (evidência round 4).
+ARG PUBLIC_CONTACT_EMAIL=royaldatacore@gmail.com
+ARG PUBLIC_CONTACT_PHONE=5516997148778
+# Build + auditoria do artefato na layer da imagem (cache por conteúdo) —
+# mesma fronteira de responsabilidade do job `build` do CI.
+RUN npm run build && npm run lint:security
+# Entrypoint: chown dos alvos graváveis + drop para HOST_UID (nunca payload
+# como root — ADR-015 D7; chown em build layer não é confiável neste stack).
+COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
 # Ordem = semântica da bateria canônica (RFC-001 §2.2): guard (shift-left,
-# falha antes do build) → build + audit do artefato → verify (unit/e2e/a11y/links).
-# LHCI permanece gate canônico de CI (ADR-015 D5 — não duplicado aqui).
-CMD ["sh", "-c", "npm run test:guard && npm run build && npm run lint:security && npm run test:all"]
+# falha antes de qualquer build) → verify (unit/e2e/a11y/links). O build do
+# artefato + audit rodam na layer da imagem (paridade com o job `build` do
+# CI; cache por conteúdo). LHCI permanece gate canônico de CI (ADR-015 D5).
+CMD ["sh", "-c", "npm run test:guard && npm run test:all"]
