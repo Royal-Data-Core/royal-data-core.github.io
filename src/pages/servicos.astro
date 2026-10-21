@@ -9,7 +9,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ServiceCard from "../components/ServiceCard.astro";
 import { withBase } from "../lib/withBase";
-import { defaultMailtoBody } from "../lib/contact";
+import { CONTACT_SUBJECTS, defaultMailtoBody } from "../lib/contact";
 import { serializeJsonLd } from "../lib/jsonld";
 import type { JsonLdNode } from "../lib/jsonld";
 
@@ -44,7 +44,7 @@ const qaDiagnostic: ServiceItem = {
     "estimativa de esforço por iniciativa",
   ],
   ctaLabel: "Solicitar diagnóstico",
-  ctaSubject: "Consultoria QA B2B — Diagnóstico de qualidade",
+  ctaSubject: CONTACT_SUBJECTS.servicesB2B,
 };
 
 const testAutomation: ServiceItem = {
@@ -62,7 +62,7 @@ const testAutomation: ServiceItem = {
     "transferência de conhecimento para o time",
   ],
   ctaLabel: "Discutir automação",
-  ctaSubject: "Consultoria QA B2B — Automação de testes",
+  ctaSubject: CONTACT_SUBJECTS.servicesB2B,
 };
 
 const embeddedQa: ServiceItem = {
@@ -80,7 +80,7 @@ const embeddedQa: ServiceItem = {
     "acompanhamento de métricas de qualidade",
   ],
   ctaLabel: "Conversar sobre alocação",
-  ctaSubject: "Oportunidade CLT QA — via site",
+  ctaSubject: CONTACT_SUBJECTS.servicesClt,
 };
 
 // SPEC-003 AC-003.3 — closed list "Por projeto | Retainer mensal | Alocação | Mentoria".

@@ -146,13 +146,16 @@ export function buildMailtoHrefEncoded(
 }
 
 /**
- * ADR-003 D4 — qualified subject table (verbatim from the SSOT).
+ * ADR-003 D4 rev. 2026-10-21 — bracket-prefix foldering format: every PT-BR
+ * subject is `[{{CTA_CTX}}] - Royal Data Core`, so mail clients folder by CTA
+ * origin without analytics. Uniform "Royal Data Core" suffix; service
+ * descriptors dropped by operator directive.
  */
 export const CONTACT_SUBJECTS = {
-  hero: "Contato via site — Hero",
-  servicesB2B: (service: string) => `Consultoria QA B2B — ${service}`,
-  servicesClt: "Oportunidade CLT QA — via site",
-  general: "Contato geral — Royal Data Core",
+  hero: "[CONTATO VIA SITE] - Royal Data Core",
+  servicesB2B: "[CONSULTORIA QA B2B] - Royal Data Core",
+  servicesClt: "[OPORTUNIDADE CLT QA] - Royal Data Core",
+  general: "[CONTATO GERAL] - Royal Data Core",
   post: (slug: string) => `Sobre o artigo: ${slug}`,
   brokenLink: (path: string) => `Link quebrado — ${path}`,
 } as const;

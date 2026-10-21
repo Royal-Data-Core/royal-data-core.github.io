@@ -14,10 +14,12 @@ import {
   CONTACT_EMAIL_DISPLAY,
   CONTACT_PHONE,
   CONTACT_PHONE_DISPLAY,
+  CONTACT_SUBJECTS,
   HAS_CONTACT_EMAIL,
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
+  defaultMailtoBody,
 } from "../lib/contact";
 import {
   DEFAULT_LOCALE,
@@ -44,9 +46,23 @@ const legalName = "ROYAL DATA CORE LTDA";
 const cnpj = "69.527.139/0001-94";
 const locationLine = locale === "en" ? "Matão/SP, Brazil" : "Matão/SP, Brasil";
 
-const encodedMailto =
-  CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
+/**
+ * ADR-003 D4 rev. 2026-10-21 — the footer had NO locale-branched subject on
+ * HEAD: one literal ("Contato geral — Royal Data Core") served every locale,
+ * so the bracket SSOT constant replaces it for all locales and the legacy
+ * em-dash form disappears domain-wide. Body origin = site root.
+ */
+const siteOrigin = Astro.site?.origin ?? null;
+const footerMailtoBody = siteOrigin
+  ? defaultMailtoBody(`${siteOrigin}${withBase("/")}`)
+  : undefined;
+const encodedMailto = CONTACT_EMAIL
+  ? buildMailtoHrefEncoded(
+      CONTACT_EMAIL,
+      CONTACT_SUBJECTS.general,
+      footerMailtoBody,
+    )
+  : null;
 const whatsappHref =
   CONTACT_PHONE &&
   buildWhatsAppHref(

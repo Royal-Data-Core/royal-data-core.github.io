@@ -14,16 +14,22 @@ import { withBase } from "../lib/withBase";
 import { readingMinutes } from "../lib/date";
 import {
   CONTACT_EMAIL,
+  CONTACT_SUBJECTS,
   buildMailtoHrefEncoded,
   contactFallbackHref,
+  defaultMailtoBody,
 } from "../lib/contact";
 
 const SITE_DESCRIPTION =
   "Estratégia de testes, automação e QA para times que não podem entregar defeito em produção. Base em Matão/SP, atendimento remoto no Brasil e no exterior.";
 
+// Same site-derivation mechanism as servicos.astro (import.meta.env.SITE).
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+const homeMailtoBody = defaultMailtoBody(`${site}${withBase("/")}`);
+
 const heroMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato via site — Hero");
+  buildMailtoHrefEncoded(CONTACT_EMAIL, CONTACT_SUBJECTS.hero, homeMailtoBody);
 
 // SPEC-002 AC-002.N1 — the build fails closed when there is nothing to show.
 const postEntries = await getCollection("blog");
@@ -52,7 +58,7 @@ const services = [
     ],
     cta: {
       label: "Solicitar diagnóstico",
-      subject: "Consultoria QA B2B — Diagnóstico de qualidade",
+      subject: CONTACT_SUBJECTS.servicesB2B,
     },
   },
   {
@@ -71,7 +77,7 @@ const services = [
     ],
     cta: {
       label: "Discutir automação",
-      subject: "Consultoria QA B2B — Automação de testes",
+      subject: CONTACT_SUBJECTS.servicesB2B,
     },
   },
   {
@@ -90,7 +96,7 @@ const services = [
     ],
     cta: {
       label: "Conversar sobre alocação",
-      subject: "Oportunidade CLT QA — via site",
+      subject: CONTACT_SUBJECTS.servicesClt,
     },
   },
 ] as const;
@@ -221,6 +227,7 @@ const services = [
             eyebrow={service.eyebrow}
             deliverables={service.deliverables}
             ctas={[service.cta]}
+            mailtoBody={homeMailtoBody}
           />
         ))
       }

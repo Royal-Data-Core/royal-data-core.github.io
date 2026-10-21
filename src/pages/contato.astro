@@ -11,19 +11,29 @@ import {
   CONTACT_PHONE,
   CONTACT_EMAIL_DISPLAY,
   CONTACT_PHONE_DISPLAY,
+  CONTACT_SUBJECTS,
   HAS_CONTACT_EMAIL,
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildTelHref,
   buildWhatsAppHref,
+  defaultMailtoBody,
 } from "../lib/contact";
 
 const SITE_DESCRIPTION =
   "Email, WhatsApp, telefone e LinkedIn. Sem formulário, sem CRM, sem rastreamento. Resposta em até 1 dia útil. Clientes no exterior: contratos em inglês.";
 
+// Same site-derivation mechanism as servicos.astro (import.meta.env.SITE).
+const site = import.meta.env.SITE ?? "https://royaldatacore.github.io";
+const contatoMailtoBody = defaultMailtoBody(`${site}${withBase("/contato")}`);
+
 const generalMailto =
   CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(CONTACT_EMAIL, "Contato geral — Royal Data Core");
+  buildMailtoHrefEncoded(
+    CONTACT_EMAIL,
+    CONTACT_SUBJECTS.general,
+    contatoMailtoBody,
+  );
 
 const waHref =
   CONTACT_PHONE &&

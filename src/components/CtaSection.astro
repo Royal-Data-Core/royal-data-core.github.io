@@ -11,10 +11,12 @@ import {
   CONTACT_PHONE,
   CONTACT_PLACEHOLDER_EMAIL,
   CONTACT_PLACEHOLDER_PHONE,
+  CONTACT_SUBJECTS,
   HAS_CONTACT_EMAIL,
   HAS_CONTACT_PHONE,
   buildMailtoHrefEncoded,
   buildWhatsAppHref,
+  defaultMailtoBody,
 } from "../lib/contact";
 import { withBase } from "../lib/withBase";
 import { DEFAULT_LOCALE, ROUTES, type Locale } from "../lib/i18n";
@@ -28,14 +30,28 @@ interface Props {
 const { locale = DEFAULT_LOCALE } = Astro.props;
 const isEn = locale === "en";
 
-const encodedMailto =
-  CONTACT_EMAIL &&
-  buildMailtoHrefEncoded(
-    CONTACT_EMAIL,
-    isEn
-      ? "General enquiry — Royal Data Core (EN site)"
-      : "Contato geral — Royal Data Core",
-  );
+/**
+ * ADR-003 D4 rev. 2026-10-21 — PT-BR branch uses the bracket SSOT constant
+ * plus the site-root auto-filled body; the EN branch keeps its inline literal
+ * untouched (SPEC-012 zero-touch). Body added to the PT branch only.
+ */
+const siteOrigin = Astro.site?.origin ?? null;
+const ptMailtoBody = siteOrigin
+  ? defaultMailtoBody(`${siteOrigin}${withBase("/")}`)
+  : undefined;
+
+const encodedMailto = isEn
+  ? CONTACT_EMAIL &&
+    buildMailtoHrefEncoded(
+      CONTACT_EMAIL,
+      "General enquiry — Royal Data Core (EN site)",
+    )
+  : CONTACT_EMAIL &&
+    buildMailtoHrefEncoded(
+      CONTACT_EMAIL,
+      CONTACT_SUBJECTS.general,
+      ptMailtoBody,
+    );
 const whatsappHref =
   HAS_CONTACT_PHONE && CONTACT_PHONE
     ? buildWhatsAppHref(

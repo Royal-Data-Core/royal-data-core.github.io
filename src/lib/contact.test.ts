@@ -69,6 +69,12 @@ describe("buildMailtoHref (RFC 6068)", () => {
       withBody.indexOf("body="),
     );
   });
+
+  it("keeps the bracket-prefixed constant byte-locked (ADR-003 D4 rev. 2026-10-21)", () => {
+    expect(
+      buildMailtoHref("a@b.com", "[CONTATO GERAL] - Royal Data Core"),
+    ).toBe("mailto:a@b.com?subject=%5BCONTATO+GERAL%5D+-+Royal+Data+Core");
+  });
 });
 
 describe("defaultMailtoBody (SPEC-005 AC-005.2)", () => {
@@ -120,9 +126,9 @@ describe("buildMailtoHrefEncoded — harvesting obfuscation", () => {
 });
 
 describe("CONTACT_SUBJECTS (ADR-003 D4 qualifier table)", () => {
-  it("builds service-specific B2B subjects", () => {
-    expect(CONTACT_SUBJECTS.servicesB2B("Automação de testes")).toBe(
-      "Consultoria QA B2B — Automação de testes",
+  it("keeps the bracket-prefixed B2B constant", () => {
+    expect(CONTACT_SUBJECTS.servicesB2B).toBe(
+      "[CONSULTORIA QA B2B] - Royal Data Core",
     );
   });
 
@@ -136,9 +142,11 @@ describe("CONTACT_SUBJECTS (ADR-003 D4 qualifier table)", () => {
   });
 
   it("keeps the verbatim constants", () => {
-    expect(CONTACT_SUBJECTS.hero).toBe("Contato via site — Hero");
-    expect(CONTACT_SUBJECTS.servicesClt).toBe("Oportunidade CLT QA — via site");
-    expect(CONTACT_SUBJECTS.general).toBe("Contato geral — Royal Data Core");
+    expect(CONTACT_SUBJECTS.hero).toBe("[CONTATO VIA SITE] - Royal Data Core");
+    expect(CONTACT_SUBJECTS.servicesClt).toBe(
+      "[OPORTUNIDADE CLT QA] - Royal Data Core",
+    );
+    expect(CONTACT_SUBJECTS.general).toBe("[CONTATO GERAL] - Royal Data Core");
   });
 });
 
