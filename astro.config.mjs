@@ -70,6 +70,24 @@ export default defineConfig({
       filter: (page) => !page.includes("/404"),
       serialize(item) {
         if (item.url.endsWith("/privacidade/")) item.priority = 0.3;
+        // SPEC-014 AC-014.1 — <loc> alinhado byte-a-byte ao rel=canonical declarado no <head> desta URL (rotas sem trailing-slash exceto raiz); elimina a forma alternativa 200 do conjunto canônico. Ref: CR indexação total.
+        // Espelha a fórmula do <head> (BaseLayout AC-001.3): remove a base, faz
+        // strip de TODA barra final e junta de volta via base terminada em "/".
+        // ÚNICA exceção (documentada): a raiz — comBase("/") conserva a barra
+        // final, então `<loc>` da home também a conserva; sem essa exceção o
+        // `<loc>` da home divergiria do canônico e deixaria de corresponder ao
+        // prefixo `${origin}${base}/` exigido por scripts/notify-indexnow.mjs.
+        const base =
+          SITE_BASE.length > 1 && !SITE_BASE.endsWith("/")
+            ? `${SITE_BASE}/`
+            : SITE_BASE;
+        const parsedUrl = new URL(item.url);
+        const routePath =
+          (base !== "/" && parsedUrl.pathname.startsWith(base)
+            ? `/${parsedUrl.pathname.slice(base.length)}`
+            : parsedUrl.pathname
+          ).replace(/\/+$/, "") || "/";
+        item.url = `${parsedUrl.origin}${base}${routePath.slice(1)}`;
         // SPEC-012 AC-012.9 — `links` (xhtml:link rel=alternate) no sitemap:
         // cada URL declara o par PT/EN da MESMA superfície. O par canônico
         // vive no <head> (SPEC-011 AC-012.2); o sitemap é o espelho para os
